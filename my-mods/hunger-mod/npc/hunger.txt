@@ -1,0 +1,107 @@
+prontera,155,185,4	script	Hunger Guide#hungermod	4_F_KAFRA1,{
+    if (hm_initialized == 0) {
+        set hm_hunger, 100;
+        set hm_initialized, 1;
+    }
+
+    mes "[Hunger Guide]";
+    mes "Tu hambre: " + hm_hunger + " / 100";
+    if (hm_hunger == 0) {
+        mes "Estas agotado: tu velocidad y tus seis estadisticas";
+        mes "estan reducidas un 20%. Come para recuperarte.";
+    }
+    next;
+
+    if (select("Comer una manzana:Salir") == 1) {
+        if (hm_hunger >= 100) {
+            mes "[Hunger Guide]";
+            mes "Ya no tienes hambre.";
+            close;
+        }
+
+        .@apples = countitem(512);
+        if (.@apples < 1) {
+            mes "[Hunger Guide]";
+            mes "No encuentro una manzana (ID 512) en tu inventario.";
+            close;
+        }
+
+        delitem 512, 1;
+        set hm_hunger, hm_hunger + 20;
+        if (hm_hunger > 100) {
+            set hm_hunger, 100;
+        }
+
+        mes "[Hunger Guide]";
+        mes "Comiste una manzana. Tu hambre ahora es " + hm_hunger + " / 100.";
+    }
+
+    close;
+}
+
+-	script	hunger_mgr	-1,{
+OnPCLoginEvent:
+    if (hm_initialized == 0) {
+    	set hm_hunger, 100;
+    	set hm_initialized, 1;
+    }
+    deltimer "hunger_mgr::OnHungerTick";
+    deltimer "hunger_mgr::OnPenaltyTick";
+    // Fast test rate: 1 hunger point per second. Use 60000 for 1 point per minute.
+    addtimer 1000, "hunger_mgr::OnHungerTick";
+    addtimer 1000, "hunger_mgr::OnPenaltyTick";
+    end;
+
+OnPCLogoutEvent:
+    deltimer "hunger_mgr::OnHungerTick";
+    deltimer "hunger_mgr::OnPenaltyTick";
+    set @hm_penalty_str, 0;
+    set @hm_penalty_agi, 0;
+    set @hm_penalty_vit, 0;
+    set @hm_penalty_int, 0;
+    set @hm_penalty_dex, 0;
+    set @hm_penalty_luk, 0;
+    end;
+
+OnHungerTick:
+    if (hm_hunger > 0)
+    	set hm_hunger, hm_hunger - 1;
+    addtimer 1000, "hunger_mgr::OnHungerTick";
+    end;
+
+OnPenaltyTick:
+    if (hm_hunger == 0) {
+    	// Add back this mod's last penalty before calculating 20% of each stat.
+    	.@str = readparam(bStr) + @hm_penalty_str;
+    	.@agi = readparam(bAgi) + @hm_penalty_agi;
+    	.@vit = readparam(bVit) + @hm_penalty_vit;
+    	.@int = readparam(bInt) + @hm_penalty_int;
+    	.@dex = readparam(bDex) + @hm_penalty_dex;
+    	.@luk = readparam(bLuk) + @hm_penalty_luk;
+
+    	set @hm_penalty_str, .@str * 20 / 100;
+    	set @hm_penalty_agi, .@agi * 20 / 100;
+    	set @hm_penalty_vit, .@vit * 20 / 100;
+    	set @hm_penalty_int, .@int * 20 / 100;
+    	set @hm_penalty_dex, .@dex * 20 / 100;
+    	set @hm_penalty_luk, .@luk * 20 / 100;
+
+    	.@penalty$ = "bonus bStr,-" + @hm_penalty_str + ";";
+    	.@penalty$ += "bonus bAgi,-" + @hm_penalty_agi + ";";
+    	.@penalty$ += "bonus bVit,-" + @hm_penalty_vit + ";";
+    	.@penalty$ += "bonus bInt,-" + @hm_penalty_int + ";";
+    	.@penalty$ += "bonus bDex,-" + @hm_penalty_dex + ";";
+    	.@penalty$ += "bonus bLuk,-" + @hm_penalty_luk + ";";
+    	.@penalty$ += "bonus bSpeedRate,-20;";
+    	bonus_script .@penalty$, 5, 1032;
+    } else {
+    	set @hm_penalty_str, 0;
+    	set @hm_penalty_agi, 0;
+    	set @hm_penalty_vit, 0;
+    	set @hm_penalty_int, 0;
+    	set @hm_penalty_dex, 0;
+    	set @hm_penalty_luk, 0;
+    }
+    addtimer 4000, "hunger_mgr::OnPenaltyTick";
+    end;
+}
