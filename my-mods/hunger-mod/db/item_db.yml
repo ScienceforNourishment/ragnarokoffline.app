@@ -1,0 +1,1331 @@
+Header:
+  Type: ITEM_DB
+  Version: 3
+
+Body:
+  - Id: 512
+    AegisName: Apple
+    Name: Apple
+    Type: Healing
+    Buy: 15
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(16,22),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 513
+    AegisName: Banana
+    Name: Banana
+    Type: Healing
+    Buy: 15
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(17,21),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 514
+    AegisName: Grape
+    Name: Grape
+    Type: Healing
+    Buy: 200
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal 0,rand(10,15);
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 515
+    AegisName: Carrot
+    Name: Carrot
+    Type: Healing
+    Buy: 15
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(18,20),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 516
+    AegisName: Sweet_Potato
+    Name: Potato
+    Type: Healing
+    Buy: 15
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(15,23),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 517
+    AegisName: Meat
+    Name: Meat
+    Type: Healing
+    Buy: 50
+    Weight: 150
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(70,100),0;
+      set hm_hunger, hm_hunger + 30;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 518
+    AegisName: Honey
+    Name: Honey
+    Type: Healing
+    Buy: 500
+    Weight: 100
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(70,100),rand(20,40);
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 519
+    AegisName: Milk
+    Name: Milk
+    Type: Healing
+    Buy: 25
+    Weight: 30
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(27,37),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 522
+    AegisName: Fruit_Of_Mastela
+    Name: Mastela Fruit
+    Type: Healing
+    Buy: 8500
+    Weight: 30
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(400,600),0;
+      set hm_hunger, hm_hunger + 40;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 526
+    AegisName: Royal_Jelly
+    Name: Royal Jelly
+    Type: Healing
+    Buy: 7000
+    Weight: 150
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(325,405),rand(40,60);
+      sc_end SC_POISON;
+      sc_end SC_SILENCE;
+      sc_end SC_BLIND;
+      sc_end SC_CONFUSION;
+      sc_end SC_CURSE;
+      sc_end SC_Hallucination;
+      set hm_hunger, hm_hunger + 40;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 529
+    AegisName: Candy
+    Name: Candy
+    Type: Healing
+    Buy: 10
+    Weight: 30
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(45,65),0;
+      set hm_hunger, hm_hunger + 5;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 530
+    AegisName: Candy_Striper
+    Name: Candy Cane
+    Type: Healing
+    Buy: 20
+    Weight: 40
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(105,145),0;
+      set hm_hunger, hm_hunger + 5;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 531
+    AegisName: Apple_Juice
+    Name: Apple Juice
+    Type: Healing
+    Buy: 20
+    Weight: 40
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(25,35),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 532
+    AegisName: Banana_Juice
+    Name: Banana Juice
+    Type: Healing
+    Buy: 20
+    Weight: 40
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(26,34),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 533
+    AegisName: Grape_Juice
+    Name: Grape Juice
+    Type: Healing
+    Buy: 250
+    Weight: 40
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal 0,rand(15,25);
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 534
+    AegisName: Carrot_Juice
+    Name: Carrot Juice
+    Type: Healing
+    Buy: 20
+    Weight: 40
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(27,33),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 535
+    AegisName: Pumpkin
+    Name: Pumpkin
+    Type: Healing
+    Buy: 15
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal 19,0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 536
+    AegisName: Ice_Cream
+    Name: Ice Cream
+    Type: Healing
+    Buy: 150
+    Weight: 80
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(105,145),0;
+      sc_start SC_FREEZE,10000,0,2500,0;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 538
+    AegisName: Well_Baked_Cookie
+    Name: Well-baked Cookie
+    Type: Healing
+    Buy: 1000
+    Weight: 30
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(160,200),0;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 539
+    AegisName: Piece_Of_Cake
+    Name: Piece of Cake
+    Type: Healing
+    Buy: 3000
+    Weight: 100
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(270,330),0;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 542
+    AegisName: Festive_Cookie
+    Name: Festival Cookie
+    Type: Healing
+    Buy: 10
+    Weight: 10
+    Script: |
+      itemheal rand(325,405),0;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 543
+    AegisName: Festive_Rainbow_Cake
+    Name: Festival Rainbow Cake
+    Type: Healing
+    Buy: 10
+    Weight: 10
+    Script: |
+      itemheal rand(325,405),0;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 544
+    AegisName: Fish_Slice
+    Name: Raw Fish
+    Type: Healing
+    Buy: 20
+    Weight: 30
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(25,60),0;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 548
+    AegisName: Cheese
+    Name: Cheese
+    Type: Healing
+    Buy: 2800
+    Weight: 50
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal 0,rand(10,15);
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 549
+    AegisName: Nice_Sweet_Potato
+    Name: Yam
+    Type: Healing
+    Buy: 180
+    Weight: 80
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(50,100),0;
+      sc_start SC_STUN,3000,0,1500,0;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 550
+    AegisName: Popped_Rice
+    Name: Rice Cake
+    Type: Healing
+    Buy: 10
+    Weight: 10
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(10,15),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 551
+    AegisName: Shusi
+    Name: Sushi
+    Type: Healing
+    Buy: 1
+    Weight: 50
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(50,60),0;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 555
+    AegisName: Rice_Cake
+    Name: Traditional Rice Cake
+    Type: Healing
+    Buy: 100
+    Weight: 20
+    Script: |
+      itemheal rand(105,145),0;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 556
+    AegisName: Long_Rice_Cake
+    Name: Rice Cake Stick
+    Type: Healing
+    Buy: 10
+    Weight: 10
+    Script: |
+      itemheal rand(20,25),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 557
+    AegisName: Hash_Rice_Cake
+    Name: Neatly Sliced Rice Cake
+    Type: Healing
+    Buy: 10
+    Weight: 10
+    Script: |
+      itemheal rand(25,30),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 558
+    AegisName: Chocolate
+    Name: Chocolate
+    Type: Healing
+    Buy: 1
+    Weight: 20
+    Script: |
+      itemheal 1,1;
+      set hm_hunger, hm_hunger + 5;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 559
+    AegisName: HandMade_Chocolate
+    Name: Hand-made Chocolate
+    Type: Healing
+    Buy: 1
+    Weight: 80
+    Script: |
+      itemheal 50,50;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 560
+    AegisName: HandMade_Chocolate_
+    Name: Handmade White Chocolate
+    Type: Healing
+    Buy: 5000
+    Weight: 80
+    Script: |
+      itemheal 50,50;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 561
+    AegisName: White_Chocolate
+    Name: White Chocolate
+    Type: Healing
+    Buy: 5000
+    Weight: 80
+    Script: |
+      itemheal 50,50;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 562
+    AegisName: Pizza
+    Name: Doublecrust Swiss Fondue
+    Type: Healing
+    Buy: 100
+    Weight: 150
+    Script: |
+      itemheal rand(70,100),0;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 563
+    AegisName: Pizza_01
+    Name: Doublecrust Swiss Fondue
+    Type: Healing
+    Buy: 1200
+    Weight: 150
+    Script: |
+      itemheal rand(375,445),0;
+      set hm_hunger, hm_hunger + 25;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 564
+    AegisName: Rice_Ball
+    Name: Rice Ball
+    Type: Healing
+    Buy: 1
+    Weight: 30
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal 200,0;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 567
+    AegisName: Prawn
+    Name: Shrimp
+    Type: Healing
+    Buy: 500
+    Weight: 40
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(117,192),0;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 568
+    AegisName: Lemon
+    Name: Lemon
+    Type: Healing
+    Buy: 60
+    Weight: 40
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal 0,rand(10,20);
+      set hm_hunger, hm_hunger + 5;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 570
+    AegisName: Lucky_Candy
+    Name: Lucky Candy
+    Type: Healing
+    Buy: 10
+    Weight: 30
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(45,65),0;
+      set hm_hunger, hm_hunger + 5;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 571
+    AegisName: Lucky_Candy_Cane
+    Name: Lucky Candy Cane
+    Type: Healing
+    Buy: 20
+    Weight: 40
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(105,145),0;
+      set hm_hunger, hm_hunger + 5;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 572
+    AegisName: Lucky_Cookie
+    Name: Lucky Cookie
+    Type: Healing
+    Buy: 1000
+    Weight: 30
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(160,200),0;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 573
+    AegisName: Chocolate_Drink
+    Name: Chocolate Drink
+    Type: Healing
+    Buy: 7000
+    Weight: 150
+    Script: |
+      itemheal rand(330,410),rand(45,65);
+      sc_end SC_POISON;
+      sc_end SC_SILENCE;
+      sc_end SC_BLIND;
+      sc_end SC_CONFUSION;
+      sc_end SC_CURSE;
+      sc_end SC_Hallucination;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 574
+    AegisName: Egg
+    Name: Egg
+    Type: Healing
+    Buy: 20
+    Weight: 30
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(33,42),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 575
+    AegisName: Piece_Of_Cake_
+    Name: 2nd Anniversary Cake
+    Type: Healing
+    Buy: 10
+    Weight: 100
+    Script: |
+      itemheal rand(270,330),0;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 576
+    AegisName: Prickly_Fruit
+    Name: Prickly Fruit
+    Type: Healing
+    Buy: 540
+    Weight: 60
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(150,300),rand(20,30);
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 578
+    AegisName: Strawberry
+    Name: Strawberry
+    Type: Healing
+    Buy: 200
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal 0,rand(16,28);
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 579
+    AegisName: Delicious_Fish
+    Name: Fresh Fish
+    Type: Healing
+    Buy: 700
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(100,150),0;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 580
+    AegisName: Bread
+    Name: Bread
+    Type: Healing
+    Buy: 150
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(50,90),0;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 581
+    AegisName: Mushroom
+    Name: Edible Mushroom
+    Type: Healing
+    Buy: 40
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(20,30),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 582
+    AegisName: Orange
+    Name: Orange
+    Type: Healing
+    Buy: 300
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(10,20),rand(10,20);
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 584
+    AegisName: Fish_Ball_Soup
+    Name: Fish Cake Soup
+    Type: Healing
+    Buy: 100
+    Weight: 60
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(40,70),0;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 586
+    AegisName: Mother's_Cake
+    Name: Mother's Cake
+    Type: Healing
+    Buy: 20
+    Weight: 100
+    Script: |
+      itemheal rand(325,405),0;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 587
+    AegisName: Prickly_Fruit_
+    Name: Red Prickly Fruit
+    Type: Healing
+    Buy: 880
+    Weight: 60
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(270,330),rand(20,30);
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 589
+    AegisName: Pizza_02
+    Name: Pizza
+    Type: Healing
+    Buy: 1200
+    Weight: 150
+    Script: |
+      itemheal rand(375,445),0;
+      set hm_hunger, hm_hunger + 25;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 591
+    AegisName: Caviar_Pancake
+    Name: Caviar Pancake
+    Type: Healing
+    Weight: 150
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(325,405),rand(40,60);
+      sc_end SC_POISON;
+      sc_end SC_SILENCE;
+      sc_end SC_BLIND;
+      sc_end SC_CONFUSION;
+      sc_end SC_CURSE;
+      sc_end SC_Hallucination;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 592
+    AegisName: Jam_Pancake
+    Name: Jam Pancake
+    Type: Healing
+    Weight: 150
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(325,405),rand(40,60);
+      sc_end SC_POISON;
+      sc_end SC_SILENCE;
+      sc_end SC_BLIND;
+      sc_end SC_CONFUSION;
+      sc_end SC_CURSE;
+      sc_end SC_Hallucination;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 593
+    AegisName: Honey_Pancake
+    Name: Honey Pancake
+    Type: Healing
+    Weight: 150
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(325,405),rand(40,60);
+      sc_end SC_POISON;
+      sc_end SC_SILENCE;
+      sc_end SC_BLIND;
+      sc_end SC_CONFUSION;
+      sc_end SC_CURSE;
+      sc_end SC_Hallucination;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 594
+    AegisName: Sour_Cream_Pancake
+    Name: Sour-Cream Pancake
+    Type: Healing
+    Weight: 150
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(325,405),rand(40,60);
+      sc_end SC_POISON;
+      sc_end SC_SILENCE;
+      sc_end SC_BLIND;
+      sc_end SC_CONFUSION;
+      sc_end SC_CURSE;
+      sc_end SC_Hallucination;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 595
+    AegisName: Mushroom_Pancake
+    Name: Mushroom Pancake
+    Type: Healing
+    Weight: 150
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(325,405),rand(40,60);
+      sc_end SC_POISON;
+      sc_end SC_SILENCE;
+      sc_end SC_BLIND;
+      sc_end SC_CONFUSION;
+      sc_end SC_CURSE;
+      sc_end SC_Hallucination;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 596
+    AegisName: Cute_Strawberry_Choco
+    Name: Cute Strawberry-Choco
+    Type: Healing
+    Buy: 20
+    Weight: 100
+    Script: |
+      itemheal 0,rand(1,100);
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 597
+    AegisName: Lovely_Choco_Tart
+    Name: Lovely Choco-Tart
+    Type: Healing
+    Buy: 20
+    Weight: 100
+    Script: |
+      itemheal rand(10,400),0;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 663
+    AegisName: Korea_Rice_Cake
+    Name: Korean Rice Cake
+    Type: Healing
+    Buy: 1
+    Weight: 10
+    Flags:
+      BuyingStore: true
+    Script: |
+      percentheal 10,0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 669
+    AegisName: Rice_Cake_Soup
+    Name: Tempting Rice-Cake Soup
+    Type: Healing
+    Buy: 500
+    Weight: 100
+    Flags:
+      BuyingStore: true
+    Script: |
+      percentheal 10,10;
+      set hm_hunger, hm_hunger + 25;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11506
+    AegisName: Fanta_Orange
+    Name: Fanta Orange
+    Type: Healing
+    Buy: 800
+    Weight: 10
+    Script: |
+      itemheal rand(50,70),rand(10,12);
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11507
+    AegisName: Fanta_Grape
+    Name: Fanta Grape
+    Type: Healing
+    Buy: 800
+    Weight: 10
+    Script: |
+      itemheal rand(50,70),rand(10,12);
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11508
+    AegisName: Karada_Meguri_Tea
+    Name: Karada Meguricha
+    Type: Healing
+    Buy: 800
+    Weight: 100
+    Script: |
+      itemheal rand(50,70),rand(10,12);
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11509
+    AegisName: Royal_Milk_Tea
+    Name: Black Tea Kochakaden
+    Type: Healing
+    Buy: 800
+    Weight: 100
+    Script: |
+      itemheal rand(50,70),rand(10,12);
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11513
+    AegisName: Protect_Neck_Candy
+    Name: Protect Neck Candy
+    Type: Healing
+    Buy: 250
+    Weight: 1
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(5,25),0;
+      set hm_hunger, hm_hunger + 5;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11515
+    AegisName: Coconut
+    Name: Coconut
+    Type: Healing
+    Buy: 1500
+    Weight: 120
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(300,400),0;
+      if (getequipid(EQI_HEAD_MID) == 15385)
+         warp "dali",113,82;
+      /* todo check map x y */
+      set hm_hunger, hm_hunger + 25;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11516
+    AegisName: Asai_Fruit
+    Name: Asai Fruit
+    Type: Healing
+    Buy: 15
+    Weight: 20
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(16,22),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11521
+    AegisName: Pingui_Berry_Juice
+    Name: Pingui Berry Juice
+    Type: Healing
+    Buy: 500
+    Weight: 50
+    EquipLevelMin: 100
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(400,800),rand(50,80);
+      set hm_hunger, hm_hunger + 25;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11525
+    AegisName: Mora_Hip_Tea
+    Name: Mora Hip Tea
+    Type: Healing
+    Buy: 20
+    Weight: 150
+    EquipLevelMin: 120
+    Flags:
+      BuyingStore: true
+    Delay:
+      Duration: 5000
+      Status: Reuse_Limit_H
+    Script: |
+      itemheal rand(1500,2000),0;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11531
+    AegisName: Coffee
+    Name: Coffee
+    Type: Healing
+    Buy: 10
+    Weight: 100
+    Script: |
+      itemheal 0,10;
+      set hm_hunger, hm_hunger + 5;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11534
+    AegisName: Coco_Juice
+    Name: Coconut Juice
+    Type: Healing
+    Buy: 20
+    Weight: 50
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(17,23),0;
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11535
+    AegisName: Almond_Chocolate
+    Name: Almond Chocolate
+    Type: Healing
+    Buy: 190
+    Weight: 200
+    Script: |
+      itemheal 0,rand(8,16);
+      set hm_hunger, hm_hunger + 10;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11538
+    AegisName: Octupus_Leg
+    Name: Fresh Octopus Legs
+    Type: Healing
+    Buy: 20
+    Weight: 30
+    Script: |
+      itemheal rand(35,60),rand(5,10);
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11550
+    AegisName: Pumpkin_Cake
+    Name: Pumpkin Cake
+    Type: Healing
+    Buy: 10
+    Weight: 40
+    Script: |
+      percentheal 5,5;
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11552
+    AegisName: Apple_Carrot_Salad
+    Name: Apple Carrot Salad
+    Type: Healing
+    Weight: 10
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoStorage: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
+    Script: |
+      itemheal rand(20,30),0;
+      sc_start SC_AGIFOOD,180000,1;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11553
+    AegisName: Casual_Stew
+    Name: Casual Stew
+    Type: Healing
+    Weight: 10
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoStorage: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
+    Script: |
+      itemheal rand(20,30),0;
+      sc_start SC_VITFOOD,180000,1;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11554
+    AegisName: Golden_Roasted_Apple
+    Name: Golden Roasted Apple
+    Type: Healing
+    Weight: 10
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoStorage: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
+    Script: |
+      itemheal rand(20,30),0;
+      sc_start SC_DEXFOOD,180000,1;
+      set hm_hunger, hm_hunger + 15;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 11562
+    AegisName: Pie_Fruit
+    Name: Pie Fruit
+    Type: Healing
+    Weight: 30
+    Flags:
+      BuyingStore: true
+    Script: |
+      itemheal rand(65,90),rand(35,40);
+      set hm_hunger, hm_hunger + 20;
+      if (hm_hunger > 100) {
+        set hm_hunger, 100;
+      }
+      dispbottom "Hambre: " + hm_hunger + " / 100.";
+      dispbottom "@@event hunger update " + hm_hunger;

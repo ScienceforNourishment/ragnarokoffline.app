@@ -2,5 +2,5 @@
   "name": "hunger-mod",
   "version": "1.0.0",
   "author": "Tu nombre",
-  "description": "Un sistema básico de hambre para los personajes."
+  "description": "Añade hambre, alimentos para recuperarla y un medidor en pantalla."
 }

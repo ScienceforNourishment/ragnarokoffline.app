@@ -8,34 +8,9 @@ prontera,155,185,4	script	Hunger Guide#hungermod	4_F_KAFRA1,{
     mes "Tu hambre: " + hm_hunger + " / 100";
     if (hm_hunger == 0) {
         mes "Estas agotado: tu velocidad y tus seis estadisticas";
-        mes "estan reducidas un 20%. Come para recuperarte.";
+        mes "estan reducidas un 20%. Usa alimentos para recuperarte.";
     }
-    next;
-
-    if (select("Comer una manzana:Salir") == 1) {
-        if (hm_hunger >= 100) {
-            mes "[Hunger Guide]";
-            mes "Ya no tienes hambre.";
-            close;
-        }
-
-        .@apples = countitem(512);
-        if (.@apples < 1) {
-            mes "[Hunger Guide]";
-            mes "No encuentro una manzana (ID 512) en tu inventario.";
-            close;
-        }
-
-        delitem 512, 1;
-        set hm_hunger, hm_hunger + 20;
-        if (hm_hunger > 100) {
-            set hm_hunger, 100;
-        }
-
-        mes "[Hunger Guide]";
-        mes "Comiste una manzana. Tu hambre ahora es " + hm_hunger + " / 100.";
-    }
-
+    mes "Al usar alimentos recuperaras hambre.";
     close;
 }
 
@@ -45,10 +20,11 @@ OnPCLoginEvent:
     	set hm_hunger, 100;
     	set hm_initialized, 1;
     }
+    dispbottom "@@event hunger update " + hm_hunger;
     deltimer "hunger_mgr::OnHungerTick";
     deltimer "hunger_mgr::OnPenaltyTick";
-    // Fast test rate: 1 hunger point per second. Use 60000 for 1 point per minute.
-    addtimer 1000, "hunger_mgr::OnHungerTick";
+    // Testing rate: 1 hunger point every 15 seconds.
+    addtimer 15000, "hunger_mgr::OnHungerTick";
     addtimer 1000, "hunger_mgr::OnPenaltyTick";
     end;
 
@@ -66,7 +42,8 @@ OnPCLogoutEvent:
 OnHungerTick:
     if (hm_hunger > 0)
     	set hm_hunger, hm_hunger - 1;
-    addtimer 1000, "hunger_mgr::OnHungerTick";
+    dispbottom "@@event hunger update " + hm_hunger;
+    addtimer 15000, "hunger_mgr::OnHungerTick";
     end;
 
 OnPenaltyTick:
