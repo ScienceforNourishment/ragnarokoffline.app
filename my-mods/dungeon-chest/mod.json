@@ -1,0 +1,10 @@
+{
+  "name": "dungeon-chest",
+  "version": "0.2.0",
+  "author": "Ragnarok Offline",
+  "description": "Cofres aleatorios por mapa de dungeon, agrupados por Tier según sus monstruos.",
+  "requires": {
+    "app": ">=1.4.0",
+    "era": "any"
+  }
+}

@@ -1,0 +1,3830 @@
+function	script	F_DungeonChest_Move	{
+	.@npc$ = getarg(0);
+	.@map$ = getarg(1);
+	.@placed = 0;
+	for (.@try = 0; .@try < 500; .@try++) {
+		.@x = rand(20, 280);
+		.@y = rand(20, 280);
+		if (!checkcell(.@map$, .@x, .@y, cell_chkpass))
+			continue;
+		movenpc .@npc$, .@x, .@y;
+		.@placed = 1;
+		break;
+	}
+
+	if (!.@placed)
+		debugmes "dungeon-chest: could not find a passable cell on " + .@map$ + " after 500 attempts for " + .@npc$;
+	return .@placed;
+}
+
+function	script	F_DungeonChest_Open	{
+	.@npc$ = getarg(0);
+	.@tier = getarg(1);
+	.@item = getarg(2);
+
+	mes "[Cofre de Tier " + .@tier + "]";
+	if (getvariableofnpc(.opened, .@npc$)) {
+		mes "El cofre ya fue abierto. No queda botín.";
+		return 0;
+	}
+
+	mes "El cofre está cerrado. ¿Quieres abrirlo?";
+	next;
+	if (select("Abrirlo:Dejarlo cerrado") == 2)
+		return 0;
+
+	if (getvariableofnpc(.opened, .@npc$)) {
+		mes "[Cofre de Tier " + .@tier + "]";
+		mes "Alguien más llegó primero y ya abrió el cofre.";
+		return 0;
+	}
+
+	if (!checkweight(.@item, 1)) {
+		mes "[Cofre de Tier " + .@tier + "]";
+		mes "No tienes espacio suficiente para cargar el botín.";
+		return 0;
+	}
+
+	set getvariableofnpc(.opened, .@npc$), 1;
+	getitem .@item, 1;
+	mes "[Cofre de Tier " + .@tier + "]";
+	mes "Encuentras " + getitemname(.@item) + ".";
+	return 1;
+}
+
+function	script	F_DungeonChest_Tick	{
+	.@npc$ = getarg(0);
+	.@map$ = getarg(1);
+
+	if (getvariableofnpc(.opened, .@npc$)) {
+		set getvariableofnpc(.opened, .@npc$), 0;
+		set getvariableofnpc(.relocated, .@npc$), 0;
+		callfunc("F_DungeonChest_Move", .@npc$, .@map$);
+	} else if (!getvariableofnpc(.relocated, .@npc$)) {
+		callfunc("F_DungeonChest_Move", .@npc$, .@map$);
+		set getvariableofnpc(.relocated, .@npc$), 1;
+	}
+	return;
+}
+
+// Generated from the dungeon maps with static monster spawns in the pinned
+// rAthena index. A chest starts at 0,0 and moves to a passable random cell on init.
+
+abbey01,0,0,4	script	Cofre T4#dcp_abbey01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abbey01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "abbey01");
+	initnpctimer;
+	end;
+}
+
+abbey02,0,0,4	script	Cofre T5#dcp_abbey02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abbey02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "abbey02");
+	initnpctimer;
+	end;
+}
+
+abbey03,0,0,4	script	Cofre T5#dcp_abbey03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abbey03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "abbey03");
+	initnpctimer;
+	end;
+}
+
+abyss_01,0,0,4	script	Cofre T4#dcp_abyss_01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abyss_01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "abyss_01");
+	initnpctimer;
+	end;
+}
+
+abyss_02,0,0,4	script	Cofre T4#dcp_abyss_02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abyss_02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "abyss_02");
+	initnpctimer;
+	end;
+}
+
+abyss_03,0,0,4	script	Cofre T5#dcp_abyss_03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abyss_03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "abyss_03");
+	initnpctimer;
+	end;
+}
+
+abyss_04,0,0,4	script	Cofre T6#dcp_abyss_04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 6, 12071);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abyss_04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "abyss_04");
+	initnpctimer;
+	end;
+}
+
+alde_dun01,0,0,4	script	Cofre T3#dcp_alde_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "alde_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "alde_dun01");
+	initnpctimer;
+	end;
+}
+
+alde_dun02,0,0,4	script	Cofre T3#dcp_alde_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "alde_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "alde_dun02");
+	initnpctimer;
+	end;
+}
+
+alde_dun03,0,0,4	script	Cofre T3#dcp_alde_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "alde_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "alde_dun03");
+	initnpctimer;
+	end;
+}
+
+alde_dun04,0,0,4	script	Cofre T3#dcp_alde_dun04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "alde_dun04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "alde_dun04");
+	initnpctimer;
+	end;
+}
+
+ama_dun01,0,0,4	script	Cofre T3#dcp_ama_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ama_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ama_dun01");
+	initnpctimer;
+	end;
+}
+
+ama_dun02,0,0,4	script	Cofre T3#dcp_ama_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ama_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ama_dun02");
+	initnpctimer;
+	end;
+}
+
+ama_dun03,0,0,4	script	Cofre T4#dcp_ama_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ama_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ama_dun03");
+	initnpctimer;
+	end;
+}
+
+anthell01,0,0,4	script	Cofre T1#dcp_anthell01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "anthell01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "anthell01");
+	initnpctimer;
+	end;
+}
+
+anthell02,0,0,4	script	Cofre T1#dcp_anthell02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "anthell02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "anthell02");
+	initnpctimer;
+	end;
+}
+
+arug_dun01,0,0,4	script	Cofre T4#dcp_arug_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "arug_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "arug_dun01");
+	initnpctimer;
+	end;
+}
+
+ayo_dun01,0,0,4	script	Cofre T3#dcp_ayo_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ayo_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ayo_dun01");
+	initnpctimer;
+	end;
+}
+
+ayo_dun02,0,0,4	script	Cofre T3#dcp_ayo_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ayo_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ayo_dun02");
+	initnpctimer;
+	end;
+}
+
+beach_dun,0,0,4	script	Cofre T4#dcp_beach_dun	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "beach_dun");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "beach_dun");
+	initnpctimer;
+	end;
+}
+
+beach_dun2,0,0,4	script	Cofre T3#dcp_beach_dun2	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "beach_dun2");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "beach_dun2");
+	initnpctimer;
+	end;
+}
+
+beach_dun3,0,0,4	script	Cofre T2#dcp_beach_dun3	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "beach_dun3");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "beach_dun3");
+	initnpctimer;
+	end;
+}
+
+bossnia_01,0,0,4	script	Cofre T5#dcp_bossnia_01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bossnia_01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "bossnia_01");
+	initnpctimer;
+	end;
+}
+
+bossnia_02,0,0,4	script	Cofre T5#dcp_bossnia_02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bossnia_02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "bossnia_02");
+	initnpctimer;
+	end;
+}
+
+bossnia_03,0,0,4	script	Cofre T5#dcp_bossnia_03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bossnia_03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "bossnia_03");
+	initnpctimer;
+	end;
+}
+
+bossnia_04,0,0,4	script	Cofre T5#dcp_bossnia_04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bossnia_04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "bossnia_04");
+	initnpctimer;
+	end;
+}
+
+bra_dun01,0,0,4	script	Cofre T3#dcp_bra_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bra_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "bra_dun01");
+	initnpctimer;
+	end;
+}
+
+bra_dun02,0,0,4	script	Cofre T3#dcp_bra_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bra_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "bra_dun02");
+	initnpctimer;
+	end;
+}
+
+c_tower1,0,0,4	script	Cofre T3#dcp_c_tower1	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower1");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "c_tower1");
+	initnpctimer;
+	end;
+}
+
+c_tower2,0,0,4	script	Cofre T3#dcp_c_tower2	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower2");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "c_tower2");
+	initnpctimer;
+	end;
+}
+
+c_tower2_,0,0,4	script	Cofre T6#dcp_c_tower2_	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 6, 12071);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower2_");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "c_tower2_");
+	initnpctimer;
+	end;
+}
+
+c_tower3,0,0,4	script	Cofre T3#dcp_c_tower3	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower3");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "c_tower3");
+	initnpctimer;
+	end;
+}
+
+c_tower3_,0,0,4	script	Cofre T6#dcp_c_tower3_	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 6, 12071);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower3_");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "c_tower3_");
+	initnpctimer;
+	end;
+}
+
+c_tower4,0,0,4	script	Cofre T3#dcp_c_tower4	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower4");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "c_tower4");
+	initnpctimer;
+	end;
+}
+
+dew_dun01,0,0,4	script	Cofre T3#dcp_dew_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "dew_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "dew_dun01");
+	initnpctimer;
+	end;
+}
+
+dew_dun02,0,0,4	script	Cofre T3#dcp_dew_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "dew_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "dew_dun02");
+	initnpctimer;
+	end;
+}
+
+dic_dun01,0,0,4	script	Cofre T5#dcp_dic_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "dic_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "dic_dun01");
+	initnpctimer;
+	end;
+}
+
+dic_dun02,0,0,4	script	Cofre T5#dcp_dic_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "dic_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "dic_dun02");
+	initnpctimer;
+	end;
+}
+
+dic_dun03,0,0,4	script	Cofre T5#dcp_dic_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "dic_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "dic_dun03");
+	initnpctimer;
+	end;
+}
+
+ein_dun01,0,0,4	script	Cofre T3#dcp_ein_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ein_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ein_dun01");
+	initnpctimer;
+	end;
+}
+
+ein_dun02,0,0,4	script	Cofre T4#dcp_ein_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ein_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ein_dun02");
+	initnpctimer;
+	end;
+}
+
+ein_dun03,0,0,4	script	Cofre T6#dcp_ein_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 6, 12071);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ein_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ein_dun03");
+	initnpctimer;
+	end;
+}
+
+gef_dun00,0,0,4	script	Cofre T1#dcp_gef_dun00	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gef_dun00");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gef_dun00");
+	initnpctimer;
+	end;
+}
+
+gef_dun01,0,0,4	script	Cofre T2#dcp_gef_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gef_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gef_dun01");
+	initnpctimer;
+	end;
+}
+
+gef_dun02,0,0,4	script	Cofre T3#dcp_gef_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gef_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gef_dun02");
+	initnpctimer;
+	end;
+}
+
+gef_dun03,0,0,4	script	Cofre T1#dcp_gef_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gef_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gef_dun03");
+	initnpctimer;
+	end;
+}
+
+gefenia01,0,0,4	script	Cofre T4#dcp_gefenia01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gefenia01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gefenia01");
+	initnpctimer;
+	end;
+}
+
+gefenia02,0,0,4	script	Cofre T4#dcp_gefenia02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gefenia02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gefenia02");
+	initnpctimer;
+	end;
+}
+
+gefenia03,0,0,4	script	Cofre T4#dcp_gefenia03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gefenia03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gefenia03");
+	initnpctimer;
+	end;
+}
+
+gefenia04,0,0,4	script	Cofre T4#dcp_gefenia04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gefenia04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gefenia04");
+	initnpctimer;
+	end;
+}
+
+gl_cas01,0,0,4	script	Cofre T3#dcp_gl_cas01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_cas01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_cas01");
+	initnpctimer;
+	end;
+}
+
+gl_cas01_,0,0,4	script	Cofre T6#dcp_gl_cas01_	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 6, 12071);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_cas01_");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_cas01_");
+	initnpctimer;
+	end;
+}
+
+gl_cas02,0,0,4	script	Cofre T4#dcp_gl_cas02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_cas02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_cas02");
+	initnpctimer;
+	end;
+}
+
+gl_cas02_,0,0,4	script	Cofre T5#dcp_gl_cas02_	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_cas02_");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_cas02_");
+	initnpctimer;
+	end;
+}
+
+gl_church,0,0,4	script	Cofre T3#dcp_gl_church	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_church");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_church");
+	initnpctimer;
+	end;
+}
+
+gl_chyard,0,0,4	script	Cofre T3#dcp_gl_chyard	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_chyard");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_chyard");
+	initnpctimer;
+	end;
+}
+
+gl_chyard_,0,0,4	script	Cofre T5#dcp_gl_chyard_	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_chyard_");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_chyard_");
+	initnpctimer;
+	end;
+}
+
+gl_dun01,0,0,4	script	Cofre T4#dcp_gl_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_dun01");
+	initnpctimer;
+	end;
+}
+
+gl_dun02,0,0,4	script	Cofre T4#dcp_gl_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_dun02");
+	initnpctimer;
+	end;
+}
+
+gl_in01,0,0,4	script	Cofre T3#dcp_gl_in01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_in01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_in01");
+	initnpctimer;
+	end;
+}
+
+gl_knt01,0,0,4	script	Cofre T4#dcp_gl_knt01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_knt01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_knt01");
+	initnpctimer;
+	end;
+}
+
+gl_knt02,0,0,4	script	Cofre T4#dcp_gl_knt02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_knt02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_knt02");
+	initnpctimer;
+	end;
+}
+
+gl_prison,0,0,4	script	Cofre T3#dcp_gl_prison	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_prison");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_prison");
+	initnpctimer;
+	end;
+}
+
+gl_prison1,0,0,4	script	Cofre T4#dcp_gl_prison1	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_prison1");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_prison1");
+	initnpctimer;
+	end;
+}
+
+gl_sew01,0,0,4	script	Cofre T3#dcp_gl_sew01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_sew01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_sew01");
+	initnpctimer;
+	end;
+}
+
+gl_sew02,0,0,4	script	Cofre T4#dcp_gl_sew02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_sew02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_sew02");
+	initnpctimer;
+	end;
+}
+
+gl_sew03,0,0,4	script	Cofre T4#dcp_gl_sew03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_sew03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_sew03");
+	initnpctimer;
+	end;
+}
+
+gl_sew04,0,0,4	script	Cofre T4#dcp_gl_sew04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_sew04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_sew04");
+	initnpctimer;
+	end;
+}
+
+gl_step,0,0,4	script	Cofre T3#dcp_gl_step	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_step");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gl_step");
+	initnpctimer;
+	end;
+}
+
+glast_01,0,0,4	script	Cofre T1#dcp_glast_01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "glast_01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "glast_01");
+	initnpctimer;
+	end;
+}
+
+gld2_ald,0,0,4	script	Cofre T5#dcp_gld2_ald	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld2_ald");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld2_ald");
+	initnpctimer;
+	end;
+}
+
+gld2_gef,0,0,4	script	Cofre T5#dcp_gld2_gef	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld2_gef");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld2_gef");
+	initnpctimer;
+	end;
+}
+
+gld2_pay,0,0,4	script	Cofre T5#dcp_gld2_pay	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld2_pay");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld2_pay");
+	initnpctimer;
+	end;
+}
+
+gld2_prt,0,0,4	script	Cofre T5#dcp_gld2_prt	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld2_prt");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld2_prt");
+	initnpctimer;
+	end;
+}
+
+gld_dun01,0,0,4	script	Cofre T5#dcp_gld_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld_dun01");
+	initnpctimer;
+	end;
+}
+
+gld_dun01_2,0,0,4	script	Cofre T5#dcp_gld_dun01_2	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun01_2");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld_dun01_2");
+	initnpctimer;
+	end;
+}
+
+gld_dun02,0,0,4	script	Cofre T5#dcp_gld_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld_dun02");
+	initnpctimer;
+	end;
+}
+
+gld_dun02_2,0,0,4	script	Cofre T5#dcp_gld_dun02_2	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun02_2");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld_dun02_2");
+	initnpctimer;
+	end;
+}
+
+gld_dun03,0,0,4	script	Cofre T4#dcp_gld_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld_dun03");
+	initnpctimer;
+	end;
+}
+
+gld_dun03_2,0,0,4	script	Cofre T5#dcp_gld_dun03_2	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun03_2");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld_dun03_2");
+	initnpctimer;
+	end;
+}
+
+gld_dun04,0,0,4	script	Cofre T4#dcp_gld_dun04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld_dun04");
+	initnpctimer;
+	end;
+}
+
+gld_dun04_2,0,0,4	script	Cofre T5#dcp_gld_dun04_2	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun04_2");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gld_dun04_2");
+	initnpctimer;
+	end;
+}
+
+gon_dun01,0,0,4	script	Cofre T3#dcp_gon_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gon_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gon_dun01");
+	initnpctimer;
+	end;
+}
+
+gon_dun02,0,0,4	script	Cofre T3#dcp_gon_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gon_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gon_dun02");
+	initnpctimer;
+	end;
+}
+
+gon_dun03,0,0,4	script	Cofre T3#dcp_gon_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gon_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "gon_dun03");
+	initnpctimer;
+	end;
+}
+
+ice_dun01,0,0,4	script	Cofre T4#dcp_ice_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ice_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ice_dun01");
+	initnpctimer;
+	end;
+}
+
+ice_dun02,0,0,4	script	Cofre T4#dcp_ice_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ice_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ice_dun02");
+	initnpctimer;
+	end;
+}
+
+ice_dun03,0,0,4	script	Cofre T4#dcp_ice_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ice_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ice_dun03");
+	initnpctimer;
+	end;
+}
+
+in_sphinx1,0,0,4	script	Cofre T2#dcp_in_sphinx1	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "in_sphinx1");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "in_sphinx1");
+	initnpctimer;
+	end;
+}
+
+in_sphinx2,0,0,4	script	Cofre T3#dcp_in_sphinx2	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "in_sphinx2");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "in_sphinx2");
+	initnpctimer;
+	end;
+}
+
+in_sphinx3,0,0,4	script	Cofre T3#dcp_in_sphinx3	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "in_sphinx3");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "in_sphinx3");
+	initnpctimer;
+	end;
+}
+
+in_sphinx4,0,0,4	script	Cofre T3#dcp_in_sphinx4	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "in_sphinx4");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "in_sphinx4");
+	initnpctimer;
+	end;
+}
+
+in_sphinx5,0,0,4	script	Cofre T3#dcp_in_sphinx5	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "in_sphinx5");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "in_sphinx5");
+	initnpctimer;
+	end;
+}
+
+iz_dun00,0,0,4	script	Cofre T1#dcp_iz_dun00	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun00");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "iz_dun00");
+	initnpctimer;
+	end;
+}
+
+iz_dun01,0,0,4	script	Cofre T1#dcp_iz_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "iz_dun01");
+	initnpctimer;
+	end;
+}
+
+iz_dun02,0,0,4	script	Cofre T2#dcp_iz_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "iz_dun02");
+	initnpctimer;
+	end;
+}
+
+iz_dun03,0,0,4	script	Cofre T2#dcp_iz_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "iz_dun03");
+	initnpctimer;
+	end;
+}
+
+iz_dun04,0,0,4	script	Cofre T2#dcp_iz_dun04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "iz_dun04");
+	initnpctimer;
+	end;
+}
+
+iz_dun05,0,0,4	script	Cofre T4#dcp_iz_dun05	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun05");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "iz_dun05");
+	initnpctimer;
+	end;
+}
+
+jupe_core,0,0,4	script	Cofre T4#dcp_jupe_core	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "jupe_core");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "jupe_core");
+	initnpctimer;
+	end;
+}
+
+juperos_01,0,0,4	script	Cofre T4#dcp_juperos_01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "juperos_01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "juperos_01");
+	initnpctimer;
+	end;
+}
+
+juperos_02,0,0,4	script	Cofre T4#dcp_juperos_02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "juperos_02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "juperos_02");
+	initnpctimer;
+	end;
+}
+
+kh_dun01,0,0,4	script	Cofre T4#dcp_kh_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "kh_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "kh_dun01");
+	initnpctimer;
+	end;
+}
+
+kh_dun02,0,0,4	script	Cofre T4#dcp_kh_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "kh_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "kh_dun02");
+	initnpctimer;
+	end;
+}
+
+lhz_dun01,0,0,4	script	Cofre T4#dcp_lhz_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lhz_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "lhz_dun01");
+	initnpctimer;
+	end;
+}
+
+lhz_dun02,0,0,4	script	Cofre T5#dcp_lhz_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lhz_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "lhz_dun02");
+	initnpctimer;
+	end;
+}
+
+lhz_dun03,0,0,4	script	Cofre T5#dcp_lhz_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lhz_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "lhz_dun03");
+	initnpctimer;
+	end;
+}
+
+lhz_dun04,0,0,4	script	Cofre T5#dcp_lhz_dun04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lhz_dun04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "lhz_dun04");
+	initnpctimer;
+	end;
+}
+
+lou_dun01,0,0,4	script	Cofre T3#dcp_lou_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lou_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "lou_dun01");
+	initnpctimer;
+	end;
+}
+
+lou_dun02,0,0,4	script	Cofre T3#dcp_lou_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lou_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "lou_dun02");
+	initnpctimer;
+	end;
+}
+
+lou_dun03,0,0,4	script	Cofre T3#dcp_lou_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lou_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "lou_dun03");
+	initnpctimer;
+	end;
+}
+
+mag_dun01,0,0,4	script	Cofre T4#dcp_mag_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mag_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "mag_dun01");
+	initnpctimer;
+	end;
+}
+
+mag_dun02,0,0,4	script	Cofre T4#dcp_mag_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mag_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "mag_dun02");
+	initnpctimer;
+	end;
+}
+
+mag_dun03,0,0,4	script	Cofre T6#dcp_mag_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 6, 12071);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mag_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "mag_dun03");
+	initnpctimer;
+	end;
+}
+
+mal_dun01,0,0,4	script	Cofre T3#dcp_mal_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mal_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "mal_dun01");
+	initnpctimer;
+	end;
+}
+
+mjo_dun01,0,0,4	script	Cofre T1#dcp_mjo_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mjo_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "mjo_dun01");
+	initnpctimer;
+	end;
+}
+
+mjo_dun02,0,0,4	script	Cofre T2#dcp_mjo_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mjo_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "mjo_dun02");
+	initnpctimer;
+	end;
+}
+
+mjo_dun03,0,0,4	script	Cofre T2#dcp_mjo_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mjo_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "mjo_dun03");
+	initnpctimer;
+	end;
+}
+
+moc_pryd01,0,0,4	script	Cofre T1#dcp_moc_pryd01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "moc_pryd01");
+	initnpctimer;
+	end;
+}
+
+moc_pryd02,0,0,4	script	Cofre T2#dcp_moc_pryd02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "moc_pryd02");
+	initnpctimer;
+	end;
+}
+
+moc_pryd03,0,0,4	script	Cofre T2#dcp_moc_pryd03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "moc_pryd03");
+	initnpctimer;
+	end;
+}
+
+moc_pryd04,0,0,4	script	Cofre T2#dcp_moc_pryd04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "moc_pryd04");
+	initnpctimer;
+	end;
+}
+
+moc_pryd05,0,0,4	script	Cofre T2#dcp_moc_pryd05	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd05");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "moc_pryd05");
+	initnpctimer;
+	end;
+}
+
+moc_pryd06,0,0,4	script	Cofre T3#dcp_moc_pryd06	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd06");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "moc_pryd06");
+	initnpctimer;
+	end;
+}
+
+moc_prydn1,0,0,4	script	Cofre T4#dcp_moc_prydn1	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_prydn1");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "moc_prydn1");
+	initnpctimer;
+	end;
+}
+
+moc_prydn2,0,0,4	script	Cofre T5#dcp_moc_prydn2	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_prydn2");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "moc_prydn2");
+	initnpctimer;
+	end;
+}
+
+mosk_dun01,0,0,4	script	Cofre T3#dcp_mosk_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mosk_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "mosk_dun01");
+	initnpctimer;
+	end;
+}
+
+mosk_dun02,0,0,4	script	Cofre T3#dcp_mosk_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mosk_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "mosk_dun02");
+	initnpctimer;
+	end;
+}
+
+mosk_dun03,0,0,4	script	Cofre T3#dcp_mosk_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mosk_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "mosk_dun03");
+	initnpctimer;
+	end;
+}
+
+nameless_n,0,0,4	script	Cofre T4#dcp_nameless_n	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "nameless_n");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "nameless_n");
+	initnpctimer;
+	end;
+}
+
+nyd_dun01,0,0,4	script	Cofre T4#dcp_nyd_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "nyd_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "nyd_dun01");
+	initnpctimer;
+	end;
+}
+
+odin_tem01,0,0,4	script	Cofre T3#dcp_odin_tem01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "odin_tem01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "odin_tem01");
+	initnpctimer;
+	end;
+}
+
+odin_tem02,0,0,4	script	Cofre T4#dcp_odin_tem02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "odin_tem02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "odin_tem02");
+	initnpctimer;
+	end;
+}
+
+odin_tem03,0,0,4	script	Cofre T3#dcp_odin_tem03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "odin_tem03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "odin_tem03");
+	initnpctimer;
+	end;
+}
+
+orcsdun01,0,0,4	script	Cofre T2#dcp_orcsdun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "orcsdun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "orcsdun01");
+	initnpctimer;
+	end;
+}
+
+orcsdun02,0,0,4	script	Cofre T2#dcp_orcsdun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "orcsdun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "orcsdun02");
+	initnpctimer;
+	end;
+}
+
+pay_dun00,0,0,4	script	Cofre T1#dcp_pay_dun00	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "pay_dun00");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "pay_dun00");
+	initnpctimer;
+	end;
+}
+
+pay_dun01,0,0,4	script	Cofre T1#dcp_pay_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "pay_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "pay_dun01");
+	initnpctimer;
+	end;
+}
+
+pay_dun02,0,0,4	script	Cofre T2#dcp_pay_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "pay_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "pay_dun02");
+	initnpctimer;
+	end;
+}
+
+pay_dun03,0,0,4	script	Cofre T2#dcp_pay_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "pay_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "pay_dun03");
+	initnpctimer;
+	end;
+}
+
+pay_dun04,0,0,4	script	Cofre T2#dcp_pay_dun04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "pay_dun04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "pay_dun04");
+	initnpctimer;
+	end;
+}
+
+prt_maze01,0,0,4	script	Cofre T1#dcp_prt_maze01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_maze01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "prt_maze01");
+	initnpctimer;
+	end;
+}
+
+prt_maze02,0,0,4	script	Cofre T1#dcp_prt_maze02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_maze02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "prt_maze02");
+	initnpctimer;
+	end;
+}
+
+prt_maze03,0,0,4	script	Cofre T2#dcp_prt_maze03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_maze03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "prt_maze03");
+	initnpctimer;
+	end;
+}
+
+prt_sewb1,0,0,4	script	Cofre T1#dcp_prt_sewb1	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_sewb1");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "prt_sewb1");
+	initnpctimer;
+	end;
+}
+
+prt_sewb2,0,0,4	script	Cofre T1#dcp_prt_sewb2	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_sewb2");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "prt_sewb2");
+	initnpctimer;
+	end;
+}
+
+prt_sewb3,0,0,4	script	Cofre T1#dcp_prt_sewb3	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_sewb3");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "prt_sewb3");
+	initnpctimer;
+	end;
+}
+
+prt_sewb4,0,0,4	script	Cofre T1#dcp_prt_sewb4	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_sewb4");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "prt_sewb4");
+	initnpctimer;
+	end;
+}
+
+ra_san01,0,0,4	script	Cofre T5#dcp_ra_san01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ra_san01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ra_san01");
+	initnpctimer;
+	end;
+}
+
+ra_san02,0,0,4	script	Cofre T5#dcp_ra_san02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ra_san02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ra_san02");
+	initnpctimer;
+	end;
+}
+
+ra_san03,0,0,4	script	Cofre T5#dcp_ra_san03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ra_san03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ra_san03");
+	initnpctimer;
+	end;
+}
+
+ra_san04,0,0,4	script	Cofre T5#dcp_ra_san04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ra_san04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ra_san04");
+	initnpctimer;
+	end;
+}
+
+ra_san05,0,0,4	script	Cofre T5#dcp_ra_san05	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ra_san05");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "ra_san05");
+	initnpctimer;
+	end;
+}
+
+schg_dun01,0,0,4	script	Cofre T4#dcp_schg_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "schg_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "schg_dun01");
+	initnpctimer;
+	end;
+}
+
+tha_t01,0,0,4	script	Cofre T3#dcp_tha_t01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t01");
+	initnpctimer;
+	end;
+}
+
+tha_t02,0,0,4	script	Cofre T4#dcp_tha_t02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t02");
+	initnpctimer;
+	end;
+}
+
+tha_t03,0,0,4	script	Cofre T4#dcp_tha_t03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t03");
+	initnpctimer;
+	end;
+}
+
+tha_t04,0,0,4	script	Cofre T4#dcp_tha_t04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t04");
+	initnpctimer;
+	end;
+}
+
+tha_t05,0,0,4	script	Cofre T4#dcp_tha_t05	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t05");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t05");
+	initnpctimer;
+	end;
+}
+
+tha_t06,0,0,4	script	Cofre T4#dcp_tha_t06	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t06");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t06");
+	initnpctimer;
+	end;
+}
+
+tha_t07,0,0,4	script	Cofre T4#dcp_tha_t07	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t07");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t07");
+	initnpctimer;
+	end;
+}
+
+tha_t08,0,0,4	script	Cofre T4#dcp_tha_t08	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t08");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t08");
+	initnpctimer;
+	end;
+}
+
+tha_t09,0,0,4	script	Cofre T5#dcp_tha_t09	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t09");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t09");
+	initnpctimer;
+	end;
+}
+
+tha_t10,0,0,4	script	Cofre T5#dcp_tha_t10	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t10");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t10");
+	initnpctimer;
+	end;
+}
+
+tha_t11,0,0,4	script	Cofre T5#dcp_tha_t11	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t11");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t11");
+	initnpctimer;
+	end;
+}
+
+tha_t12,0,0,4	script	Cofre T5#dcp_tha_t12	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t12");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tha_t12");
+	initnpctimer;
+	end;
+}
+
+thor_v01,0,0,4	script	Cofre T5#dcp_thor_v01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "thor_v01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "thor_v01");
+	initnpctimer;
+	end;
+}
+
+thor_v02,0,0,4	script	Cofre T5#dcp_thor_v02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "thor_v02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "thor_v02");
+	initnpctimer;
+	end;
+}
+
+thor_v03,0,0,4	script	Cofre T5#dcp_thor_v03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 5, 12045);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "thor_v03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "thor_v03");
+	initnpctimer;
+	end;
+}
+
+treasure01,0,0,4	script	Cofre T1#dcp_treasure01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "treasure01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "treasure01");
+	initnpctimer;
+	end;
+}
+
+treasure02,0,0,4	script	Cofre T2#dcp_treasure02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "treasure02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "treasure02");
+	initnpctimer;
+	end;
+}
+
+tur_dun01,0,0,4	script	Cofre T3#dcp_tur_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tur_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tur_dun01");
+	initnpctimer;
+	end;
+}
+
+tur_dun02,0,0,4	script	Cofre T4#dcp_tur_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tur_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tur_dun02");
+	initnpctimer;
+	end;
+}
+
+tur_dun03,0,0,4	script	Cofre T4#dcp_tur_dun03	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tur_dun03");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tur_dun03");
+	initnpctimer;
+	end;
+}
+
+tur_dun04,0,0,4	script	Cofre T4#dcp_tur_dun04	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 4, 12044);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tur_dun04");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "tur_dun04");
+	initnpctimer;
+	end;
+}
+
+um_dun01,0,0,4	script	Cofre T2#dcp_um_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 2, 12042);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "um_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "um_dun01");
+	initnpctimer;
+	end;
+}
+
+um_dun02,0,0,4	script	Cofre T3#dcp_um_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 3, 12043);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "um_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "um_dun02");
+	initnpctimer;
+	end;
+}
+
+xmas_dun01,0,0,4	script	Cofre T1#dcp_xmas_dun01	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "xmas_dun01");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "xmas_dun01");
+	initnpctimer;
+	end;
+}
+
+xmas_dun02,0,0,4	script	Cofre T1#dcp_xmas_dun02	3075,{
+	.@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+	if (.@opened) {
+		stopnpctimer;
+		initnpctimer;
+	}
+	close;
+
+OnInit:
+	.opened = 0;
+	.relocated = 0;
+	callfunc("F_DungeonChest_Move", strnpcinfo(3), "xmas_dun02");
+	initnpctimer;
+	end;
+
+OnTimer600000:
+	callfunc("F_DungeonChest_Tick", strnpcinfo(3), "xmas_dun02");
+	initnpctimer;
+	end;
+}
