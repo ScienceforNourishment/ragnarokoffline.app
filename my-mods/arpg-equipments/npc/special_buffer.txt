@@ -1,0 +1,137 @@
+//===== rAthena Script =======================================
+//= Buffer
+//===== Description: =========================================
+//= Free instant heal + buffs on click, no dialog window.
+//===== How to customize: ====================================
+//= - Duration of each buff: the number right before the last
+//=   comma in each sc_start/sc_start4 line, in milliseconds
+//=   (600000 = 10 min, 360000 = 6 min).
+//= - Buff strength/level: the number right after the duration.
+//= - To add/remove a buff: add/remove an sc_start line with the
+//=   matching SC_ status and, if you want an animation, a
+//=   specialeffect2 EF_ line above it.
+//= - percentheal must stay LAST, after every sc_start, so it heals
+//=   to max HP after any buff that raises max HP, not before.
+//= - Soul Link: switch(BaseJob) picks the spirit skill ID for the
+//=   clicking player's class. BaseJob has NO parentheses/argument.
+//=   SL_HIGH applies only to the High/trans version of the 6
+//=   first-class archetypes (eaclass()&EAJL_UPPER); 2nd class and up
+//=   get their own matching spirit; everyone else is skipped.
+//= - Sprite/name here only affects the (disabled) template; each
+//=   duplicate() line below sets its own sprite and can be changed
+//=   independently.
+//============================================================
+
+// Custom 30-Minute Instant Buffer NPC
+
+-	script	ARPG_Buffer	-1,{
+	// 1. Blessing (Level 10)
+	specialeffect2 EF_BLESSING;
+	sc_start SC_BLESSING,1800000,10;
+
+	// 2. Increase Agility (Level 10)
+	specialeffect2 EF_INCAGILITY;
+	sc_start SC_INCREASEAGI,1800000,10;
+
+	// 3. Assumptio (Level 5)
+	specialeffect2 EF_ASSUMPTIO;
+	sc_start SC_ASSUMPTIO,1800000,5;
+
+	// 4. Kyrie Eleison (Level 10)
+	specialeffect2 EF_KYRIE;
+	sc_start SC_KYRIE,1800000,10;
+
+	// 5. Magnificat (Level 5)
+	specialeffect2 EF_MAGNIFICAT;
+	sc_start SC_MAGNIFICAT,1800000,5;
+
+	// 6. Poem of Bragi
+	specialeffect2 EF_POEMBRAGI;
+	sc_start4 SC_POEMBRAGI,1800000,10,BA_POEMBRAGI,0,0;
+
+	// 7. Movement Speed Up
+	specialeffect2 EF_SPEEDUP;
+	sc_start SC_SpeedUp1,1800000,1000;
+
+	// 8. Impositio Manus (Level 5)
+	specialeffect2 EF_IMPOSITIO;
+	sc_start SC_IMPOSITIO,1800000,5;
+
+	// 9. Gloria (Level 5)
+	specialeffect2 EF_GLORIA;
+	sc_start SC_GLORIA,1800000,5;
+
+	// 10. Angelus (Level 10)
+	specialeffect2 EF_ANGELUS;
+	sc_start SC_ANGELUS,1800000,10;
+
+	// 11. Suffragium (Level 3)
+	specialeffect2 EF_SUFFRAGIUM;
+	sc_start SC_SUFFRAGIUM,1800000,3;
+
+	// 12. Providence (Level 5)
+	specialeffect2 EF_PROVIDENCE;
+	sc_start SC_PROVIDENCE,1800000,5;
+
+	// 13. Weapon Perfection (Level 10)
+	specialeffect2 EF_WEAPONPERFECT;
+	sc_start SC_WEAPONPERFECTION,1800000,10;
+
+	// 14. Overthrust (Level 5)
+	specialeffect2 EF_OVERTHRUST;
+	sc_start SC_OVERTHRUST,1800000,5;
+
+	// 15. Renovatio (Level 4)
+	sc_start SC_RENOVATIO,1800000,4;
+
+	// 16. Expiatio (Level 5)
+	sc_start SC_EXPIATIO,1800000,5;
+
+	// 17. Sacrament (Level 5)
+	sc_start SC_SECRAMENT,1800000,5;
+
+	// 18. Soul Link Check & Application
+	.@link = 0;
+	switch(BaseJob) {
+		case Job_Swordman:
+		case Job_Mage:
+		case Job_Acolyte:
+		case Job_Merchant:
+		case Job_Archer:
+		case Job_Thief:          if (eaclass()&EAJL_UPPER) .@link = 494; break;
+		case Job_Knight:         .@link = 452; break;
+		case Job_Priest:         .@link = 454; break;
+		case Job_Wizard:         .@link = 453; break;
+		case Job_Blacksmith:     .@link = 458; break;
+		case Job_Hunter:         .@link = 460; break;
+		case Job_Assassin:       .@link = 457; break;
+		case Job_Crusader:       .@link = 450; break;
+		case Job_Monk:           .@link = 447; break;
+		case Job_Sage:           .@link = 449; break;
+		case Job_Rogue:          .@link = 456; break;
+		case Job_Alchemist:      .@link = 445; break;
+		case Job_Bard:
+		case Job_Dancer:         .@link = 455; break;
+		case Job_Star_Gladiator: .@link = 448; break;
+		case Job_Soul_Linker:    .@link = 461; break;
+		case Job_Super_Novice:   .@link = 451; break;
+	}
+	.@soullink = (.@link > 0) ? 1 : 0;
+	if (.@soullink) sc_start4 SC_SPIRIT,1800000,5,.@link,0,0;
+
+	// 19. Kaupe & Kaizel
+	sc_start SC_KAUPE,1800000,3;
+	sc_start SC_KAIZEL,1800000,7;
+
+	// 20. Max HP/SP Heal (must be called last)
+	specialeffect2 EF_HEAL2;
+	percentheal 100,100;
+
+	dispbottom "Fully healed! Received 30-minute Speed Increase and Support Buffs";
+	end;
+}
+
+// ============================================================
+// ARPG Hub Map Spawn & Main Towns
+// ============================================================
+arpg_hub,153,120,4	duplicate(ARPG_Buffer)	Master Buffer#hub	936

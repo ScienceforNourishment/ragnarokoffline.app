@@ -1,0 +1,440 @@
+// Affix Forge: affix drops
+//
+// Every kill, each piece of equipment in the monster's own drop list gets an
+// extra roll at its normal drop rate (times the "drop_mult" setting). A win
+// hands the player a copy with 1-4 random bonus attributes (item random
+// options) straight into the inventory.
+//
+// The server cannot alter the stock ground drop, so that one still falls
+// plain and independently of this roll.
+
+-	script	AffixForge_Drops	-1,{
+	end;
+
+OnInit:
+	.mult    = callfunc("F_ModSetting", "affix-forge", "drop_mult", 100);
+	.scaling = callfunc("F_ModSetting", "affix-forge", "level_scaling", 1);
+	.ground  = callfunc("F_ModSetting", "affix-forge", "ground_drop", 0);
+	.pillar  = callfunc("F_ModSetting", "affix-forge", "ground_pillar", 1);
+	if (!.ground) .pillar = 0; // the pillar only exists with ground drops
+	.showmsg = 0; // 1 = show the "dropped with X attributes" chat messages
+	.debug   = 0; // 1 = write the ground drop debugmes line to the server log
+	.vm      = callfunc("F_ModSetting", "affix-forge", "value_mult", 100);
+	.uniq    = callfunc("F_ModSetting", "affix-forge", "unique_stats", 1);
+	.w1      = callfunc("F_ModSetting", "affix-forge", "weight_common", 55);
+	.w2      = callfunc("F_ModSetting", "affix-forge", "weight_uncommon", 28);
+	.w3      = callfunc("F_ModSetting", "affix-forge", "weight_rare", 14);
+	.w4      = callfunc("F_ModSetting", "affix-forge", "weight_epic", 3);
+	// "count_weights" is one text setting, "w1,w2,w3,w4": how often an item gets
+	// 1, 2, 3 or 4 attributes. A mod may declare only 20 settings, hence one string.
+	explode(.@cw$, callfunc("F_ModSetting", "affix-forge", "count_weights", "50,30,15,5"), ",");
+	.cwsum = 0;
+	for (.@i = 1; .@i <= 4; .@i++) {
+		.cw[.@i] = atoi(.@cw$[.@i - 1]);
+		if (.cw[.@i] < 0) .cw[.@i] = 0;
+		.cwsum += .cw[.@i];
+	}
+	if (.cwsum < 1) { .cw[1] = 1; .cwsum = 1; }
+	.wsum = .w1 + .w2 + .w3 + .w4;
+	if (.wsum < 1) { .w1 = 1; .wsum = 1; }
+
+	// The option pool, one row per option:
+	//   callsub L_Add, <option id>, <tier 1-4>, <min>, <max>, <kind>, <item type>, <cap>, <group>;
+	//   id         rAthena's item_randomopt_db id
+	//   tier       rarity: the tier weights in the mod settings decide how often a tier is rolled
+	//   min, max   base value range (0, 0 = the option has no value)
+	//   kind       0 = flat value, scales with monster level (x(1 + 2/100 per level))
+	//              1 = percent value, scales (x(1 + 1/100 per level))
+	//              2 = never scales
+	//   item type  0 = any item, 5 = weapons only, 4 = armor only
+	//   cap        hard ceiling on the rolled value, 0 = none
+	//   group      options with the same non-zero group never roll on one item. Groups 1-9 are
+	//              always enforced (weapon element, armor element). Groups 10 and up are stat
+	//              families (MaxHP and MaxHP %, ATK and ATK %, ...), enforced only while the
+	//              "unique_stats" setting is on.
+	// Delete a row to remove an option. To add one from item_randomopt_db.yml, copy a row
+	// (all option names are already in the client name table in data/).
+
+	// Tier 1: common
+	callsub L_Add, 3, 1, 2, 4, 0, 0, 0, 0;	// STR +X
+	callsub L_Add, 4, 1, 2, 4, 0, 0, 0, 0;	// AGI +X
+	callsub L_Add, 5, 1, 2, 4, 0, 0, 0, 0;	// VIT +X
+	callsub L_Add, 6, 1, 2, 4, 0, 0, 0, 0;	// INT +X
+	callsub L_Add, 7, 1, 2, 4, 0, 0, 0, 0;	// DEX +X
+	callsub L_Add, 8, 1, 2, 4, 0, 0, 0, 0;	// LUK +X
+	callsub L_Add, 17, 1, 5, 10, 0, 0, 0, 12;	// ATK +X
+	callsub L_Add, 19, 1, 5, 10, 0, 0, 0, 13;	// MATK +X
+	callsub L_Add, 1, 1, 30, 60, 0, 0, 0, 10;	// MaxHP +X
+	callsub L_Add, 2, 1, 10, 25, 0, 0, 0, 11;	// MaxSP +X
+	callsub L_Add, 22, 1, 3, 6, 0, 0, 0, 0;	// Flee Rate +X
+	callsub L_Add, 20, 1, 10, 20, 0, 0, 0, 0;	// DEF +X
+	callsub L_Add, 21, 1, 10, 20, 0, 0, 0, 0;	// MDEF +X
+	callsub L_Add, 18, 1, 3, 7, 0, 0, 0, 0;	// Hit Rate +X
+	callsub L_Add, 24, 1, 2, 4, 0, 0, 0, 0;	// Critical Rate +X
+	callsub L_Add, 23, 1, 2, 4, 0, 0, 0, 0;	// Perfect Dodge +X
+	callsub L_Add, 11, 1, 10, 30, 1, 0, 100, 0;	// HP Recovery Speed +X%
+	callsub L_Add, 12, 1, 10, 30, 1, 0, 100, 0;	// SP Recovery Speed +X%
+
+	// Tier 2: uncommon
+	callsub L_Add, 9, 2, 4, 6, 1, 0, 30, 10;	// MaxHP +X%
+	callsub L_Add, 10, 2, 4, 6, 1, 0, 30, 11;	// MaxSP +X%
+	callsub L_Add, 13, 2, 4, 6, 1, 0, 25, 12;	// Physical Attack +X%
+	callsub L_Add, 14, 2, 4, 6, 1, 0, 25, 13;	// Magic Attack +X%
+	callsub L_Add, 166, 2, 4, 6, 1, 0, 25, 0;	// Long-Range Physical Damage +X%
+	callsub L_Add, 219, 2, 4, 6, 1, 0, 25, 0;	// Melee Physical Damage +X%
+	callsub L_Add, 167, 2, 4, 8, 1, 0, 30, 0;	// Long-Range Damage Taken -X%
+	callsub L_Add, 220, 2, 4, 8, 1, 0, 30, 0;	// Melee Damage Taken -X%
+	callsub L_Add, 15, 2, 1, 2, 2, 0, 5, 14;	// Attack Speed (ASPD) +X
+	callsub L_Add, 16, 2, 3, 5, 1, 0, 15, 14;	// Attack Speed (ASPD) +X%
+	callsub L_Add, 170, 2, 3, 5, 1, 0, 30, 0;	// Variable Cast Time -X%
+	callsub L_Add, 171, 2, 3, 5, 1, 0, 30, 0;	// After-cast Delay -X%
+	callsub L_Add, 172, 2, 3, 6, 1, 0, 30, 0;	// SP Consumption -X%
+	callsub L_Add, 168, 2, 5, 10, 1, 0, 40, 0;	// Healing Skill Power +X%
+	callsub L_Add, 169, 2, 3, 7, 1, 0, 30, 0;	// Received Healing +X%
+	callsub L_Add, 165, 2, 5, 10, 1, 0, 40, 0;	// Critical Damage Taken -X%
+	callsub L_Add, 25, 2, 3, 7, 1, 0, 30, 0;	// Neutral Property Resistance +X%
+	callsub L_Add, 26, 2, 3, 7, 1, 0, 30, 0;	// Water Property Resistance +X%
+	callsub L_Add, 27, 2, 3, 7, 1, 0, 30, 0;	// Earth Property Resistance +X%
+	callsub L_Add, 28, 2, 3, 7, 1, 0, 30, 0;	// Fire Property Resistance +X%
+	callsub L_Add, 29, 2, 3, 7, 1, 0, 30, 0;	// Wind Property Resistance +X%
+	callsub L_Add, 30, 2, 3, 7, 1, 0, 30, 0;	// Poison Property Resistance +X%
+	callsub L_Add, 31, 2, 3, 7, 1, 0, 30, 0;	// Holy Property Resistance +X%
+	callsub L_Add, 32, 2, 3, 7, 1, 0, 30, 0;	// Dark Property Resistance +X%
+	callsub L_Add, 33, 2, 3, 7, 1, 0, 30, 0;	// Ghost Property Resistance +X%
+	callsub L_Add, 34, 2, 3, 7, 1, 0, 30, 0;	// Undead Property Resistance +X%
+	callsub L_Add, 36, 2, 5, 10, 1, 0, 40, 0;	// Physical Damage from Neutral Monsters -X%
+	callsub L_Add, 38, 2, 5, 10, 1, 0, 40, 0;	// Physical Damage from Water Monsters -X%
+	callsub L_Add, 40, 2, 5, 10, 1, 0, 40, 0;	// Physical Damage from Earth Monsters -X%
+	callsub L_Add, 42, 2, 5, 10, 1, 0, 40, 0;	// Physical Damage from Fire Monsters -X%
+	callsub L_Add, 44, 2, 5, 10, 1, 0, 40, 0;	// Physical Damage from Wind Monsters -X%
+	callsub L_Add, 46, 2, 5, 10, 1, 0, 40, 0;	// Physical Damage from Poison Monsters -X%
+	callsub L_Add, 48, 2, 5, 10, 1, 0, 40, 0;	// Physical Damage from Holy Monsters -X%
+	callsub L_Add, 50, 2, 5, 10, 1, 0, 40, 0;	// Physical Damage from Dark Monsters -X%
+	callsub L_Add, 52, 2, 5, 10, 1, 0, 40, 0;	// Physical Damage from Ghost Monsters -X%
+	callsub L_Add, 54, 2, 5, 10, 1, 0, 40, 0;	// Physical Damage from Undead Monsters -X%
+	callsub L_Add, 56, 2, 5, 10, 1, 0, 40, 0;	// Magic Damage from Neutral Monsters -X%
+	callsub L_Add, 58, 2, 5, 10, 1, 0, 40, 0;	// Magic Damage from Water Monsters -X%
+	callsub L_Add, 60, 2, 5, 10, 1, 0, 40, 0;	// Magic Damage from Earth Monsters -X%
+	callsub L_Add, 62, 2, 5, 10, 1, 0, 40, 0;	// Magic Damage from Fire Monsters -X%
+	callsub L_Add, 64, 2, 5, 10, 1, 0, 40, 0;	// Magic Damage from Wind Monsters -X%
+	callsub L_Add, 66, 2, 5, 10, 1, 0, 40, 0;	// Magic Damage from Poison Monsters -X%
+	callsub L_Add, 68, 2, 5, 10, 1, 0, 40, 0;	// Magic Damage from Holy Monsters -X%
+	callsub L_Add, 70, 2, 5, 10, 1, 0, 40, 0;	// Magic Damage from Dark Monsters -X%
+	callsub L_Add, 72, 2, 5, 10, 1, 0, 40, 0;	// Magic Damage from Ghost Monsters -X%
+	callsub L_Add, 74, 2, 5, 10, 1, 0, 40, 0;	// Magic Damage from Undead Monsters -X%
+	callsub L_Add, 87, 2, 3, 7, 1, 0, 35, 0;	// Resistance vs Formless +X%
+	callsub L_Add, 88, 2, 3, 7, 1, 0, 35, 0;	// Resistance vs Undead +X%
+	callsub L_Add, 89, 2, 3, 7, 1, 0, 35, 0;	// Resistance vs Brute +X%
+	callsub L_Add, 90, 2, 3, 7, 1, 0, 35, 0;	// Resistance vs Plant +X%
+	callsub L_Add, 91, 2, 3, 7, 1, 0, 35, 0;	// Resistance vs Insect +X%
+	callsub L_Add, 92, 2, 3, 7, 1, 0, 35, 0;	// Resistance vs Fish +X%
+	callsub L_Add, 93, 2, 3, 7, 1, 0, 35, 0;	// Resistance vs Demon +X%
+	callsub L_Add, 94, 2, 3, 7, 1, 0, 35, 0;	// Resistance vs Demi-Human +X%
+	callsub L_Add, 95, 2, 3, 7, 1, 0, 35, 0;	// Resistance vs Angel +X%
+	callsub L_Add, 96, 2, 3, 7, 1, 0, 35, 0;	// Resistance vs Dragon +X%
+	callsub L_Add, 194, 2, 3, 7, 1, 0, 35, 0;	// Physical Damage from Formless -X%
+	callsub L_Add, 195, 2, 3, 7, 1, 0, 35, 0;	// Physical Damage from Undead -X%
+	callsub L_Add, 196, 2, 3, 7, 1, 0, 35, 0;	// Physical Damage from Brute -X%
+	callsub L_Add, 197, 2, 3, 7, 1, 0, 35, 0;	// Physical Damage from Plant -X%
+	callsub L_Add, 198, 2, 3, 7, 1, 0, 35, 0;	// Physical Damage from Insect -X%
+	callsub L_Add, 199, 2, 3, 7, 1, 0, 35, 0;	// Physical Damage from Fish -X%
+	callsub L_Add, 200, 2, 3, 7, 1, 0, 35, 0;	// Physical Damage from Demon -X%
+	callsub L_Add, 201, 2, 3, 7, 1, 0, 35, 0;	// Physical Damage from Demi-Human -X%
+	callsub L_Add, 202, 2, 3, 7, 1, 0, 35, 0;	// Physical Damage from Angel -X%
+	callsub L_Add, 203, 2, 3, 7, 1, 0, 35, 0;	// Physical Damage from Dragon -X%
+	callsub L_Add, 149, 2, 3, 6, 1, 0, 30, 0;	// Damage from Normal Monsters -X%
+	callsub L_Add, 160, 2, 3, 7, 1, 0, 30, 0;	// Physical Damage from Small Monsters -X%
+	callsub L_Add, 190, 2, 3, 7, 1, 0, 30, 0;	// Magic Damage from Small Monsters -X%
+	callsub L_Add, 161, 2, 3, 7, 1, 0, 30, 0;	// Physical Damage from Medium Monsters -X%
+	callsub L_Add, 191, 2, 3, 7, 1, 0, 30, 0;	// Magic Damage from Medium Monsters -X%
+	callsub L_Add, 162, 2, 3, 7, 1, 0, 30, 0;	// Physical Damage from Large Monsters -X%
+	callsub L_Add, 192, 2, 3, 7, 1, 0, 30, 0;	// Magic Damage from Large Monsters -X%
+
+	// Tier 3: rare
+	callsub L_Add, 164, 3, 5, 10, 1, 0, 40, 0;	// Critical Damage +X%
+	callsub L_Add, 193, 3, 2, 4, 1, 0, 15, 0;	// All Property Resistance +X%
+	callsub L_Add, 218, 3, 5, 15, 1, 0, 50, 0;	// Reflected Damage Taken -X%
+	callsub L_Add, 150, 3, 3, 6, 1, 0, 30, 0;	// Damage from Boss Monsters -X%
+	callsub L_Add, 37, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Neutral Monsters +X%
+	callsub L_Add, 39, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Water Monsters +X%
+	callsub L_Add, 41, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Earth Monsters +X%
+	callsub L_Add, 43, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Fire Monsters +X%
+	callsub L_Add, 45, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Wind Monsters +X%
+	callsub L_Add, 47, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Poison Monsters +X%
+	callsub L_Add, 49, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Holy Monsters +X%
+	callsub L_Add, 51, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Dark Monsters +X%
+	callsub L_Add, 53, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Ghost Monsters +X%
+	callsub L_Add, 55, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Undead Monsters +X%
+	callsub L_Add, 57, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Neutral Monsters +X%
+	callsub L_Add, 59, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Water Monsters +X%
+	callsub L_Add, 61, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Earth Monsters +X%
+	callsub L_Add, 63, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Fire Monsters +X%
+	callsub L_Add, 65, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Wind Monsters +X%
+	callsub L_Add, 67, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Poison Monsters +X%
+	callsub L_Add, 69, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Holy Monsters +X%
+	callsub L_Add, 71, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Dark Monsters +X%
+	callsub L_Add, 73, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Ghost Monsters +X%
+	callsub L_Add, 75, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Undead Monsters +X%
+	callsub L_Add, 97, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Formless +X%
+	callsub L_Add, 98, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Undead +X%
+	callsub L_Add, 99, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Brute +X%
+	callsub L_Add, 100, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Plant +X%
+	callsub L_Add, 101, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Insect +X%
+	callsub L_Add, 102, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Fish +X%
+	callsub L_Add, 103, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Demon +X%
+	callsub L_Add, 104, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Demi-Human +X%
+	callsub L_Add, 105, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Angel +X%
+	callsub L_Add, 106, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Dragon +X%
+	callsub L_Add, 107, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Formless +X%
+	callsub L_Add, 108, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Undead +X%
+	callsub L_Add, 109, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Brute +X%
+	callsub L_Add, 110, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Plant +X%
+	callsub L_Add, 111, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Insect +X%
+	callsub L_Add, 112, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Fish +X%
+	callsub L_Add, 113, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Demon +X%
+	callsub L_Add, 114, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Demi-Human +X%
+	callsub L_Add, 115, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Angel +X%
+	callsub L_Add, 116, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Dragon +X%
+	callsub L_Add, 147, 3, 3, 6, 1, 0, 30, 0;	// Damage vs Normal Monsters +X%
+	callsub L_Add, 151, 3, 3, 6, 1, 0, 30, 0;	// Magic Damage vs Normal Monsters +X%
+	callsub L_Add, 157, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Small Monsters +X%
+	callsub L_Add, 187, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Small Monsters +X%
+	callsub L_Add, 158, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Medium Monsters +X%
+	callsub L_Add, 188, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Medium Monsters +X%
+	callsub L_Add, 159, 3, 3, 7, 1, 0, 35, 0;	// Physical Damage vs Large Monsters +X%
+	callsub L_Add, 189, 3, 3, 7, 1, 0, 35, 0;	// Magic Damage vs Large Monsters +X%
+	callsub L_Add, 221, 3, 3, 7, 1, 0, 35, 0;	// Neutral Magic Skill Damage +X%
+	callsub L_Add, 222, 3, 3, 7, 1, 0, 35, 0;	// Water Magic Skill Damage +X%
+	callsub L_Add, 223, 3, 3, 7, 1, 0, 35, 0;	// Earth Magic Skill Damage +X%
+	callsub L_Add, 224, 3, 3, 7, 1, 0, 35, 0;	// Fire Magic Skill Damage +X%
+	callsub L_Add, 225, 3, 3, 7, 1, 0, 35, 0;	// Wind Magic Skill Damage +X%
+	callsub L_Add, 226, 3, 3, 7, 1, 0, 35, 0;	// Poison Magic Skill Damage +X%
+	callsub L_Add, 227, 3, 3, 7, 1, 0, 35, 0;	// Holy Magic Skill Damage +X%
+	callsub L_Add, 228, 3, 3, 7, 1, 0, 35, 0;	// Dark Magic Skill Damage +X%
+	callsub L_Add, 229, 3, 3, 7, 1, 0, 35, 0;	// Ghost Magic Skill Damage +X%
+	callsub L_Add, 230, 3, 3, 7, 1, 0, 35, 0;	// Undead Magic Skill Damage +X%
+	callsub L_Add, 185, 3, 0, 0, 2, 5, 0, 0;	// Weapon cannot be broken
+	callsub L_Add, 186, 3, 0, 0, 2, 4, 0, 0;	// Armor cannot be broken
+
+	// Tier 4: epic
+	callsub L_Add, 148, 4, 3, 6, 1, 0, 30, 0;	// Damage vs Boss Monsters +X%
+	callsub L_Add, 152, 4, 3, 6, 1, 0, 30, 0;	// Magic Damage vs Boss Monsters +X%
+	callsub L_Add, 153, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Normal Monsters X%
+	callsub L_Add, 154, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Boss Monsters X%
+	callsub L_Add, 155, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Normal Monsters X%
+	callsub L_Add, 156, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Boss Monsters X%
+	callsub L_Add, 127, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Formless Monsters X%
+	callsub L_Add, 128, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Undead Monsters X%
+	callsub L_Add, 129, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Brute Monsters X%
+	callsub L_Add, 130, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Plant Monsters X%
+	callsub L_Add, 131, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Insect Monsters X%
+	callsub L_Add, 132, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Fish Monsters X%
+	callsub L_Add, 133, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Demon Monsters X%
+	callsub L_Add, 134, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Demi-Human Monsters X%
+	callsub L_Add, 135, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Angel Monsters X%
+	callsub L_Add, 136, 4, 2, 5, 1, 0, 25, 0;	// Ignore DEF of Dragon Monsters X%
+	callsub L_Add, 137, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Formless Monsters X%
+	callsub L_Add, 138, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Undead Monsters X%
+	callsub L_Add, 139, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Brute Monsters X%
+	callsub L_Add, 140, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Plant Monsters X%
+	callsub L_Add, 141, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Insect Monsters X%
+	callsub L_Add, 142, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Fish Monsters X%
+	callsub L_Add, 143, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Demon Monsters X%
+	callsub L_Add, 144, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Demi-Human Monsters X%
+	callsub L_Add, 145, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Angel Monsters X%
+	callsub L_Add, 146, 4, 2, 5, 1, 0, 25, 0;	// Ignore MDEF of Dragon Monsters X%
+	callsub L_Add, 231, 4, 2, 4, 1, 0, 15, 0;	// All Magic Skill Damage +X%
+	callsub L_Add, 232, 4, 2, 5, 1, 0, 15, 0;	// EXP from Formless Monsters +X%
+	callsub L_Add, 233, 4, 2, 5, 1, 0, 15, 0;	// EXP from Undead Monsters +X%
+	callsub L_Add, 234, 4, 2, 5, 1, 0, 15, 0;	// EXP from Brute Monsters +X%
+	callsub L_Add, 235, 4, 2, 5, 1, 0, 15, 0;	// EXP from Plant Monsters +X%
+	callsub L_Add, 236, 4, 2, 5, 1, 0, 15, 0;	// EXP from Insect Monsters +X%
+	callsub L_Add, 237, 4, 2, 5, 1, 0, 15, 0;	// EXP from Fish Monsters +X%
+	callsub L_Add, 238, 4, 2, 5, 1, 0, 15, 0;	// EXP from Demon Monsters +X%
+	callsub L_Add, 239, 4, 2, 5, 1, 0, 15, 0;	// EXP from Demi-Human Monsters +X%
+	callsub L_Add, 240, 4, 2, 5, 1, 0, 15, 0;	// EXP from Angel Monsters +X%
+	callsub L_Add, 241, 4, 2, 5, 1, 0, 15, 0;	// EXP from Dragon Monsters +X%
+	callsub L_Add, 242, 4, 1, 3, 1, 0, 10, 0;	// EXP from all Monsters +X%
+	callsub L_Add, 163, 4, 0, 0, 2, 5, 0, 0;	// Weapon ignores size penalty
+	callsub L_Add, 175, 4, 0, 0, 2, 5, 0, 1;	// Weapon Element: Neutral
+	callsub L_Add, 176, 4, 0, 0, 2, 5, 0, 1;	// Weapon Element: Water
+	callsub L_Add, 177, 4, 0, 0, 2, 5, 0, 1;	// Weapon Element: Earth
+	callsub L_Add, 178, 4, 0, 0, 2, 5, 0, 1;	// Weapon Element: Fire
+	callsub L_Add, 179, 4, 0, 0, 2, 5, 0, 1;	// Weapon Element: Wind
+	callsub L_Add, 180, 4, 0, 0, 2, 5, 0, 1;	// Weapon Element: Poison
+	callsub L_Add, 181, 4, 0, 0, 2, 5, 0, 1;	// Weapon Element: Holy
+	callsub L_Add, 182, 4, 0, 0, 2, 5, 0, 1;	// Weapon Element: Dark
+	callsub L_Add, 183, 4, 0, 0, 2, 5, 0, 1;	// Weapon Element: Ghost
+	callsub L_Add, 184, 4, 0, 0, 2, 5, 0, 1;	// Weapon Element: Undead
+	callsub L_Add, 76, 4, 0, 0, 2, 4, 0, 2;	// Armor Element: Neutral
+	callsub L_Add, 77, 4, 0, 0, 2, 4, 0, 2;	// Armor Element: Water
+	callsub L_Add, 78, 4, 0, 0, 2, 4, 0, 2;	// Armor Element: Earth
+	callsub L_Add, 79, 4, 0, 0, 2, 4, 0, 2;	// Armor Element: Fire
+	callsub L_Add, 80, 4, 0, 0, 2, 4, 0, 2;	// Armor Element: Wind
+	callsub L_Add, 81, 4, 0, 0, 2, 4, 0, 2;	// Armor Element: Poison
+	callsub L_Add, 82, 4, 0, 0, 2, 4, 0, 2;	// Armor Element: Holy
+	callsub L_Add, 83, 4, 0, 0, 2, 4, 0, 2;	// Armor Element: Dark
+	callsub L_Add, 84, 4, 0, 0, 2, 4, 0, 2;	// Armor Element: Ghost
+	callsub L_Add, 85, 4, 0, 0, 2, 4, 0, 2;	// Armor Element: Undead
+
+	// Index the pool by tier, for the rarity roll.
+	for (.@i = 0; .@i < .n; .@i++) {
+		.@t = .p_tier[.@i];
+		.ti[(.@t - 1) * 400 + .tc[.@t]] = .@i;
+		.tc[.@t]++;
+	}
+	end;
+
+L_Add:
+	.p_id[.n]   = getarg(0);
+	.p_tier[.n] = getarg(1);
+	.p_min[.n]  = getarg(2);
+	.p_max[.n]  = getarg(3);
+	.p_kind[.n] = getarg(4);
+	.p_type[.n] = getarg(5);
+	.p_cap[.n]  = getarg(6);
+	.p_grp[.n]  = getarg(7);
+	.n++;
+	return;
+
+OnNPCKillEvent:
+	if (.debug) debugmes "affix-forge: kill event mob " + killedrid + " gid " + killedgid + " mult " + .mult + " ground " + .ground;
+	if (.mult < 1) end;
+	// getmobdrops fills $@MobDrop_item[] / $@MobDrop_rate[] and returns the
+	// drop count, or 0 for an unknown monster.
+	if (getmobdrops(killedrid) == 0) end;
+	.@count = $@MobDrop_count;
+	for (.@d = 0; .@d < .@count; .@d++) {
+		.@item[.@d] = $@MobDrop_item[.@d];
+		.@rate[.@d] = $@MobDrop_rate[.@d];
+	}
+
+	.@lv = getmonsterinfo(killedrid, MOB_LV);
+
+	// Where the monster died. getmapxy cannot look up monsters, so read them with
+	// getunitdata (killedgid = the dead monster's unit id; UMOB_X / UMOB_Y are the
+	// monster fields this server uses). Start from the player's position and only
+	// take the monster's if it is a real spot near the player, so a failed lookup
+	// falls back to the player.
+	getmapxy(.@map$, .@x, .@y, BL_PC);
+	if (.debug) debugmes "affix-forge: player at " + .@map$ + " " + .@x + "," + .@y + ", reading monster position";
+	getunitdata(killedgid, .@mob);
+	if (.debug) debugmes "affix-forge: monster at " + .@mob[UMOB_X] + "," + .@mob[UMOB_Y];
+	.@mx = .@mob[UMOB_X];
+	.@my = .@mob[UMOB_Y];
+	.@dx = .@mx - .@x;
+	.@dy = .@my - .@y;
+	if (.@dx < 0) .@dx = -.@dx;
+	if (.@dy < 0) .@dy = -.@dy;
+	if (.@mx > 0 && .@my > 0 && .@dx <= 30 && .@dy <= 30) {
+		.@x = .@mx;
+		.@y = .@my;
+	} else if (.debug) {
+		debugmes "affix-forge: could not read the monster position, using the player position";
+	}
+
+	.@flat = 100;
+	.@pct  = 100;
+	if (.scaling) {
+		.@flat = 100 + .@lv * 2;
+		.@pct  = 100 + .@lv;
+	}
+
+	for (.@d = 0; .@d < .@count; .@d++) {
+		.@id = .@item[.@d];
+		.@type = getiteminfo(.@id, ITEMINFO_TYPE);
+		// 4 armor, 5 weapon, 12 shadow gear
+		if (.@type != 4 && .@type != 5 && .@type != 12) continue;
+		if (rand(10000) >= .@rate[.@d] * .mult / 100) continue;
+
+		// How many attributes, then that many distinct options: each one rolls
+		// a tier by weight, then a random option of that tier that fits the item.
+		// The count is weighted (setting count_weights).
+		.@r = rand(1, .cwsum);
+		.@k = 1;
+		for (.@j = 1; .@j <= 4; .@j++) {
+			.@r -= .cw[.@j];
+			if (.@r <= 0) { .@k = .@j; break; }
+		}
+		.@got = 0;
+		cleararray .@oid[0], 0, 4;
+		cleararray .@oval[0], 0, 4;
+		cleararray .@opar[0], 0, 4;
+		cleararray .@ogrp[0], 0, 4;
+		for (.@j = 0; .@j < .@k; .@j++) {
+			.@s = -1;
+			.@tries = 0;
+			while (.@s < 0 && .@tries < 80) {
+				.@tries++;
+				.@r = rand(1, .wsum);
+				if (.@r <= .w1) .@t = 1;
+				else if (.@r <= .w1 + .w2) .@t = 2;
+				else if (.@r <= .w1 + .w2 + .w3) .@t = 3;
+				else .@t = 4;
+				if (.tc[.@t] < 1) continue;
+				.@c = .ti[(.@t - 1) * 400 + rand(.tc[.@t])];
+				if (.p_type[.@c] && .p_type[.@c] != .@type) continue;
+				.@dup = 0;
+				for (.@u = 0; .@u < .@got; .@u++) {
+					if (.@oid[.@u] == .p_id[.@c]) .@dup = 1;
+					if (.p_grp[.@c] && .@ogrp[.@u] == .p_grp[.@c] && (.p_grp[.@c] < 10 || .uniq)) .@dup = 1;
+				}
+				if (.@dup) continue;
+				.@s = .@c;
+			}
+			if (.@s < 0) continue;
+
+			.@v = 1;
+			if (.p_max[.@s] > 0) {
+				.@v = rand(.p_min[.@s], .p_max[.@s]);
+				if (.p_kind[.@s] == 0) .@v = .@v * .@flat / 100;
+				else if (.p_kind[.@s] == 1) .@v = .@v * .@pct / 100;
+				.@v = .@v * .vm / 100;
+				if (.p_cap[.@s] > 0 && .@v > .p_cap[.@s]) .@v = .p_cap[.@s];
+				if (.@v < 1) .@v = 1;
+			}
+			.@oid[.@got]  = .p_id[.@s];
+			.@oval[.@got] = .@v;
+			.@ogrp[.@got] = .p_grp[.@s];
+			.@got++;
+		}
+		if (.@got < 1) continue;
+		.@k = .@got;
+
+		// Would the player's @autoloot have picked up the stock drop? Same test
+		// as the server: the item is on the @autolootitem list, or its rate (as
+		// the player sees it) is within AUTOLOOT_RATE and its type is allowed.
+		.@auto = 0;
+		if (.ground) {
+			if (AUTOLOOT_RATE > 0) {
+				.@mine = getmobdroprate(killedrid, .@id);
+				if (.@mine > 0 && .@mine <= AUTOLOOT_RATE && (AUTOLOOT_TYPE == 0 || (AUTOLOOT_TYPE & (1 << .@type)))) .@auto = 1;
+			}
+			if (!.@auto) {
+				.@n = getautolootitems(.@list);
+				for (.@u = 0; .@u < .@n; .@u++)
+					if (.@list[.@u] == .@id) .@auto = 1;
+			}
+		}
+
+		if (.ground && !.@auto) {
+			// Drop it on the ground, unidentified. The last argument asks for
+			// the pillar of light (setting ground_pillar); the server picks its color from the option count
+			// (battle conf rndopt_drop_pillar, on by default): blue 1, yellow 2,
+			// purple 3 or more.
+			makeitem3 .@id, 1, .@map$, .@x, .@y, 0, 0, 0, 0, 0, 0, 0, .@oid, .@oval, .@opar, .pillar;
+			if (.debug) debugmes "affix-forge: ground drop item " + .@id + " on " + .@map$ + " " + .@x + "," + .@y + " options " + .@oid[0] + "/" + .@oid[1] + "/" + .@oid[2] + "/" + .@oid[3];
+			if (.showmsg) dispbottom "A " + getitemname(.@id) + " dropped with " + .@k + " hidden attribute" + (.@k > 1 ? "s" : "") + "!", 0x00FF88;
+			continue;
+		}
+
+		if (!checkweight(.@id, 1)) {
+			dispbottom "You are too heavy to pick up the " + getitemname(.@id) + " the monster dropped!", 0xFF8800;
+			continue;
+		}
+		// Ground drop mode (autoloot): stays unidentified like a ground drop.
+		getitem3 .@id, 1, (.ground ? 0 : 1), 0, 0, 0, 0, 0, 0, .@oid, .@oval, .@opar;
+		if (.showmsg) dispbottom "A " + getitemname(.@id) + " dropped with " + .@k + (.ground ? " hidden" : " bonus") + " attribute" + (.@k > 1 ? "s" : "") + "!", 0x00FF88;
+	}
+	end;
+}

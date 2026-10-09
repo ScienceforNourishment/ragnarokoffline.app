@@ -1,0 +1,90 @@
+// ARPG Equipments Mod - Made by Iguera
+// Global Essence Extraction Engine & NPC Debugger
+
+function	script	F_ARPG_Extract_Essence	{
+	mes "[Extract Item Essence]";
+	mes "Select the equipment item you wish to destroy for essence.";
+	next;
+
+	// 1. Fetch Inventory List
+	getinventorylist;
+	.@inv_count = @inventorylist_count;
+	.@eq_count = 0;
+
+	// Filter unequipped Weapons (4) and Armor (5)
+	for ( .@i = 0; .@i < .@inv_count; .@i++ ) {
+		.@type = getiteminfo(@inventorylist_id[.@i], ITEMINFO_TYPE);
+		if ( ( .@type == 4 || .@type == 5 || .@type == 12 ) && !@inventorylist_equip[.@i] && @inventorylist_id[.@i] != 55100 ) {
+			.@eq_idx[.@eq_count] = .@i;
+			.@eq_id[.@eq_count] = @inventorylist_id[.@i];
+
+			.@eq_count++;
+		}
+	}
+
+	if ( .@eq_count == 0 ) {
+		mes "[Extract Item Essence]";
+		mes "You do not have any unequipped equipment items in your inventory to destroy.";
+		close;
+	}
+
+	// 2. Build Selection Menu
+	.@menu_str$ = "Destroy all Items:";
+	for ( .@j = 0; .@j < .@eq_count; .@j++ ) {
+		.@menu_str$ += getitemname(.@eq_id[.@j]) + ":";
+	}
+	.@menu_str$ += "Cancel";
+
+	.@choice = select(.@menu_str$);
+
+	// If player clicked Cancel
+	if ( .@choice == .@eq_count + 2 ) {
+		close;
+	}
+
+	// 3. Confirmation Dialog
+	mes "[Extract Item Essence]";
+	if ( .@choice == 1 ) {
+		mes "You are going to destroy ^FF0000ALL^000000 unequipped equipment items in your inventory, are you sure?";
+	} else {
+		.@target_item_id = .@eq_id[.@choice - 2];
+		mes "You are going to destroy ^0000FF" + getitemname(.@target_item_id) + "^000000, are you sure?";
+	}
+	next;
+
+	if ( select("Yes, destroy:Cancel") == 2 ) {
+		mes "[Extract Item Essence]";
+		mes "Extraction cancelled.";
+		close;
+	}
+
+	// 4. Safe Item Destruction & Essence Calculation
+	.@total_essence = 0;
+	.@destroyed_count = 0;
+
+	for ( .@m = 0; .@m < .@eq_count; .@m++ ) {
+		// Process item if "Destroy All" (choice 1) or specific selected item
+		if ( .@choice == 1 || .@choice - 2 == .@m ) {
+			.@item_id = .@eq_id[.@m];
+
+			// Delete exactly 1 unit of the target item ID safely
+			delitem .@item_id, 1;
+			.@destroyed_count++;
+
+			// Reward logic: 1 for 0 options, 100 for >0 options
+			.@total_essence += rand(1,20);
+		}
+	}
+
+	// 5. Award Equipment Essence (ID 56000)
+	if ( .@total_essence > 0 ) {
+		getitem 56000, .@total_essence;
+		specialeffect2 154; // Refinement success visual effect
+		mes "[Extract Item Essence]";
+		mes "Extraction complete!";
+		mes "Destroyed " + .@destroyed_count + " item(s).";
+		mes "Received ^0000FF" + .@total_essence + "x Equipment Essence^000000.";
+	}
+
+	close;
+}

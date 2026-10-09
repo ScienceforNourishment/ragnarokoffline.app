@@ -1,0 +1,146 @@
+function	script	F_ARPG_Extract_Bonus_Stats	{
+	.@essence_req = 100; // Fee: 100x Equipment Essence
+	.@essence_id = 56000; // Equipment Essence Item ID
+
+	// STEP 1: Check capacity across all 5 Option Scroll IDs (56001 - 56005)
+	.@target_scroll_id = 0;
+	for ( .@s = 56001; .@s <= 56005; .@s++ ) {
+		if ( countitem(.@s) == 0 ) {
+			.@target_scroll_id = .@s;
+			break;
+		}
+	}
+
+	if ( .@target_scroll_id == 0 ) {
+		mes "[Bonus Stat Extractor]";
+		mes "^FF0000You already have 5 different Option Scrolls in your inventory - please use or vendor any of them before we can proceed.^000000";
+		close;
+	}
+
+	// Intro Dialog - Page 1
+	mes "[Bonus Stat Extractor]";
+	mes "For a small fee of " + .@essence_req + "x Equipment Essences, ^0000FFI can extract the bonus attributes from your items^000000. You can obtain these essences by dismantling your unwanted Equipments with the NPC above me.";
+	next;
+
+	// Intro Dialog - Page 2
+	mes "[Bonus Stat Extractor]";
+	mes "My friend will then be able to Imbue these same bonus attributes on an Equipment of your choice. ^0000FFYou can only hold up to 5 of these scrolls at any given time!^000000";
+	next;
+
+	if (select("Extract Bonus Stats from Item", "Cancel") == 2) {
+		close;
+	}
+
+	// STEP 2: Scan inventory for unequipped equipment (Weapons, Armor, Shadow Gear)
+	getinventorylist;
+	.@inv_count = @inventorylist_count;
+	.@eq_count = 0;
+
+	for ( .@i = 0; .@i < .@inv_count; .@i++ ) {
+		.@item_id = @inventorylist_id[.@i];
+		.@type = getiteminfo(.@item_id, ITEMINFO_TYPE);
+
+		// Skip equipped items, specific exclusion (55100), and all Essence/Scroll items (56000 - 56005)
+		if ( @inventorylist_equip[.@i] != 0 ) continue;
+		if ( .@item_id == 55100 ) continue;
+		if ( .@item_id >= 56000 && .@item_id <= 56005 ) continue;
+
+		// Filter: Armor/Costume (4), Weapon (5), Shadow Gear (12)
+		if ( .@type == 4 || .@type == 5 || .@type == 12 ) {
+			// CRITICAL FIX: Store array pointer AND real inventory slot index
+			.@eq_array_idx[.@eq_count] = .@i;
+			.@eq_inv_idx[.@eq_count]   = @inventorylist_idx[.@i];
+			.@eq_id[.@eq_count]        = .@item_id;
+			.@eq_refine[.@eq_count]    = @inventorylist_refine[.@i];
+			.@eq_count++;
+		}
+	}
+
+	if ( .@eq_count == 0 ) {
+		mes "[Bonus Stat Extractor]";
+		mes "You do not have any unequipped equipment items in your inventory.";
+		close;
+	}
+
+	// STEP 3: Build Selection Menu
+	.@menu_str$ = "";
+	for ( .@j = 0; .@j < .@eq_count; .@j++ ) {
+		.@ref = .@eq_refine[.@j];
+		if ( .@ref > 0 ) {
+			.@menu_str$ += "+" + .@ref + " ";
+		}
+		.@menu_str$ += getitemname(.@eq_id[.@j]) + ":";
+	}
+	.@menu_str$ += "Cancel";
+
+	.@choice = select(.@menu_str$);
+
+	if ( .@choice == .@eq_count + 1 ) {
+		close;
+	}
+
+	.@sel_index          = .@choice - 1;
+	.@selected_array_idx = .@eq_array_idx[.@sel_index]; // for reading @inventorylist_option_*
+	.@selected_inv_slot  = .@eq_inv_idx[.@sel_index];   // for delitemidx
+	.@selected_id        = .@eq_id[.@sel_index];
+	.@selected_refine    = .@eq_refine[.@sel_index];
+
+	// STEP 4: Confirmation Dialogue
+	mes "[Bonus Stat Extractor]";
+	mes "Extract bonus stats from ^0000FF" + (.@selected_refine > 0 ? "+" + .@selected_refine + " " : "") + getitemname(.@selected_id) + "^000000?";
+	mes "Fee: ^0055AA" + .@essence_req + "x Equipment Essence^000000.";
+	mes "^FF0000Warning: The source item will be DESTROYED in the process!^000000";
+	next;
+
+	if (select("Yes, extract stats", "Cancel") == 2) {
+		mes "[Bonus Stat Extractor]";
+		mes "Extraction cancelled.";
+		close;
+	}
+
+	if ( countitem(.@essence_id) < .@essence_req ) {
+		mes "[Bonus Stat Extractor]";
+		mes "You do not have enough Equipment Essence for the extraction fee.";
+		mes "Required: ^0000FF" + .@essence_req + "x Equipment Essence^000000.";
+		close;
+	}
+
+	// STEP 5: Map Random Options using full array names and getd()
+	cleararray .@OptID[0], 0, 5;
+	cleararray .@OptVal[0], 0, 5;
+	cleararray .@OptParam[0], 0, 5;
+
+	.@has_options = 0;
+
+	for ( .@k = 1; .@k <= 5; .@k++ ) {
+		.@id  = getd("@inventorylist_option_id" + .@k + "[" + .@selected_array_idx + "]");
+		.@val = getd("@inventorylist_option_value" + .@k + "[" + .@selected_array_idx + "]");
+		.@par = getd("@inventorylist_option_parameter" + .@k + "[" + .@selected_array_idx + "]");
+
+		if ( .@id > 0 ) {
+			.@OptID[.@k - 1] = .@id;
+			.@OptVal[.@k - 1] = .@val;
+			.@OptParam[.@k - 1] = .@par;
+			.@has_options = 1;
+		}
+	}
+
+	if ( !.@has_options ) {
+		mes "[Bonus Stat Extractor]";
+		mes "That item does not have any Bonus Stats (Random Options) to extract!";
+		close;
+	}
+
+	// CRITICAL FIX: Delete source item by its true inventory index FIRST, then deduct essence
+	delitemidx .@selected_inv_slot, 1;
+	delitem .@essence_id, .@essence_req;
+
+	// STEP 6: Grant Next Available Option Scroll (56001 - 56005) with mapped options
+	getitem3 .@target_scroll_id, 1, 0, 0, 0, 0, 0, 0, 0, .@OptID, .@OptVal, .@OptParam;
+
+	specialeffect2 154; // Refinement success visual effect
+	mes "[Bonus Stat Extractor]";
+	mes "Extraction complete!";
+	mes "Received ^0000FF1x " + getitemname(.@target_scroll_id) + "^000000 containing all bonus stats!";
+	close;
+}

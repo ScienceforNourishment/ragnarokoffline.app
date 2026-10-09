@@ -1,0 +1,246 @@
+// ARPG Equipments Mod - Made by Iguera
+// Global Function: Bonus Stats Crafter (Imbuer) Engine
+
+function	script	F_ARPG_Imbue_Bonus_Stats	{
+	.@essence_req = 100;    // Fee: 100x Equipment Essence
+	.@essence_id = 56000;   // Equipment Essence Item ID
+
+	// -------------------------------------------------------------
+	// STEP 1: Intro Dialogue
+	// -------------------------------------------------------------
+	mes "[Bonus Stats Crafter]";
+	mes "For a fee of " + .@essence_req + "x Equipment Essences, ^0000FFI can infuse the bonus stats stored in an Option Scroll onto any Equipment of your choice^000000.";
+	next;
+
+	mes "[Bonus Stats Crafter]";
+	mes "^00AA00All Refinements, Cards, Enchantments, and Item Grades on your equipment are 100% PRESERVED during the process!^000000";
+	next;
+
+	if (select("Imbue Equipment", "Cancel") == 2) {
+		close;
+	}
+
+	// -------------------------------------------------------------
+	// STEP 2: Verify if player holds any Option Scroll (56001 - 56005)
+	// -------------------------------------------------------------
+	getinventorylist;
+	.@inv_count = @inventorylist_count;
+	.@scroll_count = 0;
+
+	for ( .@s = 56001; .@s <= 56005; .@s++ ) {
+		if ( countitem(.@s) > 0 ) {
+			.@scroll_count++;
+		}
+	}
+
+	if ( .@scroll_count == 0 ) {
+		mes "[Bonus Stats Crafter]";
+		mes "You do not have any Option Scrolls in your inventory!";
+		mes "Please interact with the ^0000FFBonus Stats Extractor^000000 above me to extract stats into a Scroll first.";
+		close;
+	}
+
+	// -------------------------------------------------------------
+	// STEP 3: Scan inventory for unequipped target equipments
+	// -------------------------------------------------------------
+	.@eq_count = 0;
+
+	for ( .@i = 0; .@i < .@inv_count; .@i++ ) {
+		.@item_id = @inventorylist_id[.@i];
+		.@type = getiteminfo(.@item_id, ITEMINFO_TYPE);
+
+		// Skip equipped items, specific exclusion (55100), and all Essence/Scroll items (56000 - 56005)
+		if ( @inventorylist_equip[.@i] != 0 ) continue;
+		if ( .@item_id == 55100 ) continue;
+		if ( .@item_id >= 56000 && .@item_id <= 56005 ) continue;
+
+		// Filter: Armor/Costume (4), Weapon (5), Shadow Gear (12)
+		if ( .@type == 4 || .@type == 5 || .@type == 12 ) {
+			// CRITICAL FIX: Save true inventory index, cards, enchants, grade, and bound flags
+			.@eq_array_idx[.@eq_count] = .@i;
+			.@eq_inv_idx[.@eq_count]   = @inventorylist_idx[.@i];
+			.@eq_id[.@eq_count]        = .@item_id;
+			.@eq_refine[.@eq_count]    = @inventorylist_refine[.@i];
+			.@eq_identify[.@eq_count]  = @inventorylist_identify[.@i];
+			.@eq_attrib[.@eq_count]    = @inventorylist_attribute[.@i];
+			.@eq_card1[.@eq_count]     = @inventorylist_card1[.@i];
+			.@eq_card2[.@eq_count]     = @inventorylist_card2[.@i];
+			.@eq_card3[.@eq_count]     = @inventorylist_card3[.@i];
+			.@eq_card4[.@eq_count]     = @inventorylist_card4[.@i];
+			.@eq_grade[.@eq_count]     = @inventorylist_enchantgrade[.@i];
+			.@eq_bound[.@eq_count]     = @inventorylist_bound[.@i];
+			.@eq_count++;
+		}
+	}
+
+	if ( .@eq_count == 0 ) {
+		mes "[Bonus Stats Crafter]";
+		mes "You do not have any unequipped target equipment items in your inventory.";
+		close;
+	}
+
+	// Present Target Equipment Selection List
+	.@menu_str$ = "";
+	for ( .@j = 0; .@j < .@eq_count; .@j++ ) {
+		.@ref = .@eq_refine[.@j];
+		.@grd = .@eq_grade[.@j];
+		if ( .@grd > 0 ) {
+			// Grade tag: 1=D, 2=C, 3=B, 4=A
+			.@menu_str$ += "[Grade " + (.@grd == 1 ? "D" : .@grd == 2 ? "C" : .@grd == 3 ? "B" : "A") + "] ";
+		}
+		if ( .@ref > 0 ) {
+			.@menu_str$ += "+" + .@ref + " ";
+		}
+		.@menu_str$ += getitemname(.@eq_id[.@j]) + ":";
+	}
+	.@menu_str$ += "Cancel";
+
+	.@choice_eq = select(.@menu_str$);
+
+	if ( .@choice_eq == .@eq_count + 1 ) {
+		close;
+	}
+
+	.@sel_eq_index   = .@choice_eq - 1;
+	.@target_inv_idx = .@eq_inv_idx[.@sel_eq_index];
+	.@target_item_id = .@eq_id[.@sel_eq_index];
+	.@target_refine  = .@eq_refine[.@sel_eq_index];
+	.@target_ident   = .@eq_identify[.@sel_eq_index];
+	.@target_attrib  = .@eq_attrib[.@sel_eq_index];
+	.@target_card1   = .@eq_card1[.@sel_eq_index];
+	.@target_card2   = .@eq_card2[.@sel_eq_index];
+	.@target_card3   = .@eq_card3[.@sel_eq_index];
+	.@target_card4   = .@eq_card4[.@sel_eq_index];
+	.@target_grade   = .@eq_grade[.@sel_eq_index];
+	.@target_bound   = .@eq_bound[.@sel_eq_index];
+
+	// -------------------------------------------------------------
+	// STEP 4: Choose which Scroll (56001 - 56005) to consume
+	// -------------------------------------------------------------
+	.@scroll_menu$ = "";
+	.@valid_scroll_index = 0;
+
+	for ( .@sc = 56001; .@sc <= 56005; .@sc++ ) {
+		if ( countitem(.@sc) > 0 ) {
+			.@scroll_id_map[.@valid_scroll_index] = .@sc;
+			.@scroll_menu$ += getitemname(.@sc) + ":";
+			.@valid_scroll_index++;
+		}
+	}
+	.@scroll_menu$ += "Cancel";
+
+	mes "[Bonus Stats Crafter]";
+	mes "Select the Option Scroll you wish to infuse into your ^0000FF" + getitemname(.@target_item_id) + "^000000:";
+	next;
+
+	.@choice_sc = select(.@scroll_menu$);
+
+	if ( .@choice_sc == .@valid_scroll_index + 1 ) {
+		close;
+	}
+
+	.@selected_scroll_id = .@scroll_id_map[.@choice_sc - 1];
+
+	// Locate exact inventory slot of chosen Scroll to extract options
+	.@scroll_array_slot = -1;
+	.@scroll_inv_slot   = -1;
+	for ( .@k = 0; .@k < .@inv_count; .@k++ ) {
+		if ( @inventorylist_id[.@k] == .@selected_scroll_id && !@inventorylist_equip[.@k] ) {
+			.@scroll_array_slot = .@k;
+			.@scroll_inv_slot   = @inventorylist_idx[.@k];
+			break;
+		}
+	}
+
+	if ( .@scroll_array_slot == -1 ) {
+		mes "[Bonus Stats Crafter]";
+		mes "Error locating scroll in inventory.";
+		close;
+	}
+
+	// Read stored Random Options off the chosen Scroll
+	cleararray .@OptID[0], 0, 5;
+	cleararray .@OptVal[0], 0, 5;
+	cleararray .@OptParam[0], 0, 5;
+
+	.@has_options = 0;
+
+	for ( .@slot = 1; .@slot <= 5; .@slot++ ) {
+		.@id  = getd("@inventorylist_option_id" + .@slot + "[" + .@scroll_array_slot + "]");
+		.@val = getd("@inventorylist_option_value" + .@slot + "[" + .@scroll_array_slot + "]");
+		.@par = getd("@inventorylist_option_parameter" + .@slot + "[" + .@scroll_array_slot + "]");
+
+		if ( .@id > 0 ) {
+			.@OptID[.@slot - 1] = .@id;
+			.@OptVal[.@slot - 1] = .@val;
+			.@OptParam[.@slot - 1] = .@par;
+			.@has_options = 1;
+		}
+	}
+
+	if ( !.@has_options ) {
+		mes "[Bonus Stats Crafter]";
+		mes "That Option Scroll is empty or invalid!";
+		close;
+	}
+
+	// -------------------------------------------------------------
+	// STEP 5: Confirmation Window displaying Option IDs and Values
+	// -------------------------------------------------------------
+	mes "[Bonus Stats Crafter]";
+	mes "Target Item: ^0000FF" + (.@target_refine ? "+" + .@target_refine + " " : "") + getitemname(.@target_item_id) + "^000000";
+	if ( .@target_grade > 0 ) {
+		mes "Grade: ^FF8800Grade " + (.@target_grade == 1 ? "D" : .@target_grade == 2 ? "C" : .@target_grade == 3 ? "B" : "A") + "^000000";
+	}
+	mes "Scroll: ^0000FF" + getitemname(.@selected_scroll_id) + "^000000";
+	mes "Fee: ^0055AA" + .@essence_req + "x Equipment Essence^000000";
+	mes "------------------------";
+	mes "^0055AAStats to Transmute:^000000";
+
+	for ( .@o = 0; .@o < 5; .@o++ ) {
+		if ( .@OptID[.@o] > 0 ) {
+			mes "- Option ID ^00FF00" + .@OptID[.@o] + "^000000 | Value: ^00FF00" + .@OptVal[.@o] + "^000000";
+		}
+	}
+	next;
+
+	if (select("Yes, imbue stats!", "Cancel") == 2) {
+		mes "[Bonus Stats Crafter]";
+		mes "Transfusion cancelled.";
+		close;
+	}
+
+	if ( countitem(.@essence_id) < .@essence_req ) {
+		mes "[Bonus Stats Crafter]";
+		mes "You do not have enough Equipment Essence for the fee.";
+		mes "Required: ^0000FF" + .@essence_req + "x Equipment Essence^000000.";
+		close;
+	}
+
+	// -------------------------------------------------------------
+	// STEP 6: Execute Imbue Process
+	// -------------------------------------------------------------
+	// CRITICAL FIX: Delete target item and scroll by their true slots FIRST, then deduct essence
+	delitemidx .@target_inv_idx, 1;
+	delitemidx .@scroll_inv_slot, 1;
+	delitem .@essence_id, .@essence_req;
+
+	// CRITICAL FIX: Deliver item with Cards, Enchants, Refine, Grade, and Bound state 100% PRESERVED
+	if ( .@target_bound > 0 ) {
+		getitembound4 .@target_item_id, 1, .@target_ident, .@target_refine, .@target_attrib,
+		              .@target_card1, .@target_card2, .@target_card3, .@target_card4,
+		              .@target_bound, .@target_grade,
+		              .@OptID, .@OptVal, .@OptParam;
+	} else {
+		getitem4 .@target_item_id, 1, .@target_ident, .@target_refine, .@target_attrib,
+		         .@target_card1, .@target_card2, .@target_card3, .@target_card4,
+		         .@target_grade,
+		         .@OptID, .@OptVal, .@OptParam;
+	}
+
+	specialeffect2 154; // Refinement success visual effect
+	mes "[Bonus Stats Crafter]";
+	mes "Transfusion complete!";
+	mes "Successfully imbued ^0000FF" + getitemname(.@target_item_id) + "^000000 with stored bonus attributes!";
+	close;
+}

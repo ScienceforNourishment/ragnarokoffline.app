@@ -1,0 +1,127 @@
+Header:
+  Type: RANDOM_OPTION_GROUP
+  Version: 1
+
+Body:
+  - Id: 200
+    Group: GLOBAL_POOL
+    Slots:
+      # Slot 1: Basic Stats
+      - Slot: 1
+        Options:
+          - Option: VAR_STRAMOUNT
+            MinValue: 10
+            MaxValue: 50
+            Chance: 1666
+          - Option: VAR_AGIAMOUNT
+            MinValue: 10
+            MaxValue: 50
+            Chance: 1666
+          - Option: VAR_VITAMOUNT
+            MinValue: 10
+            MaxValue: 50
+            Chance: 1666
+          - Option: VAR_INTAMOUNT
+            MinValue: 10
+            MaxValue: 50
+            Chance: 1666
+          - Option: VAR_DEXAMOUNT
+            MinValue: 10
+            MaxValue: 50
+            Chance: 1666
+          - Option: VAR_LUKAMOUNT
+            MinValue: 10
+            MaxValue: 50
+            Chance: 1666
+
+      # Slot 2: Offensive Stats
+      - Slot: 2
+        Options:
+          - Option: VAR_ATTPOWER
+            MinValue: 25
+            MaxValue: 100
+            Chance: 2000
+          - Option: VAR_ATKPERCENT
+            MinValue: 10
+            MaxValue: 25
+            Chance: 2000
+          - Option: VAR_ATTMPOWER
+            MinValue: 25
+            MaxValue: 100
+            Chance: 2000
+          - Option: VAR_MAGICATKPERCENT
+            MinValue: 10
+            MaxValue: 25
+            Chance: 2000
+          - Option: RANGE_ATTACK_DAMAGE_TARGET
+            MinValue: 10
+            MaxValue: 25
+            Chance: 2000
+
+      # Slot 3: Defensive Stats
+      - Slot: 3
+        Options:
+          - Option: VAR_MAXHPAMOUNT
+            MinValue: 200
+            MaxValue: 4000
+            Chance: 1428
+          - Option: VAR_MAXHPPERCENT
+            MinValue: 5
+            MaxValue: 30
+            Chance: 1428
+          - Option: VAR_MAXSPAMOUNT
+            MinValue: 200
+            MaxValue: 4000
+            Chance: 1428
+          - Option: VAR_MAXSPPERCENT
+            MinValue: 10
+            MaxValue: 30
+            Chance: 1428
+          - Option: VAR_AVOIDSUCCESSVALUE
+            MinValue: 30
+            MaxValue: 120
+            Chance: 1428
+          - Option: VAR_ITEMDEFPOWER
+            MinValue: 50
+            MaxValue: 400
+            Chance: 1428
+          - Option: VAR_MDEFPOWER
+            MinValue: 50
+            MaxValue: 400
+            Chance: 1428
+
+      # Slot 4: Utility Stats
+      - Slot: 4
+        Options:
+          - Option: VAR_HITSUCCESSVALUE
+            MinValue: 30
+            MaxValue: 120
+            Chance: 1250
+          - Option: VAR_PLUSASPD
+            MinValue: 3
+            MaxValue: 20
+            Chance: 1250
+          - Option: VAR_PLUSASPDPERCENT
+            MinValue: 5
+            MaxValue: 20
+            Chance: 1250
+          - Option: VAR_CRITICALSUCCESSVALUE
+            MinValue: 5
+            MaxValue: 70
+            Chance: 1250
+          - Option: VAR_PLUSAVOIDSUCCESSVALUE
+            MinValue: 10
+            MaxValue: 100
+            Chance: 1250
+          - Option: DEC_SPELL_CAST_TIME
+            MinValue: 5
+            MaxValue: 20
+            Chance: 1250
+          - Option: DEC_SPELL_DELAY_TIME
+            MinValue: 5
+            MaxValue: 20
+            Chance: 1250
+          - Option: RANGE_ATTACK_DAMAGE_TARGET
+            MinValue: 10
+            MaxValue: 25
+            Chance: 1250

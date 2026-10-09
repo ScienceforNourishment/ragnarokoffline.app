@@ -1,0 +1,805 @@
+// Affix Smith: works on the affixes (item random options) of equipment. Four services:
+//   - move ALL affixes of one item onto another (the source is used up),
+//   - move ONE chosen affix onto another item (the source is used up),
+//   - remove one chosen affix from an item,
+//   - reroll an item's affixes.
+// Every service costs zeny, set in the mod settings (Settings > Mods). Service numbers used
+// for prices: 0 move all, 1 reroll, 2 move one, 3 remove.
+//
+// Rerolling uses the same affix pool as the drops (the NPC AffixForge_Drops in affix_drops.txt),
+// read when the first player uses the service.
+
+prontera,164,176,4	script	Affix Smith#affixsmith	4_M_DWARF,{
+	mes "[Affix Smith]";
+	mes "I can move affixes between pieces of equipment, take one off, or reroll them.";
+	mes "Each service costs zeny. Ask me what they are.";
+	next;
+
+L_Main:
+	.@sel = select("Move ALL affixes onto another item:Move ONE affix onto another item:Remove an affix:Reroll an item's affixes:What does it cost?:Leave");
+	if (.@sel == 6) close;
+
+	if (.@sel == 5) {
+		mes "[Affix Smith]";
+		mes "^0000FFMove all affixes^000000";
+		mes callsub(L_CostLine, 0);
+		mes " ";
+		mes "^0000FFMove one affix^000000";
+		mes callsub(L_CostLine, 2);
+		mes " ";
+		mes "^0000FFRemove an affix^000000";
+		mes callsub(L_CostLine, 3);
+		mes " ";
+		mes "^0000FFReroll^000000";
+		mes callsub(L_CostLine, 1);
+		next;
+		goto L_Main;
+	}
+
+	// ------------------------------------------------------------------ move
+	if (.@sel == 1) {
+		getinventorylist;
+		.@n = callsub(L_Collect, 1, -1);
+		if (.@n < 1) {
+			mes "[Affix Smith]";
+			mes "You carry no unequipped equipment with affixes to take them from.";
+			close;
+		}
+		.@s = callsub(L_Choose, "Take the affixes from which item? It is used up.", .@n);
+		if (.@s < 0) goto L_Main;
+		.@n = callsub(L_Collect, 2, .@s);
+		if (.@n < 1) {
+			mes "[Affix Smith]";
+			mes "You have no other unequipped equipment to put them on.";
+			close;
+		}
+		.@t = callsub(L_Choose, "Put them on which item? Its own affixes are lost.", .@n);
+		if (.@t < 0) goto L_Main;
+
+		callsub L_ReadOpts, .@s, 0;
+		callsub L_ReadOpts, .@t, 5;
+
+		mes "[Affix Smith]";
+		mes "^0000FFFrom^000000 " + callsub(L_ItemLine, .@s) + " (used up)";
+		callsub L_OptLines, 0;
+		mes "^0000FFOnto^000000 " + callsub(L_ItemLine, .@t);
+		if (callsub(L_OptCount, .@t)) {
+			mes "Its current affixes will be lost:";
+			callsub L_OptLines, 5;
+		}
+		mes " ";
+		mes callsub(L_CostLine, 0);
+		next;
+		if (Zeny < .zc[0]) {
+			mes "[Affix Smith]";
+			mes "You cannot afford that. Come back with the full price.";
+			close;
+		}
+		if (select("Do it:Not now") == 2) goto L_Main;
+
+		// Everything is checked again, then paid and done.
+		getinventorylist;
+		if (Zeny < .zc[0]) {
+			mes "[Affix Smith]";
+			mes "Your belongings changed. Try again.";
+			close;
+		}
+		Zeny -= .zc[0];
+		cleararray @af_goid[0], 0, 5;
+		cleararray @af_goval[0], 0, 5;
+		cleararray @af_gopar[0], 0, 5;
+		for (.@k = 0; .@k < 5; .@k++) {
+			@af_goid[.@k] = @af_oid[.@k];
+			@af_goval[.@k] = @af_oval[.@k];
+			@af_gopar[.@k] = @af_opar[.@k];
+		}
+		callsub L_Swap, .@t, .@s;
+		specialeffect2 154;
+		mes "[Affix Smith]";
+		mes "Done. The affixes now sit on your ^0000FF" + getitemname(@af_given) + "^000000.";
+		close;
+	}
+
+	// ------------------------------------------------------------- move one
+	if (.@sel == 2) {
+		getinventorylist;
+		.@n = callsub(L_Collect, 1, -1);
+		if (.@n < 1) {
+			mes "[Affix Smith]";
+			mes "You carry no unequipped equipment with affixes to take one from.";
+			close;
+		}
+		.@s = callsub(L_Choose, "Take one affix from which item? The item is used up.", .@n);
+		if (.@s < 0) goto L_Main;
+		callsub L_ReadOpts, .@s, 0;
+		.@k = callsub(L_ChooseAffix, 0, "Which affix do you want to take?");
+		if (.@k < 0) goto L_Main;
+		.@n = callsub(L_Collect, 2, .@s);
+		if (.@n < 1) {
+			mes "[Affix Smith]";
+			mes "You have no other unequipped equipment to put it on.";
+			close;
+		}
+		.@t = callsub(L_Choose, "Put it on which item?", .@n);
+		if (.@t < 0) goto L_Main;
+		callsub L_ReadOpts, .@t, 5;
+
+		// Where it lands: over the same affix if the target already has one, else a free slot,
+		// else a slot the player gives up.
+		.@slot = -1;
+		for (.@j = 0; .@j < 5; .@j++)
+			if (@af_oid[5 + .@j] == @af_oid[.@k]) .@slot = .@j;
+		.@same = (.@slot >= 0);
+		for (.@j = 0; .@j < 5 && .@slot < 0; .@j++)
+			if (@af_oid[5 + .@j] < 1) .@slot = .@j;
+		if (.@slot < 0) {
+			.@slot = callsub(L_ChooseAffix, 5, "That item already has five affixes. Which one should the new affix replace?");
+			if (.@slot < 0) goto L_Main;
+		}
+
+		mes "[Affix Smith]";
+		mes "^0000FFTake^000000 " + callsub(L_OptText, @af_oid[.@k], @af_oval[.@k]);
+		mes "^0000FFFrom^000000 " + callsub(L_ItemLine, .@s) + " (used up)";
+		mes "^0000FFOnto^000000 " + callsub(L_ItemLine, .@t);
+		if (.@same) mes "It already has that affix; its value is replaced.";
+		else if (@af_oid[5 + .@slot] > 0) mes "It replaces: " + callsub(L_OptText, @af_oid[5 + .@slot], @af_oval[5 + .@slot]);
+		mes " ";
+		mes callsub(L_CostLine, 2);
+		next;
+		if (Zeny < .zc[2]) {
+			mes "[Affix Smith]";
+			mes "You cannot afford that. Come back with the full price.";
+			close;
+		}
+		if (select("Do it:Not now") == 2) goto L_Main;
+
+		getinventorylist;
+		if (Zeny < .zc[2]) {
+			mes "[Affix Smith]";
+			mes "Your belongings changed. Try again.";
+			close;
+		}
+		Zeny -= .zc[2];
+		for (.@j = 0; .@j < 5; .@j++) {
+			@af_goid[.@j] = @af_oid[5 + .@j];
+			@af_goval[.@j] = @af_oval[5 + .@j];
+			@af_gopar[.@j] = @af_opar[5 + .@j];
+		}
+		@af_goid[.@slot] = @af_oid[.@k];
+		@af_goval[.@slot] = @af_oval[.@k];
+		@af_gopar[.@slot] = @af_opar[.@k];
+		callsub L_Compact;
+		callsub L_Swap, .@t, .@s;
+		specialeffect2 154;
+		mes "[Affix Smith]";
+		mes "Done. Your ^0000FF" + getitemname(@af_given) + "^000000 now carries:";
+		for (.@j = 0; .@j < 5; .@j++)
+			if (@af_goid[.@j] > 0) mes "- " + callsub(L_OptText, @af_goid[.@j], @af_goval[.@j]);
+		close;
+	}
+
+	// ---------------------------------------------------------------- remove
+	if (.@sel == 3) {
+		getinventorylist;
+		.@n = callsub(L_Collect, 1, -1);
+		if (.@n < 1) {
+			mes "[Affix Smith]";
+			mes "You carry no unequipped equipment with affixes.";
+			close;
+		}
+		.@t = callsub(L_Choose, "Remove an affix from which item?", .@n);
+		if (.@t < 0) goto L_Main;
+		callsub L_ReadOpts, .@t, 5;
+		.@k = callsub(L_ChooseAffix, 5, "Which affix should I remove?");
+		if (.@k < 0) goto L_Main;
+
+		mes "[Affix Smith]";
+		mes "^0000FFRemove^000000 " + callsub(L_OptText, @af_oid[5 + .@k], @af_oval[5 + .@k]);
+		mes "^0000FFFrom^000000 " + callsub(L_ItemLine, .@t);
+		mes "What stays:";
+		.@left = 0;
+		for (.@j = 0; .@j < 5; .@j++) {
+			if (.@j == .@k || @af_oid[5 + .@j] < 1) continue;
+			mes "  - " + callsub(L_OptText, @af_oid[5 + .@j], @af_oval[5 + .@j]);
+			.@left++;
+		}
+		if (!.@left) mes "  (none)";
+		mes " ";
+		mes callsub(L_CostLine, 3);
+		next;
+		if (Zeny < .zc[3]) {
+			mes "[Affix Smith]";
+			mes "You cannot afford that. Come back with the full price.";
+			close;
+		}
+		if (select("Remove it:Not now") == 2) goto L_Main;
+
+		getinventorylist;
+		if (Zeny < .zc[3]) {
+			mes "[Affix Smith]";
+			mes "Your belongings changed. Try again.";
+			close;
+		}
+		Zeny -= .zc[3];
+		for (.@j = 0; .@j < 5; .@j++) {
+			@af_goid[.@j] = @af_oid[5 + .@j];
+			@af_goval[.@j] = @af_oval[5 + .@j];
+			@af_gopar[.@j] = @af_opar[5 + .@j];
+		}
+		@af_goid[.@k] = 0;
+		@af_goval[.@k] = 0;
+		@af_gopar[.@k] = 0;
+		callsub L_Compact;
+		callsub L_Swap, .@t, -1;
+		specialeffect2 154;
+		mes "[Affix Smith]";
+		mes "Done. The affix is gone from your ^0000FF" + getitemname(@af_given) + "^000000.";
+		close;
+	}
+
+	// ---------------------------------------------------------------- reroll
+	if (callsub(L_Pool) < 1) {
+		mes "[Affix Smith]";
+		mes "My affix tables are not loaded, so I cannot reroll right now. Try again after the server has finished starting.";
+		close;
+	}
+	getinventorylist;
+	.@n = callsub(L_Collect, 1, -1);
+	if (.@n < 1) {
+		mes "[Affix Smith]";
+		mes "You carry no unequipped equipment with affixes.";
+		close;
+	}
+	.@t = callsub(L_Choose, "Reroll the affixes of which item?", .@n);
+	if (.@t < 0) goto L_Main;
+	callsub L_ReadOpts, .@t, 5;
+	.@oc = callsub(L_OptCount, .@t);
+
+	mes "[Affix Smith]";
+	mes callsub(L_ItemLine, .@t);
+	mes "Its " + .@oc + " current affix" + (.@oc > 1 ? "es" : "") + ", all of which are replaced by " + .@oc + " new random one" + (.@oc > 1 ? "s" : "") + ":";
+	callsub L_OptLines, 5;
+	mes " ";
+	mes callsub(L_CostLine, 1);
+	next;
+	if (Zeny < .zc[1]) {
+		mes "[Affix Smith]";
+		mes "You cannot afford that. Come back with the full price.";
+		close;
+	}
+	if (select("Reroll:Not now") == 2) goto L_Main;
+
+	getinventorylist;
+	callsub L_Roll, .@oc, @inventorylist_id[.@t];
+	if (@af_noid[0] < 1 || Zeny < .zc[1]) {
+		mes "[Affix Smith]";
+		mes "Something went wrong, and nothing was taken. Try again.";
+		close;
+	}
+	Zeny -= .zc[1];
+	cleararray @af_goid[0], 0, 5;
+	cleararray @af_goval[0], 0, 5;
+	cleararray @af_gopar[0], 0, 5;
+	for (.@k = 0; .@k < 5; .@k++) {
+		@af_goid[.@k] = @af_noid[.@k];
+		@af_goval[.@k] = @af_noval[.@k];
+	}
+	callsub L_Swap, .@t, -1;
+	specialeffect2 154;
+	mes "[Affix Smith]";
+	mes "Your ^0000FF" + getitemname(@af_given) + "^000000 now carries:";
+	for (.@k = 0; .@k < 5; .@k++)
+		if (@af_goid[.@k] > 0) mes "- " + callsub(L_OptText, @af_goid[.@k], @af_goval[.@k]);
+	close;
+
+// ---------------------------------------------------------------------------
+// Helpers. Item numbers below are positions in the arrays getinventorylist fills.
+
+// How many affixes inventory entry getarg(0) has.
+L_OptCount:
+	.@i = getarg(0);
+	.@c = 0;
+	for (.@k = 1; .@k <= 5; .@k++)
+		if (getd("@inventorylist_option_id" + .@k + "[" + .@i + "]") > 0) .@c++;
+	return .@c;
+
+// Copy an entry's affixes into @af_oid / @af_oval / @af_opar at offset getarg(1).
+L_ReadOpts:
+	.@i = getarg(0);
+	.@o = getarg(1);
+	for (.@k = 0; .@k < 5; .@k++) {
+		@af_oid[.@o + .@k]  = getd("@inventorylist_option_id" + (.@k + 1) + "[" + .@i + "]");
+		@af_oval[.@o + .@k] = getd("@inventorylist_option_value" + (.@k + 1) + "[" + .@i + "]");
+		@af_opar[.@o + .@k] = getd("@inventorylist_option_parameter" + (.@k + 1) + "[" + .@i + "]");
+	}
+	return;
+
+L_OptText:
+	.@t$ = .nm$[getarg(0)];
+	if (.@t$ == "") return "Option " + getarg(0) + ": " + getarg(1);
+	.@t$ = replacestr(.@t$, "%d", "" + getarg(1));
+	return replacestr(.@t$, "%%", "%");
+
+L_OptLines:
+	.@o = getarg(0);
+	.@any = 0;
+	for (.@k = 0; .@k < 5; .@k++) {
+		if (@af_oid[.@o + .@k] < 1) continue;
+		mes "  - " + callsub(L_OptText, @af_oid[.@o + .@k], @af_oval[.@o + .@k]);
+		.@any = 1;
+	}
+	if (!.@any) mes "  (none)";
+	return;
+
+// Pick one of the affixes stored at @af_oid[getarg(0) + 0..4]. Returns its slot (0-4), or -1.
+L_ChooseAffix:
+	.@o = getarg(0);
+	.@m$ = "";
+	.@n = 0;
+	for (.@k = 0; .@k < 5; .@k++) {
+		if (@af_oid[.@o + .@k] < 1) continue;
+		.@pos[.@n] = .@k;
+		.@m$ += replacestr(callsub(L_OptText, @af_oid[.@o + .@k], @af_oval[.@o + .@k]), ":", " -") + ":";
+		.@n++;
+	}
+	mes "[Affix Smith]";
+	mes getarg(1);
+	next;
+	.@c = select(.@m$ + "Cancel") - 1;
+	if (.@c >= .@n) return -1;
+	return .@pos[.@c];
+
+// Squeeze the gaps out of @af_goid / @af_goval / @af_gopar so affixes sit in the first slots.
+L_Compact:
+	.@n = 0;
+	for (.@i = 0; .@i < 5; .@i++) {
+		if (@af_goid[.@i] < 1) continue;
+		@af_goid[.@n] = @af_goid[.@i];
+		@af_goval[.@n] = @af_goval[.@i];
+		@af_gopar[.@n] = @af_gopar[.@i];
+		.@n++;
+	}
+	for (.@i = .@n; .@i < 5; .@i++) {
+		@af_goid[.@i] = 0;
+		@af_goval[.@i] = 0;
+		@af_gopar[.@i] = 0;
+	}
+	return;
+
+// One menu line for an inventory entry.
+L_ItemLine:
+	.@i = getarg(0);
+	.@s$ = "";
+	.@g = @inventorylist_enchantgrade[.@i];
+	if (.@g > 0) .@s$ += "[" + (.@g == 1 ? "D" : .@g == 2 ? "C" : .@g == 3 ? "B" : "A") + "] ";
+	if (@inventorylist_refine[.@i] > 0) .@s$ += "+" + @inventorylist_refine[.@i] + " ";
+	.@s$ += getitemname(@inventorylist_id[.@i]);
+	.@c = callsub(L_OptCount, .@i);
+	if (.@c > 0) .@s$ += " <" + .@c + " affix" + (.@c > 1 ? "es" : "") + ">";
+	return .@s$;
+
+// Fill @af_cand with unequipped equipment. getarg(0): 1 = only with affixes, 2 = any.
+// getarg(1): an entry to leave out, or -1. Returns how many.
+L_Collect:
+	.@need = getarg(0);
+	.@skip = getarg(1);
+	.@n = 0;
+	for (.@i = 0; .@i < @inventorylist_count; .@i++) {
+		if (.@i == .@skip || @inventorylist_equip[.@i]) continue;
+		.@ty = getiteminfo(@inventorylist_id[.@i], ITEMINFO_TYPE);
+		if (.@ty != IT_ARMOR && .@ty != IT_WEAPON && .@ty != IT_SHADOWGEAR) continue;
+		if (.@need == 1 && callsub(L_OptCount, .@i) < 1) continue;
+		@af_cand[.@n] = .@i;
+		.@n++;
+	}
+	return .@n;
+
+// Let the player pick one of the @af_cand entries, paged. Returns the entry or -1.
+L_Choose:
+	.@prompt$ = getarg(0);
+	.@n = getarg(1);
+	.@page = 0;
+	.@per = 25;
+	while (1) {
+		.@from = .@page * .@per;
+		.@to = .@from + .@per;
+		if (.@to > .@n) .@to = .@n;
+		.@m$ = "";
+		for (.@k = .@from; .@k < .@to; .@k++)
+			.@m$ += replacestr(callsub(L_ItemLine, @af_cand[.@k]), ":", " -") + ":";
+		if (.@to < .@n) .@m$ += "[Next page]:";
+		if (.@page > 0) .@m$ += "[Previous page]:";
+		.@m$ += "Cancel";
+		mes "[Affix Smith]";
+		mes .@prompt$;
+		if (.@n > .@per) mes "Page " + (.@page + 1) + " of " + ((.@n - 1) / .@per + 1) + ".";
+		next;
+		.@c = select(.@m$) - 1;
+		.@cnt = .@to - .@from;
+		if (.@c < .@cnt) return @af_cand[.@from + .@c];
+		.@c -= .@cnt;
+		if (.@to < .@n) {
+			if (.@c == 0) { .@page++; continue; }
+			.@c--;
+		}
+		if (.@page > 0 && .@c == 0) { .@page--; continue; }
+		return -1;
+	}
+
+// The price line for service getarg(0) (0 move all, 1 reroll, 2 move one, 3 remove).
+L_CostLine:
+	.@z = .zc[getarg(0)];
+	if (.@z > 0) return "Price: ^0000FF" + .@z + "z^000000";
+	return "Free of charge.";
+
+// Take entry getarg(0) out of the inventory (and entry getarg(1) too, unless -1), and give back
+// the same item, with everything it had, but with the affixes in @af_goid/@af_goval/@af_gopar.
+L_Swap:
+	.@i = getarg(0);
+	.@id = @inventorylist_id[.@i];
+	.@ident = @inventorylist_identify[.@i];
+	.@ref = @inventorylist_refine[.@i];
+	.@attr = @inventorylist_attribute[.@i];
+	.@c1 = @inventorylist_card1[.@i];
+	.@c2 = @inventorylist_card2[.@i];
+	.@c3 = @inventorylist_card3[.@i];
+	.@c4 = @inventorylist_card4[.@i];
+	.@grade = @inventorylist_enchantgrade[.@i];
+	.@bound = @inventorylist_bound[.@i];
+	delitemidx @inventorylist_idx[.@i], 1;
+	if (getarg(1) >= 0) delitemidx @inventorylist_idx[getarg(1)], 1;
+	if (.@bound > 0)
+		getitembound4 .@id, 1, .@ident, .@ref, .@attr, .@c1, .@c2, .@c3, .@c4, .@bound, .@grade, @af_goid, @af_goval, @af_gopar;
+	else
+		getitem4 .@id, 1, .@ident, .@ref, .@attr, .@c1, .@c2, .@c3, .@c4, .@grade, @af_goid, @af_goval, @af_gopar;
+	@af_given = .@id;
+	return;
+
+// ---------------------------------------------------------------------------
+// The affix pool, read from the drops NPC (affix_drops.txt) the first time it is needed.
+// Returns how many options it has, 0 if that mod is not there.
+L_Pool:
+	if (.pn > 0) return .pn;
+	if (!getnpcid("AffixForge_Drops")) return 0;
+	.@n = getvariableofnpc(.n, "AffixForge_Drops");
+	if (.@n < 1) return 0;
+	for (.@i = 0; .@i < .@n; .@i++) {
+		.p_id[.@i]   = getvariableofnpc(.p_id[.@i], "AffixForge_Drops");
+		.p_tier[.@i] = getvariableofnpc(.p_tier[.@i], "AffixForge_Drops");
+		.p_min[.@i]  = getvariableofnpc(.p_min[.@i], "AffixForge_Drops");
+		.p_max[.@i]  = getvariableofnpc(.p_max[.@i], "AffixForge_Drops");
+		.p_kind[.@i] = getvariableofnpc(.p_kind[.@i], "AffixForge_Drops");
+		.p_type[.@i] = getvariableofnpc(.p_type[.@i], "AffixForge_Drops");
+		.p_cap[.@i]  = getvariableofnpc(.p_cap[.@i], "AffixForge_Drops");
+		.p_grp[.@i]  = getvariableofnpc(.p_grp[.@i], "AffixForge_Drops");
+		.@t = .p_tier[.@i];
+		.ti[(.@t - 1) * 400 + .tc[.@t]] = .@i;
+		.tc[.@t]++;
+	}
+	.pn = .@n;
+	return .pn;
+
+// Roll getarg(0) distinct affixes for item getarg(1) into @af_noid / @af_noval. Same rules as
+// the drops: a tier by weight, then an option of that tier that fits the item. Values scale
+// with the item's required level.
+L_Roll:
+	.@k = getarg(0);
+	.@item = getarg(1);
+	if (.@k > 5) .@k = 5;
+	.@type = getiteminfo(.@item, ITEMINFO_TYPE);
+	.@lv = getiteminfo(.@item, ITEMINFO_EQUIPLEVELMIN);
+	if (.@lv < 1) .@lv = 1;
+	.@em$ = "affix-forge";
+	.@vm = callfunc("F_ModSetting", .@em$, "value_mult", 100);
+	.@w1 = callfunc("F_ModSetting", .@em$, "weight_common", 55);
+	.@w2 = callfunc("F_ModSetting", .@em$, "weight_uncommon", 28);
+	.@w3 = callfunc("F_ModSetting", .@em$, "weight_rare", 14);
+	.@w4 = callfunc("F_ModSetting", .@em$, "weight_epic", 3);
+	.@sum = .@w1 + .@w2 + .@w3 + .@w4;
+	if (.@sum < 1) { .@w1 = 1; .@sum = 1; }
+	.@flat = 100;
+	.@pct = 100;
+	if (callfunc("F_ModSetting", .@em$, "level_scaling", 1)) {
+		.@flat = 100 + .@lv * 2;
+		.@pct = 100 + .@lv;
+	}
+	.@uniq = callfunc("F_ModSetting", .@em$, "unique_stats", 1);
+	cleararray @af_noid[0], 0, 5;
+	cleararray @af_noval[0], 0, 5;
+	.@got = 0;
+	for (.@j = 0; .@j < .@k; .@j++) {
+		.@s = -1;
+		.@tries = 0;
+		while (.@s < 0 && .@tries < 80) {
+			.@tries++;
+			.@r = rand(1, .@sum);
+			if (.@r <= .@w1) .@t = 1;
+			else if (.@r <= .@w1 + .@w2) .@t = 2;
+			else if (.@r <= .@w1 + .@w2 + .@w3) .@t = 3;
+			else .@t = 4;
+			if (.tc[.@t] < 1) continue;
+			.@c = .ti[(.@t - 1) * 400 + rand(.tc[.@t])];
+			if (.p_type[.@c] && .p_type[.@c] != .@type) continue;
+			.@dup = 0;
+			for (.@u = 0; .@u < .@got; .@u++) {
+				if (@af_noid[.@u] == .p_id[.@c]) .@dup = 1;
+				if (.p_grp[.@c] && .@ogrp[.@u] == .p_grp[.@c] && (.p_grp[.@c] < 10 || .@uniq)) .@dup = 1;
+			}
+			if (.@dup) continue;
+			.@s = .@c;
+		}
+		if (.@s < 0) continue;
+		.@v = 1;
+		if (.p_max[.@s] > 0) {
+			.@v = rand(.p_min[.@s], .p_max[.@s]);
+			if (.p_kind[.@s] == 0) .@v = .@v * .@flat / 100;
+			else if (.p_kind[.@s] == 1) .@v = .@v * .@pct / 100;
+			.@v = .@v * .@vm / 100;
+			if (.p_cap[.@s] > 0 && .@v > .p_cap[.@s]) .@v = .p_cap[.@s];
+			if (.@v < 1) .@v = 1;
+		}
+		@af_noid[.@got] = .p_id[.@s];
+		@af_noval[.@got] = .@v;
+		.@ogrp[.@got] = .p_grp[.@s];
+		.@got++;
+	}
+	return .@got;
+
+OnInit:
+	.zc[0] = callfunc("F_ModSetting", "affix-forge", "transfer_zeny", 100000);
+	.zc[1] = callfunc("F_ModSetting", "affix-forge", "reroll_zeny", 50000);
+	.zc[2] = callfunc("F_ModSetting", "affix-forge", "move_one_zeny", 60000);
+	.zc[3] = callfunc("F_ModSetting", "affix-forge", "remove_zeny", 30000);
+	.nm$[1] = "MaxHP +%d";
+	.nm$[2] = "MaxSP +%d";
+	.nm$[3] = "STR +%d";
+	.nm$[4] = "AGI +%d";
+	.nm$[5] = "VIT +%d";
+	.nm$[6] = "INT +%d";
+	.nm$[7] = "DEX +%d";
+	.nm$[8] = "LUK +%d";
+	.nm$[9] = "MaxHP +%d%%";
+	.nm$[10] = "MaxSP +%d%%";
+	.nm$[11] = "HP Recovery +%d%%";
+	.nm$[12] = "SP Recovery +%d%%";
+	.nm$[13] = "ATK +%d%%";
+	.nm$[14] = "MATK +%d%%";
+	.nm$[15] = "ASPD +%d";
+	.nm$[16] = "ASPD -%d%%";
+	.nm$[17] = "ATK +%d";
+	.nm$[18] = "HIT +%d";
+	.nm$[19] = "MATK +%d";
+	.nm$[20] = "DEF +%d";
+	.nm$[21] = "MDEF +%d";
+	.nm$[22] = "FLEE +%d";
+	.nm$[23] = "Perfect Dodge +%d";
+	.nm$[24] = "Critical +%d";
+	.nm$[25] = "Neutral elemental resistance +%d%%";
+	.nm$[26] = "Water elemental resistance +%d%%";
+	.nm$[27] = "Earth elemental resistance +%d%%";
+	.nm$[28] = "Fire elemental resistance +%d%%";
+	.nm$[29] = "Wind elemental resistance +%d%%";
+	.nm$[30] = "Poison elemental resistance +%d%%";
+	.nm$[31] = "Holy elemental resistance +%d%%";
+	.nm$[32] = "Shadow elemental resistance +%d%%";
+	.nm$[33] = "Ghost elemental resistance +%d%%";
+	.nm$[34] = "Undead elemental resistance +%d%%";
+	.nm$[35] = "All elemental (except Neutral) resistance +%d%%";
+	.nm$[36] = "Neutral monster resistance +%d%%";
+	.nm$[37] = "ATK +%d%% against Neutral monster";
+	.nm$[38] = "Water monster resistance +%d%%";
+	.nm$[39] = "ATK +%d%% against Water monster";
+	.nm$[40] = "Earth monster resistance +%d%%";
+	.nm$[41] = "ATK +%d%% against Earth monster";
+	.nm$[42] = "Fire monster resistance +%d%%";
+	.nm$[43] = "ATK +%d%% against Fire monster";
+	.nm$[44] = "Wind monster resistance +%d%%";
+	.nm$[45] = "ATK +%d%% against Wind monster";
+	.nm$[46] = "Poison monster resistance +%d%%";
+	.nm$[47] = "ATK +%d%% against Poison monster";
+	.nm$[48] = "Holy monster resistance +%d%%";
+	.nm$[49] = "ATK +%d%% against Holy monster";
+	.nm$[50] = "Shadow monster resistance +%d%%";
+	.nm$[51] = "ATK +%d%% against Shadow monster";
+	.nm$[52] = "Ghost monster resistance +%d%%";
+	.nm$[53] = "ATK +%d%% against Ghost monster";
+	.nm$[54] = "Undead monster resistance +%d%%";
+	.nm$[55] = "ATK +%d%% against Undead monster";
+	.nm$[56] = "Neutral monster magic resistance +%d%%";
+	.nm$[57] = "MATK +%d%% against Neutral monster";
+	.nm$[58] = "Water monster magic resistance +%d%%";
+	.nm$[59] = "MATK +%d%% against Water monster";
+	.nm$[60] = "Earth monster magic resistance +%d%%";
+	.nm$[61] = "MATK +%d%% against  Earth monster";
+	.nm$[62] = "Fire monster magic resistance +%d%%";
+	.nm$[63] = "MATK +%d%% against Fire monster";
+	.nm$[64] = "Wind monster magic resistance +%d%%";
+	.nm$[65] = "MATK +%d%% against Wind monster";
+	.nm$[66] = "Poison monster magic resistance +%d%%";
+	.nm$[67] = "MATK +%d%% against Poison monster";
+	.nm$[68] = "Holy monster magic resistance +%d%%";
+	.nm$[69] = "MATK +%d%% against Holy monster";
+	.nm$[70] = "Shadow monster magic resistance +%d%%";
+	.nm$[71] = "MATK +%d%% against Shadow monster";
+	.nm$[72] = "Ghost monster magic resistance +%d%%";
+	.nm$[73] = "MATK +%d%% against Ghost monster";
+	.nm$[74] = "Undead monster magic resistance +%d%%";
+	.nm$[75] = "MATK +%d%% against Undead monster";
+	.nm$[76] = "Armor Element: Neutral";
+	.nm$[77] = "Armor Element: Water";
+	.nm$[78] = "Armor Element: Earth";
+	.nm$[79] = "Armor Element: Fire";
+	.nm$[80] = "Armor Element: Wind";
+	.nm$[81] = "Armor Element: Poison";
+	.nm$[82] = "Armor Element: Holy";
+	.nm$[83] = "Armor Element: Shadow";
+	.nm$[84] = "Armor Element: Ghost";
+	.nm$[85] = "Armor Element: Undead";
+	.nm$[87] = "Formless monster resistance +%d%%";
+	.nm$[88] = "Undead monster resistance +%d%%";
+	.nm$[89] = "Brute monster resistance +%d%%";
+	.nm$[90] = "Plant monster resistance +%d%%";
+	.nm$[91] = "Insect monster resistance +%d%%";
+	.nm$[92] = "Fish monster resistance +%d%%";
+	.nm$[93] = "Demon monster resistance +%d%%";
+	.nm$[94] = "Demihuman monster resistance +%d%%";
+	.nm$[95] = "Angel monster resistance +%d%%";
+	.nm$[96] = "Dragon monster resistance +%d%%";
+	.nm$[97] = "ATK +%d%% against Formless monster";
+	.nm$[98] = "ATK +%d%% against Undead monster";
+	.nm$[99] = "ATK +%d%% against Brute monster";
+	.nm$[100] = "ATK +%d%% against Plant monster";
+	.nm$[101] = "ATK +%d%% against Insect monster";
+	.nm$[102] = "ATK +%d%% against Fish monster";
+	.nm$[103] = "ATK +%d%% against Demon monster";
+	.nm$[104] = "ATK +%d%% against Demihuman monster";
+	.nm$[105] = "ATK +%d%% against Angel monster";
+	.nm$[106] = "ATK +%d%% against Dragon monster";
+	.nm$[107] = "MATK +%d%% against Formless monster";
+	.nm$[108] = "MATK +%d%% against Undead monster";
+	.nm$[109] = "MATK +%d%% against Brute monster";
+	.nm$[110] = "MATK +%d%% against Plant monster";
+	.nm$[111] = "MATK +%d%% against Insect monster";
+	.nm$[112] = "MATK +%d%% against Fish monster";
+	.nm$[113] = "MATK +%d%% against Devil monster";
+	.nm$[114] = "MATK +%d%% against Demihuman monster";
+	.nm$[115] = "MATK +%d%% against Angel monster";
+	.nm$[116] = "MATK +%d%% against Dragon monster";
+	.nm$[117] = "Critical +%d against Formless monster";
+	.nm$[118] = "Critical +%d against Undead monster";
+	.nm$[119] = "Critical +%d against Brute monster";
+	.nm$[120] = "Critical +%d against Plant monster";
+	.nm$[121] = "Critical +%d against Insect monster";
+	.nm$[122] = "Critical +%d against Fish monster";
+	.nm$[123] = "Critical +%d against Demon monster";
+	.nm$[124] = "Critical +%d against Demihuman monster";
+	.nm$[125] = "Critical +%d against Angel monster";
+	.nm$[126] = "Critical +%d against Dragon monster";
+	.nm$[127] = "Pierces %d%% DEF of Formless monster";
+	.nm$[128] = "Pierces %d%% DEF of Undead monster";
+	.nm$[129] = "Pierces %d%% DEF of Brute monster";
+	.nm$[130] = "Pierces %d%% DEF of Plant monster";
+	.nm$[131] = "Pierces %d%% DEF of Insect monster";
+	.nm$[132] = "Pierces %d%% DEF of Fish monster";
+	.nm$[133] = "Pierces %d%% DEF of Demon monster";
+	.nm$[134] = "Pierces %d%% DEF of Demihuman monster";
+	.nm$[135] = "Pierces %d%% DEF of Angel monster";
+	.nm$[136] = "Pierces %d%% DEF of Dragon monster";
+	.nm$[137] = "Pierces %d%% MDEF of Formless monster";
+	.nm$[138] = "Pierces %d%% MDEF of Undead monster";
+	.nm$[139] = "Pierces %d%% MDEF of Brute monster";
+	.nm$[140] = "Pierces %d%% MDEF of Plant monster";
+	.nm$[141] = "Pierces %d%% MDEF of Insect monster";
+	.nm$[142] = "Pierces %d%% MDEF of Fish monster";
+	.nm$[143] = "Pierces %d%% MDEF of Demon monster";
+	.nm$[144] = "Pierces %d%% MDEF of Demihuman monster";
+	.nm$[145] = "Pierces %d%% MDEF of Angel monster";
+	.nm$[146] = "Pierces %d%% MDEF of Dragon monster";
+	.nm$[147] = "ATK +%d%% against Normal monster";
+	.nm$[148] = "ATK +%d%% against Boss monster";
+	.nm$[149] = "Normal monster resistance +%d%%";
+	.nm$[150] = "Boss monster resistance +%d%%";
+	.nm$[151] = "MATK +%d%% against Normal monster";
+	.nm$[152] = "MATK +%d%% against Boss monster";
+	.nm$[153] = "Pierces %d%% DEF of Normal monster";
+	.nm$[154] = "Pierces %d%% DEF of Boss monster";
+	.nm$[155] = "Pierces %d%% MDEF of Normal monster";
+	.nm$[156] = "Pierces %d%% MDEF of Boss monster";
+	.nm$[157] = "ATK +%d%% against Small size monster";
+	.nm$[158] = "ATK +%d%% against Medium size monster";
+	.nm$[159] = "ATK +%d%% against Large size monster";
+	.nm$[160] = "Small monster resistance +%d%%";
+	.nm$[161] = "Medium monster resistance +%d%%";
+	.nm$[162] = "Large monster resistance +%d%%";
+	.nm$[163] = "Nullify weapon's damage size penalty";
+	.nm$[164] = "Critical Damage +%d%%";
+	.nm$[165] = "Critical Damage -%d%%";
+	.nm$[166] = "Ranged Physical Damage +%d%%";
+	.nm$[167] = "Received Ranged Physical Damage -%d%%";
+	.nm$[168] = "Healing effectiveness +%d%%";
+	.nm$[169] = "Recovery gained from Healing skills +%d%%";
+	.nm$[170] = "Variable Casting Time -%d%%";
+	.nm$[171] = "After Skill Delay -%d%%";
+	.nm$[172] = "SP Consumption -%d%%";
+	.nm$[175] = "Weapon Element: Neutral";
+	.nm$[176] = "Weapon Element: Water";
+	.nm$[177] = "Weapon Element: Earth";
+	.nm$[178] = "Weapon Element: Fire";
+	.nm$[179] = "Weapon Element: Wind";
+	.nm$[180] = "Weapon Element: Poison";
+	.nm$[181] = "Weapon Element: Holy";
+	.nm$[182] = "Weapon Element: Shadow";
+	.nm$[183] = "Weapon Element: Ghost";
+	.nm$[184] = "Weapon Element: Undead";
+	.nm$[185] = "Indestructible in battle";
+	.nm$[186] = "Indestructible in battle";
+	.nm$[187] = "MATK against Small size monster +%d%%";
+	.nm$[188] = "MATK against Medium size monster +%d%%";
+	.nm$[189] = "MATK against Large size monster +%d%%";
+	.nm$[190] = "Small monster magic resistance +%d%%";
+	.nm$[191] = "Medium monster magic resistance +%d%%";
+	.nm$[192] = "Large monster magic resistance +%d%%";
+	.nm$[193] = "Elemental attacks resistance +%d%%";
+	.nm$[194] = "Formless monster resistance +%d%%";
+	.nm$[195] = "Undead monster resistance +%d%%";
+	.nm$[196] = "Brute monster resistance +%d%%";
+	.nm$[197] = "Plant monster resistance +%d%%";
+	.nm$[198] = "Insect monster resistance +%d%%";
+	.nm$[199] = "Fish monster resistance +%d%%";
+	.nm$[200] = "Demon monster resistance +%d%%";
+	.nm$[201] = "Demihuman monster resistance +%d%%";
+	.nm$[202] = "Angel monster resistance +%d%%";
+	.nm$[203] = "Dragon monster resistance +%d%%";
+	.nm$[204] = "Ranged Physical Damage +%d%%";
+	.nm$[205] = "Received Ranged Physical Damage -%d%%";
+	.nm$[206] = "Demi-Human players resistance + %d%%";
+	.nm$[207] = "Doram players resistance +%d%%";
+	.nm$[208] = "ATK against Demi-Human players +%d%%";
+	.nm$[209] = "ATK against Doram players +%d%%";
+	.nm$[210] = "MATK against Demi-Human players +%d%%";
+	.nm$[211] = "MATK against Doram players +%d%%";
+	.nm$[212] = "Critical +%d for Demi-Human players";
+	.nm$[213] = "Critical +%d for Doram players";
+	.nm$[214] = "Pierces %d%% DEF of Demi-Human players";
+	.nm$[215] = "Pierces %d%% DEF of Doram players";
+	.nm$[216] = "Pierces %d%% MDEF of Demi-Human players";
+	.nm$[217] = "Pierces %d%% MDEF of Doram players";
+	.nm$[218] = "Recieved reflected damage -%d%%";
+	.nm$[219] = "Melee Physical Damage +%d%%";
+	.nm$[220] = "Received Melee Physical Damage -%d%%";
+	.nm$[221] = "Neutral elemental magic skill damage +%d%%";
+	.nm$[222] = "Water elemental magic skill damage +%d%%";
+	.nm$[223] = "Earth elemental magic skill damage +%d%%";
+	.nm$[224] = "Fire elemental magic skill damage +%d%%";
+	.nm$[225] = "Wind elemental magic skill damage +%d%%";
+	.nm$[226] = "Poison elemental magic skill damage +%d%%";
+	.nm$[227] = "Holy elemental magic skill damage +%d%%";
+	.nm$[228] = "Shadow elemental magic skill damage +%d%%";
+	.nm$[229] = "Ghost elemental magic skill damage +%d%%";
+	.nm$[230] = "Undead elemental magic skill damage +%d%%";
+	.nm$[231] = "All elemental magic skill damage +%d%%";
+	.nm$[232] = "Experience gained from Formless race monsters +%d%%";
+	.nm$[233] = "Experience gained from Undead race monsters +%d%%";
+	.nm$[234] = "Experience gained from Brute race monsters +%d%%";
+	.nm$[235] = "Experience gained from Plant race monsters +%d%%";
+	.nm$[236] = "Experience gained from Insect race monsters +%d%%";
+	.nm$[237] = "Experience gained from Fish race monsters +%d%%";
+	.nm$[238] = "Experience gained from Demon race monsters +%d%%";
+	.nm$[239] = "Experience gained from Demi-Human race monsters +%d%%";
+	.nm$[240] = "Experience gained from Angel race monsters +%d%%";
+	.nm$[241] = "Experience gained from Dragon race monsters +%d%%";
+	.nm$[242] = "Experience gained from all race monsters +%d%%";
+	.nm$[243] = "POW +%d";
+	.nm$[244] = "SPL +%d";
+	.nm$[245] = "STA +%d";
+	.nm$[246] = "WIS +%d";
+	.nm$[247] = "CON +%d";
+	.nm$[248] = "CRT +%d";
+	.nm$[249] = "P.ATK +%d";
+	.nm$[250] = "S.MATK +%d";
+	.nm$[251] = "RES +%d";
+	.nm$[252] = "MRES +%d";
+	.nm$[253] = "H.PLUS +%d";
+	.nm$[254] = "C.RATE +%d";
+	end;
+}

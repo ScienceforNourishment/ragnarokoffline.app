@@ -1,0 +1,949 @@
+# ARPG Equipments Mod - Made by Iguera
+#
+# Creates 6 tiered chests for the rewards with 4 Random Options each
+# I used a rather complex funcion to not rely on Random Option Groups, because they insisted on bugging out and presented some restrictions
+#
+# Creates some essences got on Equipment Dismantle
+# Creates 5 different Scroll IDs for Advanced Item Crafting
+
+Header:
+  Type: ITEM_DB
+  Version: 3
+
+Body:
+# ===========================================================================================
+# ==================================== CHEST REWARDS ========================================
+# ===========================================================================================
+  - Id: 55000
+    AegisName: Common_Equipment_Chest_T1
+    Name: Common Equipment Chest T1
+    Type: Usable
+    Buy: 1000
+    Weight: 10
+    View: 13634
+    Flags:
+      Container: true
+    Script: |
+      // Clear output arrays to prevent cross-contamination from previous executions
+      cleararray .@OptID[0], 0, 4;
+      cleararray .@OptVal[0], 0, 4;
+      cleararray .@OptParam[0], 0, 4;
+
+      // ==========================================
+      // STEP 1: Process and Fill Random Option IDs
+      // ==========================================
+      // Slot 1: Basic Stats (6 options, Chance 1666 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 6, 1666, 3, 4, 5, 6, 7, 8;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[0] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[0] == 0) { .@OptID[0] = .@args[1 + .@args[0]]; }
+
+      // Slot 2: Offensive Stats (5 options, Chance 2000 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 5, 2000, 17, 13, 19, 14, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[1] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[1] == 0) { .@OptID[1] = .@args[1 + .@args[0]]; }
+
+      // Slot 3: Defensive Stats (7 options, Chance 1428 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 7, 1428, 1, 9, 2, 10, 22, 20, 21;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[2] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[2] == 0) { .@OptID[2] = .@args[1 + .@args[0]]; }
+
+      // Slot 4: Utility Stats (8 options, Chance 1250 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 8, 1250, 18, 15, 16, 24, 23, 170, 171, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[3] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[3] == 0) { .@OptID[3] = .@args[1 + .@args[0]]; }
+
+      // ==========================================
+      // STEP 2: Value Range Mapping Loops
+      // ==========================================
+      for (.@i = 0; .@i < 4; .@i++) {
+          switch (.@OptID[.@i]) {
+              
+              // ===== Basic Stats (Slot 1 Range) =====
+              // STR/AGI/VIT/INT/DEX/LUK
+              case 3: case 4: case 5: case 6: case 7: case 8:
+                  .@OptVal[.@i] = rand(2, 4); break;
+              
+              // ===== Offensive Stats (Slot 2 Range) =====
+              // ATK/MATK
+              case 17: case 19:
+                  .@OptVal[.@i] = rand(5, 10); break;
+
+              // ATK%/MATK%/RANGED%    
+              case 13: case 14: case 166:
+                  .@OptVal[.@i] = rand(4, 6); break;
+
+              // ===== Defensive Stats (Slot 3 Range) =====
+              // HP/SP
+              case 1: case 2:
+                  .@OptVal[.@i] = rand(30, 60); break;
+
+              // HP%/SP%
+              case 9: case 10:
+                  .@OptVal[.@i] = rand(4, 6); break;
+
+              // FLEE
+              case 22:
+                  .@OptVal[.@i] = rand(3, 6); break;
+
+              // DEF/MDEF
+              case 20: case 21:
+                  .@OptVal[.@i] = rand(10, 20); break;
+
+              // ===== Utility Stats (Slot 4 Range) =====
+              // HIT
+              case 18:
+                  .@OptVal[.@i] = rand(3, 7); break;
+
+              // ASPD
+              case 15:
+                  .@OptVal[.@i] = rand(1, 2); break;
+
+              // ASPD%/VarCast/AfterCast
+              case 16: case 170: case 171:
+                  .@OptVal[.@i] = rand(3, 5); break;
+
+              // CRITICAL
+              case 24:
+                  .@OptVal[.@i] = rand(2, 4); break;
+
+              // CRITICAL FLEE
+              case 23:
+                  .@OptVal[.@i] = rand(2, 4); break;
+              default:
+                  .@OptVal[.@i] = 0; break;
+          }
+      }
+
+      // Parameters tracking clear
+      .@OptParam[0] = 0; .@OptParam[1] = 0; .@OptParam[2] = 0; .@OptParam[3] = 0;
+
+      // Deliver the final item with all 4 randomized options
+      .@rolled_item = groupranditem(IG_ADVENTURER_RETURNS_SUPPORT_BOX, 2);
+      if (.@rolled_item <= 0) { .@rolled_item = 1161; } // Fallback tracking safety
+      getitem3 .@rolled_item, 1, 1, 0, 0, 0, 0, 0, 0, .@OptID, .@OptVal, .@OptParam;
+      dispbottom "You just unboxed an Equipment with special properties! May the odds be ever in your favor!";
+
+
+  - Id: 55001
+    AegisName: Uncommon_Equipment_Chest_T2
+    Name: Uncommon Equipment Chest T2
+    Type: Usable
+    Buy: 5000
+    Weight: 10
+    View: 13634
+    Flags:
+      Container: true
+    Script: |
+      // Clear output arrays to prevent cross-contamination from previous executions
+      cleararray .@OptID[0], 0, 4;
+      cleararray .@OptVal[0], 0, 4;
+      cleararray .@OptParam[0], 0, 4;
+
+      // ==========================================
+      // STEP 1: Process and Fill Random Option IDs
+      // ==========================================
+      // Slot 1: Basic Stats (6 options, Chance 1666 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 6, 1666, 3, 4, 5, 6, 7, 8;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[0] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[0] == 0) { .@OptID[0] = .@args[1 + .@args[0]]; }
+
+      // Slot 2: Offensive Stats (5 options, Chance 2000 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 5, 2000, 17, 13, 19, 14, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[1] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[1] == 0) { .@OptID[1] = .@args[1 + .@args[0]]; }
+
+      // Slot 3: Defensive Stats (7 options, Chance 1428 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 7, 1428, 1, 9, 2, 10, 22, 20, 21;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[2] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[2] == 0) { .@OptID[2] = .@args[1 + .@args[0]]; }
+
+      // Slot 4: Utility Stats (8 options, Chance 1250 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 8, 1250, 18, 15, 16, 24, 23, 170, 171, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[3] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[3] == 0) { .@OptID[3] = .@args[1 + .@args[0]]; }
+
+      // ==========================================
+      // STEP 2: Value Range Mapping Loops
+      // ==========================================
+      for (.@i = 0; .@i < 4; .@i++) {
+          switch (.@OptID[.@i]) {
+              
+              // ===== Basic Stats (Slot 1 Range) =====
+              // STR/AGI/VIT/INT/DEX/LUK
+              case 3: case 4: case 5: case 6: case 7: case 8:
+                  .@OptVal[.@i] = rand(4, 6); break;
+              
+              // ===== Offensive Stats (Slot 2 Range) =====
+              // ATK/MATK
+              case 17: case 19:
+                  .@OptVal[.@i] = rand(8, 15); break;
+
+              // ATK%/MATK%/RANGED%    
+              case 13: case 14: case 166:
+                  .@OptVal[.@i] = rand(5, 7); break;
+
+              // ===== Defensive Stats (Slot 3 Range) =====
+              // HP/SP
+              case 1: case 2:
+                  .@OptVal[.@i] = rand(50, 90); break;
+
+              // HP%/SP%
+              case 9: case 10:
+                  .@OptVal[.@i] = rand(4, 6); break;
+
+              // FLEE
+              case 22:
+                  .@OptVal[.@i] = rand(5, 8); break;
+
+              // DEF/MDEF
+              case 20: case 21:
+                  .@OptVal[.@i] = rand(15, 30); break;
+
+              // ===== Utility Stats (Slot 4 Range) =====
+              // HIT
+              case 18:
+                  .@OptVal[.@i] = rand(5, 10); break;
+
+              // ASPD
+              case 15:
+                  .@OptVal[.@i] = rand(2, 3); break;
+
+              // ASPD%/VarCast/AfterCast
+              case 16: case 170: case 171:
+                  .@OptVal[.@i] = rand(3, 6); break;
+
+              // CRITICAL
+              case 24:
+                  .@OptVal[.@i] = rand(3, 6); break;
+
+              // CRITICAL FLEE
+              case 23:
+                  .@OptVal[.@i] = rand(3, 6); break;
+              default:
+                  .@OptVal[.@i] = 0; break;
+          }
+      }
+
+      // Parameters tracking clear
+      .@OptParam[0] = 0; .@OptParam[1] = 0; .@OptParam[2] = 0; .@OptParam[3] = 0;
+
+      // Deliver the final item with all 4 randomized options
+      .@rolled_item = groupranditem(IG_ADVENTURER_RETURNS_SUPPORT_BOX, 3);
+      if (.@rolled_item <= 0) { .@rolled_item = 1161; } // Fallback tracking safety
+      getitem3 .@rolled_item, 1, 1, 0, 0, 0, 0, 0, 0, .@OptID, .@OptVal, .@OptParam;
+      dispbottom "You just unboxed a Great Equipment with special properties! May the odds be ever in your favor!";
+
+  - Id: 55002
+    AegisName: Magic_Equipment_Chest_T3
+    Name: Magic Equipment Chest T3
+    Type: Usable
+    Buy: 20000
+    Weight: 10
+    View: 13634
+    Flags:
+      Container: true
+    Script: |
+      // Clear output arrays to prevent cross-contamination from previous executions
+      cleararray .@OptID[0], 0, 4;
+      cleararray .@OptVal[0], 0, 4;
+      cleararray .@OptParam[0], 0, 4;
+
+      // ==========================================
+      // STEP 1: Process and Fill Random Option IDs
+      // ==========================================
+      // Slot 1: Basic Stats (6 options, Chance 1666 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 6, 1666, 3, 4, 5, 6, 7, 8;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[0] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[0] == 0) { .@OptID[0] = .@args[1 + .@args[0]]; }
+
+      // Slot 2: Offensive Stats (5 options, Chance 2000 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 5, 2000, 17, 13, 19, 14, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[1] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[1] == 0) { .@OptID[1] = .@args[1 + .@args[0]]; }
+
+      // Slot 3: Defensive Stats (7 options, Chance 1428 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 7, 1428, 1, 9, 2, 10, 22, 20, 21;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[2] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[2] == 0) { .@OptID[2] = .@args[1 + .@args[0]]; }
+
+      // Slot 4: Utility Stats (8 options, Chance 1250 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 8, 1250, 18, 15, 16, 24, 23, 170, 171, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[3] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[3] == 0) { .@OptID[3] = .@args[1 + .@args[0]]; }
+
+      // ==========================================
+      // STEP 2: Value Range Mapping Loops
+      // ==========================================
+      for (.@i = 0; .@i < 4; .@i++) {
+          switch (.@OptID[.@i]) {
+              
+              // ===== Basic Stats (Slot 1 Range) =====
+              // STR/AGI/VIT/INT/DEX/LUK
+              case 3: case 4: case 5: case 6: case 7: case 8:
+                  .@OptVal[.@i] = rand(5, 10); break;
+              
+              // ===== Offensive Stats (Slot 2 Range) =====
+              // ATK/MATK
+              case 17: case 19:
+                  .@OptVal[.@i] = rand(10, 20); break;
+
+              // ATK%/MATK%/RANGED%    
+              case 13: case 14: case 166:
+                  .@OptVal[.@i] = rand(5, 10); break;
+
+              // ===== Defensive Stats (Slot 3 Range) =====
+              // HP/SP
+              case 1: case 2:
+                  .@OptVal[.@i] = rand(100, 200); break;
+
+              // HP%/SP%
+              case 9: case 10:
+                  .@OptVal[.@i] = rand(5, 10); break;
+
+              // FLEE
+              case 22:
+                  .@OptVal[.@i] = rand(8, 12); break;
+
+              // DEF/MDEF
+              case 20: case 21:
+                  .@OptVal[.@i] = rand(20, 40); break;
+
+              // ===== Utility Stats (Slot 4 Range) =====
+              // HIT
+              case 18:
+                  .@OptVal[.@i] = rand(10, 15); break;
+
+              // ASPD
+              case 15:
+                  .@OptVal[.@i] = rand(3, 5); break;
+
+              // ASPD%/VarCast/AfterCast
+              case 16: case 170: case 171:
+                  .@OptVal[.@i] = rand(4, 8); break;
+
+              // CRITICAL
+              case 24:
+                  .@OptVal[.@i] = rand(4, 10); break;
+
+              // CRITICAL FLEE
+              case 23:
+                  .@OptVal[.@i] = rand(4, 10); break;
+              default:
+                  .@OptVal[.@i] = 0; break;
+          }
+      }
+
+      // Parameters tracking clear
+      .@OptParam[0] = 0; .@OptParam[1] = 0; .@OptParam[2] = 0; .@OptParam[3] = 0;
+
+      // Deliver the final item with all 4 randomized options
+      .@rolled_item = groupranditem(IG_ADVENTURER_RETURNS_SUPPORT_BOX, 4);
+      if (.@rolled_item <= 0) { .@rolled_item = 1161; } // Fallback tracking safety
+      getitem3 .@rolled_item, 1, 1, 0, 0, 0, 0, 0, 0, .@OptID, .@OptVal, .@OptParam;
+      dispbottom "You just unboxed a Rare Equipment with special properties! May the odds be ever in your favor!";
+  
+  - Id: 55003
+    AegisName: Rare_Equipment_Chest_T4
+    Name: Rare Equipment Chest T4
+    Type: Usable
+    Buy: 40000
+    Weight: 10
+    View: 13634
+    Flags:
+      Container: true
+    Script: |
+      // Clear output arrays to prevent cross-contamination from previous executions
+      cleararray .@OptID[0], 0, 4;
+      cleararray .@OptVal[0], 0, 4;
+      cleararray .@OptParam[0], 0, 4;
+
+      // ==========================================
+      // STEP 1: Process and Fill Random Option IDs
+      // ==========================================
+      // Slot 1: Basic Stats (6 options, Chance 1666 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 6, 1666, 3, 4, 5, 6, 7, 8;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[0] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[0] == 0) { .@OptID[0] = .@args[1 + .@args[0]]; }
+
+      // Slot 2: Offensive Stats (5 options, Chance 2000 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 5, 2000, 17, 13, 19, 14, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[1] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[1] == 0) { .@OptID[1] = .@args[1 + .@args[0]]; }
+
+      // Slot 3: Defensive Stats (7 options, Chance 1428 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 7, 1428, 1, 9, 2, 10, 22, 20, 21;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[2] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[2] == 0) { .@OptID[2] = .@args[1 + .@args[0]]; }
+
+      // Slot 4: Utility Stats (8 options, Chance 1250 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 8, 1250, 18, 15, 16, 24, 23, 170, 171, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[3] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[3] == 0) { .@OptID[3] = .@args[1 + .@args[0]]; }
+
+      // ==========================================
+      // STEP 2: Value Range Mapping Loops
+      // ==========================================
+      for (.@i = 0; .@i < 4; .@i++) {
+          switch (.@OptID[.@i]) {
+              
+              // ===== Basic Stats (Slot 1 Range) =====
+              // STR/AGI/VIT/INT/DEX/LUK
+              case 3: case 4: case 5: case 6: case 7: case 8:
+                  .@OptVal[.@i] = rand(8, 12); break;
+              
+              // ===== Offensive Stats (Slot 2 Range) =====
+              // ATK/MATK
+              case 17: case 19:
+                  .@OptVal[.@i] = rand(20, 40); break;
+
+              // ATK%/MATK%/RANGED%    
+              case 13: case 14: case 166:
+                  .@OptVal[.@i] = rand(7, 12); break;
+
+              // ===== Defensive Stats (Slot 3 Range) =====
+              // HP/SP
+              case 1: case 2:
+                  .@OptVal[.@i] = rand(200, 300); break;
+
+              // HP%/SP%
+              case 9: case 10:
+                  .@OptVal[.@i] = rand(8, 12); break;
+
+              // FLEE
+              case 22:
+                  .@OptVal[.@i] = rand(10, 15); break;
+
+              // DEF/MDEF
+              case 20: case 21:
+                  .@OptVal[.@i] = rand(30, 50); break;
+
+              // ===== Utility Stats (Slot 4 Range) =====
+              // HIT
+              case 18:
+                  .@OptVal[.@i] = rand(12, 20); break;
+
+              // ASPD
+              case 15:
+                  .@OptVal[.@i] = rand(3, 5); break;
+
+              // ASPD%/VarCast/AfterCast
+              case 16: case 170: case 171:
+                  .@OptVal[.@i] = rand(5, 10); break;
+
+              // CRITICAL
+              case 24:
+                  .@OptVal[.@i] = rand(5, 10); break;
+
+              // CRITICAL FLEE
+              case 23:
+                  .@OptVal[.@i] = rand(5, 15); break;
+              default:
+                  .@OptVal[.@i] = 0; break;
+          }
+      }
+
+      // Parameters tracking clear
+      .@OptParam[0] = 0; .@OptParam[1] = 0; .@OptParam[2] = 0; .@OptParam[3] = 0;
+
+      // Deliver the final item with all 4 randomized options
+      .@rolled_item = groupranditem(IG_ADVENTURER_RETURNS_SUPPORT_BOX, 5);
+      if (.@rolled_item <= 0) { .@rolled_item = 1161; } // Fallback tracking safety
+      getitem3 .@rolled_item, 1, 1, 0, 0, 0, 0, 0, 0, .@OptID, .@OptVal, .@OptParam;
+      dispbottom "You just unboxed a Very Rare Equipment with special properties! May the odds be ever in your favor!";
+
+  - Id: 55004
+    AegisName: Unique_Equipment_Chest_T5
+    Name: Unique Equipment Chest T5
+    Type: Usable
+    Buy: 80000
+    Weight: 10
+    View: 23985
+    Flags:
+      Container: true
+    Script: |
+      // Clear output arrays to prevent cross-contamination from previous executions
+      cleararray .@OptID[0], 0, 4;
+      cleararray .@OptVal[0], 0, 4;
+      cleararray .@OptParam[0], 0, 4;
+
+      // ==========================================
+      // STEP 1: Process and Fill Random Option IDs
+      // ==========================================
+      // Slot 1: Basic Stats (6 options, Chance 1666 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 6, 1666, 3, 4, 5, 6, 7, 8;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[0] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[0] == 0) { .@OptID[0] = .@args[1 + .@args[0]]; }
+
+      // Slot 2: Offensive Stats (5 options, Chance 2000 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 5, 2000, 17, 13, 19, 14, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[1] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[1] == 0) { .@OptID[1] = .@args[1 + .@args[0]]; }
+
+      // Slot 3: Defensive Stats (7 options, Chance 1428 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 7, 1428, 1, 9, 2, 10, 22, 20, 21;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[2] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[2] == 0) { .@OptID[2] = .@args[1 + .@args[0]]; }
+
+      // Slot 4: Utility Stats (8 options, Chance 1250 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 8, 1250, 18, 15, 16, 24, 23, 170, 171, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[3] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[3] == 0) { .@OptID[3] = .@args[1 + .@args[0]]; }
+
+      // ==========================================
+      // STEP 2: Value Range Mapping Loops
+      // ==========================================
+      for (.@i = 0; .@i < 4; .@i++) {
+          switch (.@OptID[.@i]) {
+              
+              // ===== Basic Stats (Slot 1 Range) =====
+              // STR/AGI/VIT/INT/DEX/LUK
+              case 3: case 4: case 5: case 6: case 7: case 8:
+                  .@OptVal[.@i] = rand(12, 20); break;
+              
+              // ===== Offensive Stats (Slot 2 Range) =====
+              // ATK/MATK
+              case 17: case 19:
+                  .@OptVal[.@i] = rand(25, 50); break;
+
+              // ATK%/MATK%/RANGED%    
+              case 13: case 14: case 166:
+                  .@OptVal[.@i] = rand(10, 15); break;
+
+              // ===== Defensive Stats (Slot 3 Range) =====
+              // HP/SP
+              case 1: case 2:
+                  .@OptVal[.@i] = rand(300, 500); break;
+
+              // HP%/SP%
+              case 9: case 10:
+                  .@OptVal[.@i] = rand(10, 15); break;
+
+              // FLEE
+              case 22:
+                  .@OptVal[.@i] = rand(15, 20); break;
+
+              // DEF/MDEF
+              case 20: case 21:
+                  .@OptVal[.@i] = rand(40, 60); break;
+
+              // ===== Utility Stats (Slot 4 Range) =====
+              // HIT
+              case 18:
+                  .@OptVal[.@i] = rand(15, 25); break;
+
+              // ASPD
+              case 15:
+                  .@OptVal[.@i] = rand(5, 5); break;
+
+              // ASPD%/VarCast/AfterCast
+              case 16: case 170: case 171:
+                  .@OptVal[.@i] = rand(5, 15); break;
+
+              // CRITICAL
+              case 24:
+                  .@OptVal[.@i] = rand(5, 10); break;
+
+              // CRITICAL FLEE
+              case 23:
+                  .@OptVal[.@i] = rand(10, 12); break;
+              default:
+                  .@OptVal[.@i] = 0; break;
+          }
+      }
+
+      // Parameters tracking clear
+      .@OptParam[0] = 0; .@OptParam[1] = 0; .@OptParam[2] = 0; .@OptParam[3] = 0;
+
+      // Deliver the final item with all 4 randomized options
+      .@rolled_item = groupranditem(IG_ADVENTURER_RETURNS_SUPPORT_BOX, 6);
+      if (.@rolled_item <= 0) { .@rolled_item = 1161; } // Fallback tracking safety
+      getitem3 .@rolled_item, 1, 1, 0, 0, 0, 0, 0, 0, .@OptID, .@OptVal, .@OptParam;
+      dispbottom "You just unboxed an Exceptionally Rare Equipment with AMAZING properties! Hope the RNG graces you!";
+
+  - Id: 55005
+    AegisName: Legendary_Equipment_Chest_T6
+    Name: Legendary Equipment Chest T6
+    Type: Usable
+    Buy: 150000
+    Weight: 10
+    View: 23985
+    Flags:
+      Container: true
+    Script: |
+      // Clear output arrays to prevent cross-contamination from previous executions
+      cleararray .@OptID[0], 0, 4;
+      cleararray .@OptVal[0], 0, 4;
+      cleararray .@OptParam[0], 0, 4;
+
+      // ==========================================
+      // STEP 1: Process and Fill Random Option IDs
+      // ==========================================
+      // Slot 1: Basic Stats (6 options, Chance 1666 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 6, 1666, 3, 4, 5, 6, 7, 8;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[0] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[0] == 0) { .@OptID[0] = .@args[1 + .@args[0]]; }
+
+      // Slot 2: Offensive Stats (5 options, Chance 2000 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 5, 2000, 17, 13, 19, 14, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[1] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[1] == 0) { .@OptID[1] = .@args[1 + .@args[0]]; }
+
+      // Slot 3: Defensive Stats (7 options, Chance 1428 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 7, 1428, 1, 9, 2, 10, 22, 20, 21;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[2] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[2] == 0) { .@OptID[2] = .@args[1 + .@args[0]]; }
+
+      // Slot 4: Utility Stats (8 options, Chance 1250 each)
+      cleararray .@args[0], 0, 10;
+      setarray .@args[0], 8, 1250, 18, 15, 16, 24, 23, 170, 171, 166;
+      .@roll = rand(1, 10000);
+      for (.@idx = 0; .@idx < .@args[0]; .@idx++) {
+          if (.@roll <= (.@args[1] * (.@idx + 1))) {
+              .@OptID[3] = .@args[2 + .@idx];
+              break;
+          }
+      }
+      if (.@OptID[3] == 0) { .@OptID[3] = .@args[1 + .@args[0]]; }
+
+      // ==========================================
+      // STEP 2: Value Range Mapping Loops
+      // ==========================================
+      for (.@i = 0; .@i < 4; .@i++) {
+          switch (.@OptID[.@i]) {
+              
+              // ===== Basic Stats (Slot 1 Range) =====
+              // STR/AGI/VIT/INT/DEX/LUK
+              case 3: case 4: case 5: case 6: case 7: case 8:
+                  .@OptVal[.@i] = rand(20, 30); break;
+              
+              // ===== Offensive Stats (Slot 2 Range) =====
+              // ATK/MATK
+              case 17: case 19:
+                  .@OptVal[.@i] = rand(30, 70); break;
+
+              // ATK%/MATK%/RANGED%    
+              case 13: case 14: case 166:
+                  .@OptVal[.@i] = rand(10, 20); break;
+
+              // ===== Defensive Stats (Slot 3 Range) =====
+              // HP/SP
+              case 1: case 2:
+                  .@OptVal[.@i] = rand(1000, 2000); break;
+
+              // HP%/SP%
+              case 9: case 10:
+                  .@OptVal[.@i] = rand(10, 20); break;
+
+              // FLEE
+              case 22:
+                  .@OptVal[.@i] = rand(20, 30); break;
+
+              // DEF/MDEF
+              case 20: case 21:
+                  .@OptVal[.@i] = rand(50, 100); break;
+
+              // ===== Utility Stats (Slot 4 Range) =====
+              // HIT
+              case 18:
+                  .@OptVal[.@i] = rand(30, 50); break;
+
+              // ASPD
+              case 15:
+                  .@OptVal[.@i] = rand(5, 10); break;
+
+              // ASPD%/VarCast/AfterCast
+              case 16: case 170: case 171:
+                  .@OptVal[.@i] = rand(5, 15); break;
+
+              // CRITICAL
+              case 24:
+                  .@OptVal[.@i] = rand(10, 20); break;
+
+              // CRITICAL FLEE
+              case 23:
+                  .@OptVal[.@i] = rand(15, 20); break;
+              default:
+                  .@OptVal[.@i] = 0; break;
+          }
+      }
+
+      // Parameters tracking clear
+      .@OptParam[0] = 0; .@OptParam[1] = 0; .@OptParam[2] = 0; .@OptParam[3] = 0;
+
+      // Deliver the final item with all 4 randomized options
+      .@rolled_item = groupranditem(IG_ADVENTURER_RETURNS_SUPPORT_BOX, 7);
+      if (.@rolled_item <= 0) { .@rolled_item = 1161; } // Fallback tracking safety
+      getitem3 .@rolled_item, 1, 1, 0, 0, 0, 0, 0, 0, .@OptID, .@OptVal, .@OptParam;
+      dispbottom "You just unboxed an Exceptionally Rare Equipment with AMAZING properties! Hope the RNG graces you!";
+
+# ===========================================================================================
+# ==================================== CRAFTING MATERIALS ===================================
+# ===========================================================================================
+
+  - Id: 56000
+    AegisName: ARPG_Equipment_Essence
+    Name: Equipment Essence
+    Type: Etc
+    Buy: 0
+    Weight: 0
+    View: 640
+    KeepWithGuild: true
+    Trade:
+      drop: true
+      sell: true
+      storage: true
+      guild_storage: true
+      trade: true
+      cart: true
+
+  - Id: 56001
+    AegisName: ARPG_Bonus_Attributes_Scroll_1
+    Name: Bonus Attributes Scroll 1
+    Type: Etc
+    Buy: 0
+    Weight: 0
+    View: 12381
+    KeepWithGuild: false
+    Trade:
+      drop: false
+      trade: false
+      sell: true
+      cart: false
+      storage: false
+      guild_storage: false
+      mail: false
+      auction: false
+
+  - Id: 56002
+    AegisName: ARPG_Bonus_Attributes_Scroll_2
+    Name: Bonus Attributes Scroll 2
+    Type: Etc
+    Buy: 0
+    Weight: 0
+    View: 12381
+    KeepWithGuild: false
+    Trade:
+      drop: false
+      trade: false
+      sell: true
+      cart: false
+      storage: false
+      guild_storage: false
+      mail: false
+      auction: false
+
+  - Id: 56003
+    AegisName: ARPG_Bonus_Attributes_Scroll_3
+    Name: Bonus Attributes Scroll 3
+    Type: Etc
+    Buy: 0
+    Weight: 0
+    View: 12381
+    KeepWithGuild: false
+    Trade:
+      drop: false
+      trade: false
+      sell: true
+      cart: false
+      storage: false
+      guild_storage: false
+      mail: false
+      auction: false
+
+  - Id: 56004
+    AegisName: ARPG_Bonus_Attributes_Scroll_4
+    Name: Bonus Attributes Scroll 4
+    Type: Etc
+    Buy: 0
+    Weight: 0
+    View: 12381
+    KeepWithGuild: false
+    Trade:
+      drop: false
+      trade: false
+      sell: true
+      cart: false
+      storage: false
+      guild_storage: false
+      mail: false
+      auction: false
+
+  - Id: 56005
+    AegisName: ARPG_Bonus_Attributes_Scroll_5
+    Name: Bonus Attributes Scroll 5
+    Type: Etc
+    Buy: 0
+    Weight: 0
+    View: 12381
+    KeepWithGuild: false
+    Trade:
+      drop: false
+      trade: false
+      sell: true
+      cart: false
+      storage: false
+      guild_storage: false
+      mail: false
+      auction: false
+

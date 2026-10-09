@@ -1,0 +1,111 @@
+ARPG Equipments Mod - Full Patch Notes
+
+========== v1.2.4 ==========
+* Now supports customization of both Primary and Secondary chest drop rates
+* Now supports decimal numbers in all chest custom drop rates
+
+
+========== v1.2.3 ==========
+* Now supports a single file for both Renewal and Pre-Renewal Versions of the game (Thanks to @Flux159)
+* Can now be installed and updated directly from the Ragnarok Offline Mod Page (Thanks to @Flux159)
+
+
+========== v1.2.2 ==========
+Fixed errors on NPC Bonus Attributes Extractor 
+* There was an accidental bug where the NPC could delete the wrong item from the player inventory when creating a Scroll (fixed)
+* There was an accidental bug where 2 of the exact same item could be deleted at once (fixed)
+
+Fixed erros on NPC Bonus Attributes Imbuer to preserve all CARDS, ENCHANTMENTS and GRADE from the original item
+* Now when enchanting any item with you Options Scrolls, all the item properties are correctly preserved
+* You do not need to remove any cards before doing it
+* You will not lose your Grade, Refinement, Cards or Enchantments from now on
+
+Fixed Option Scrolls item properties
+* To avoid any bugs now they cannot be stored anywhere or traded between players
+* The only way to remove them from your inventory (without enchanting a new item with them) is to sell it on any shop
+
+
+========== v1.2.1 ==========
+Mod Settings
+* Added the option to turn the Chest Drop Rates NPC on/off (Thanks BlaXun)
+* Added the option to configure the Chest Drop Rates directly at he Mod Settings (Thanks BlaXun)
+
+Chest Drop Rates NPC
+* Now has 2 additional options to turn all rates back to intended values or the custom values you set at Mod Settings
+
+Sprite Update
+* Allocated unique Sprites to each of the 6 different Chests
+
+
+========== v1.2.0 ==========
+* Added 3 new chest tiers to the game (bringing the total to 6) and you can now enable/disable any of them on the Mod Settings menu
+  - Tiers 1, 2 and 3 are meant for progression at levels 1-99 and intended for all players (Renewal and Pre-Renewal)
+  - Tiers 4, 5 and 6 are meant ONLY for Renewal Players (I recommend iRO latest version to avoid invisible items)
+ 
+* You can now customize the drop rates of each Chest with a NPC at the ARPG Hub (1st one to the right)
+  - No more blaming the Author if you find them too high or too low
+  - No, you cannot customize which bonus attibutes and values you get per Tier (unless you ask Claude to do it)
+
+* Reworked all the possible rewards and bonus attributes values per Tier
+  - Each chest has around 100 to 200 rewards, with at least 1 or 2 VERY SPECIAL rewards in each of them. Fire up your RNG!
+  - The bonus attributes on each Tier now scale better according to the era and level, Tier 1 are very low and Tier 6 will prepare you for the maps I'm cooking
+  - Slots are now filled according to your progression, with each new tier unlocking new equipment types
+  - Tiers 4-6 chests now contain all set pieces for progression - from Imperial to Nebula - according to their associated level
+  
+* Fixed the errors in the Mods page and Missing Sprites for Pre-Renewal
+ - Changed the NPC model of the ARPG Hub Teleporter in Prontera (bye bye badass Valkyrie) - the location remains unchanged (prontera,140,174)
+
+
+========== v1.1.1 ==========
+* Added and Improved some Quality of Life and Utility NPCs to the ARPG Hub Map:
+1) Updated the buffer NPC (Created by MondoTruth) in the ARPG Hub to have more buffs and Speed Increase with 30min duration
+2) Added a Kafra (save/storage/identify all)
+3) Added a Tool Shop (with more items - including ammunition and some supplies for 2nd and 3rd Job Skills)
+4) Added a Resetter NPC to the Hub for convenience (Stats/Skills)
+5) Added a Plagiarism NPC for Rogue, Abyss Chaser and Shadow Chaser classes to use, with all the available skills in this fork
+
+* ARPG NPCs in the Hub now correctly reads and interact with Shadow Gear: Equipment Dismantler, Bonus Stats Extractor, Bonus Stats Imbuer
+
+* Relocated the ARPG Hub Teleporter in Prontera to coordinates prontera,140,174 (southwest of the fountain)
+
+
+========== v1.1.0 ==========
+EQUIPMENT AND REWARD CHESTS REWORK
+* Reworked all Equipment you can get from each chest (removed rental/drop restricted/missing sprites)
+* Tweaked the range of the bonus attributes you can get per Tier, some of them were too powerful (like +20 ASPD or +100 Perfect Dodge)
+
+ARPG MOD HUB IMPLEMENTED WITH TELEPORTER IN PRONTERA
+* You can now access a new Hub Area that put togheter all NPCs for this mod and for future mods of the ARPG Pack:
+1) Equipment Dismantler NPC - Destroys Equipment for Special Essence
+2) Bonus Stats Extractor - Extract the Bonus Attributes (Random Options) from your items into Scrolls
+3) Bonus Stats Imbuer - Apply the Bonus Attributes inside a Scroll to any Equipment you want
+
+* Added some QoL NPCs already created by amazing people with a few power-ups and tweaks (All-in-one NPC Pack from MondoTruth and other contributors)
+1) Master Buffer NPC - With a few extra buffs and Speed Increase
+2) Tool Dealer - With a few extra items for convenience
+
+ADVANCED EQUIPMENT CRAFTING - Part 1
+* Dismantle all unwanted equipment for Essences (yes, even the ones without Random Options) - this should fix the problem of previous items got from chests that you could not store or vendor
+* Extract the Bonus Attributes (Random Options) from any Equipment obtained by the Chests and imbue them on any Equipment you want. It does not need to be the same slot as the sacrificed item
+
+
+========== v1.0.1 ==========
+* Now functional with pre-renewal versions
+
+
+========== v1.0.0 ==========
+IMPLEMENTED 3 TIERS OF CHESTS OBTAINED BY KILLING MONSTERS
+* Funcion as Global Rewards (awarded directly into your inventory by killing monsters). 
+* The tier of the chests (quality/rarity of its rewards) are directly related to the level of monsters you kill.
+* All the equipment you get from these chests have 4 additional random options, divided by:
+
+1) 1st bonus is always attribute-related (STR/AGI/VIT/INT/DEX/LUK)
+2) 2nd bonus is always a offensive stat (ATK/ATK M/Long Ranged Dmg) 
+3) 3rd bonus is always a defensive stat (HP/SP/FLEE/DEF/MDEF)  - SP is the exception if you don't consider mages
+4) 4th bonus is  almost always a utility stat focused on increasing you power(HIT/ASPD/CRIT/Fixed and Variable Cast Time Reduction/After Cast Delay Reduction) - it can have a special roll for one additional offensive stat
+
+Tier 1 chests drops from all monsters (5% chance)  and contain mostly low level equipments fit for most of the classes, with the lowest range of bonuses - with a very rare chance around 1% (to be changed, it's still the same probability) for Costumes and Mid/Low Headgear pieces
+
+Tier 2 chests drops from monsters lvl 31+ (2,5% chance) and contain better equipments, with a mid range of bonuses - with a chance around 10% (to be changed, it's still the same probability) for Costumes and Mid/Low Headgear pieces
+
+Tier 3 chests drops from monsters lvl 61+ (1,5% chance) and contain high-end equipments + shadow gear with a insane range of bonuses (STR from +10 to +60 for example) - with a chance around 10% (to be changed, it's still the same probability) for EndGame Progression Set Pieces (Grace/Noblesse/Imperial/Illusion/Temporal

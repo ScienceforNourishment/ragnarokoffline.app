@@ -1,0 +1,139 @@
+{
+  "name": "affix-forge",
+  "version": "1.3.0",
+  "author": "rhwski",
+  "description": "Monsters drop equipment with 1-4 random affixes from a pool of 214 options in four rarity tiers, and the Affix Smith in Prontera moves, removes and rerolls affixes for a price you set.",
+  "requires": {
+    "app": ">=1.4.3",
+    "era": "any"
+  },
+  "prerenewalFolder": "pre-renewal",
+  "settings": [
+    {
+      "key": "drop_mult",
+      "type": "number",
+      "default": 100,
+      "min": 0,
+      "max": 10000,
+      "label": "Modded drop chance (% of the monster's own drop rate)",
+      "description": "Each equipment item in a monster's drop list gets an extra roll at its normal rate times this percentage. 100 = same rate as the stock drop, 0 = mod off."
+    },
+    {
+      "key": "count_weights",
+      "type": "string",
+      "default": "50,30,15,5",
+      "max_length": 40,
+      "label": "Attribute count weights (1,2,3,4 attributes)",
+      "description": "Four whole numbers separated by commas: how often a modded item gets 1, 2, 3 or 4 attributes, relative to each other. 50,30,15,5 = 50% / 30% / 15% / 5%. Use 0 to switch a count off, e.g. 0,50,30,20 = never exactly 1."
+    },
+    {
+      "key": "level_scaling",
+      "type": "boolean",
+      "default": true,
+      "label": "Scale values with monster level",
+      "description": "Higher level monsters roll stronger values. Off = every monster rolls the base values."
+    },
+    {
+      "key": "unique_stats",
+      "type": "boolean",
+      "default": true,
+      "label": "One affix per stat",
+      "description": "On: an item never rolls two affixes of the same stat, so it can have MaxHP or MaxHP %, not both (same for MaxSP, ATK, MATK and ASPD). Off: only the exact same affix is kept from repeating."
+    },
+    {
+      "key": "ground_drop",
+      "type": "boolean",
+      "default": false,
+      "label": "Drop on the ground, unidentified",
+      "description": "Off: the modded item goes straight into your inventory, identified. On: it drops on the ground next to you, unidentified. Pick it up and identify it to see the attributes. The pillar of light is a separate option below."
+    },
+    {
+      "key": "ground_pillar",
+      "type": "boolean",
+      "default": true,
+      "label": "Ground drop: show the pillar of light",
+      "description": "Only applies when 'Drop on the ground, unidentified' is on; with that off there is never a pillar. On: the drop gets a colored pillar like a card drop (blue = 1 attribute, yellow = 2, purple = 3-4). If dropped items do not appear in the game, turn this off: some clients cannot draw the colored pillar and skip the item."
+    },
+    {
+      "key": "weight_common",
+      "type": "number",
+      "default": 55,
+      "min": 0,
+      "max": 1000,
+      "label": "Rarity weight: Tier 1 (common)",
+      "description": "How often each attribute is rolled from Tier 1: flat stats, ATK/MATK, HP/SP, HIT/FLEE/CRIT, recovery. Relative to the other three weights."
+    },
+    {
+      "key": "weight_uncommon",
+      "type": "number",
+      "default": 28,
+      "min": 0,
+      "max": 1000,
+      "label": "Rarity weight: Tier 2 (uncommon)",
+      "description": "Percent stats, ASPD, cast/delay, resistances and damage-taken reductions."
+    },
+    {
+      "key": "weight_rare",
+      "type": "number",
+      "default": 14,
+      "min": 0,
+      "max": 1000,
+      "label": "Rarity weight: Tier 3 (rare)",
+      "description": "Damage bonuses vs races, elements and sizes, crit damage, indestructible gear."
+    },
+    {
+      "key": "weight_epic",
+      "type": "number",
+      "default": 3,
+      "min": 0,
+      "max": 1000,
+      "label": "Rarity weight: Tier 4 (epic)",
+      "description": "Boss damage, ignore DEF/MDEF, bonus EXP, element conversion. Set 0 to never roll them."
+    },
+    {
+      "key": "value_mult",
+      "type": "number",
+      "default": 100,
+      "min": 10,
+      "max": 500,
+      "label": "Value multiplier (%)",
+      "description": "Scales every rolled value. 100 = as designed, 200 = double. The per-option caps still apply."
+    },
+    {
+      "key": "transfer_zeny",
+      "type": "number",
+      "default": 100000,
+      "min": 0,
+      "max": 100000000,
+      "label": "Move all affixes: price (zeny)",
+      "description": "Zeny charged for moving the affixes of one item onto another. 0 = free."
+    },
+    {
+      "key": "reroll_zeny",
+      "type": "number",
+      "default": 50000,
+      "min": 0,
+      "max": 100000000,
+      "label": "Reroll: price (zeny)",
+      "description": "Zeny charged for rerolling the affixes of one item. 0 = free."
+    },
+    {
+      "key": "move_one_zeny",
+      "type": "number",
+      "default": 60000,
+      "min": 0,
+      "max": 100000000,
+      "label": "Move one affix: price (zeny)",
+      "description": "Zeny charged for moving a single chosen affix onto another item. 0 = free."
+    },
+    {
+      "key": "remove_zeny",
+      "type": "number",
+      "default": 30000,
+      "min": 0,
+      "max": 100000000,
+      "label": "Remove an affix: price (zeny)",
+      "description": "Zeny charged for removing one chosen affix from an item. 0 = free."
+    }
+  ]
+}

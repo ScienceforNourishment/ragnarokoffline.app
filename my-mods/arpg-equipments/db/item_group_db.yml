@@ -1,0 +1,2688 @@
+# ARPG Equipments Mod - Made by Iguera
+#
+# I had to use an already existing group inside Athena files, because it does not let me create new ones. That's why the name is so random
+# But I managed to ignore this restriction and manipulate the results through some functions, workarounds and subgroups
+# For now the rates are the same, which means you have the same chance to get each item, but I plan to change it
+# Subgroup 2 is designated for Commom Chest (Tier 1)
+# Subgroup 3 is designated for Uncommom Chest (Tier 2)
+# Subgroup 4 is designated for Magic Chest (Tier 3)
+# Subgroup 5 is designated for Rare Chest (Tier 4)
+# Subgroup 6 is designated for Unique Chest (Tier 5)
+# Subgroup 7 is designated for Legendary Chest (Tier 6)
+
+Header:
+  Type: ITEM_GROUP_DB
+  Version: 5
+
+Body:
+  - Group: ADVENTURER_RETURNS_SUPPORT_BOX
+    SubGroups:
+      - SubGroup: 2
+      # Made for Commom Chest (lvl 1-30) - The most basic one. Most of the itens are low level equipments usable by multiple classes
+        List:
+          - Index: 0
+            Item: Main_Gauche_
+            Rate: 1000
+          - Index: 1
+            Item: Rod_
+            Rate: 1000
+          - Index: 2
+            Item: Guard_
+            Rate: 1000
+          - Index: 3
+            Item: Buckler_
+            Rate: 1000
+          - Index: 4
+            Item: Shield_
+            Rate: 1000
+          - Index: 5
+            Item: Mirror_Shield_
+            Rate: 1000
+          - Index: 6
+            Item: Memorize_Book_
+            Rate: 1000
+          - Index: 7
+            Item: Sunglasses_
+            Rate: 1000
+          - Index: 8
+            Item: Glasses_
+            Rate: 1000
+          - Index: 9
+            Item: Bandana
+            Rate: 1000
+          - Index: 10
+            Item: Eye_Bandage
+            Rate: 1000
+          - Index: 11
+            Item: Biretta_
+            Rate: 1000
+          - Index: 12
+            Item: Flu_Mask_
+            Rate: 1000
+          - Index: 13
+            Item: Goggle_
+            Rate: 1000
+          - Index: 14
+            Item: Helm_
+            Rate: 1000
+          - Index: 15
+            Item: Circlet_
+            Rate: 1000
+          - Index: 16
+            Item: Blade_
+            Rate: 1000
+          - Index: 17
+            Item: Mace_
+            Rate: 1000
+          - Index: 18
+            Item: Axe_
+            Rate: 1000
+          - Index: 19
+            Item: Battle_Axe_
+            Rate: 1000
+          - Index: 20
+            Item: Katana_
+            Rate: 1000
+          - Index: 21
+            Item: Javelin_
+            Rate: 1000
+          - Index: 22
+            Item: Composite_Bow_
+            Rate: 1000
+          - Index: 23
+            Item: Stiletto_
+            Rate: 1000
+          - Index: 24
+            Item: Dagger_
+            Rate: 1000
+          - Index: 25
+            Item: Wand_
+            Rate: 1000
+          - Index: 26
+            Item: Staff_
+            Rate: 1000
+          - Index: 27
+            Item: Scimiter_
+            Rate: 1000
+          - Index: 28
+            Item: Flail_
+            Rate: 1000
+          - Index: 29
+            Item: Chain_
+            Rate: 1000
+          - Index: 30
+            Item: Book
+            Rate: 1000
+          - Index: 31
+            Item: Slayer_
+            Rate: 1000
+          - Index: 32
+            Item: Bastard_Sword_
+            Rate: 1000
+          - Index: 33
+            Item: Great_Bow_
+            Rate: 1000
+          - Index: 34
+            Item: Angel's_Safeguard
+            Rate: 1000
+          - Index: 35
+            Item: Gladius_
+            Rate: 1000
+          - Index: 36
+            Item: Damascus_
+            Rate: 1000
+          - Index: 37
+            Item: Arc_Wand_
+            Rate: 1000
+          - Index: 38
+            Item: Two_Handed_Axe_
+            Rate: 1000
+          - Index: 39
+            Item: Adventurere's_Suit_
+            Rate: 1000
+          - Index: 40
+            Item: Angel's_Protection
+            Rate: 1000
+          - Index: 41
+            Item: Chain_Mail_
+            Rate: 1000
+          - Index: 42
+            Item: Coat_
+            Rate: 1000
+          - Index: 43
+            Item: Plate_Armor_
+            Rate: 1000
+          - Index: 44
+            Item: Goibne's_Armor
+            Rate: 1000
+          - Index: 45
+            Item: Leather_Jacket_
+            Rate: 1000
+          - Index: 46
+            Item: Mage_Coat_
+            Rate: 1000
+          - Index: 47
+            Item: Mantle_
+            Rate: 1000
+          - Index: 48
+            Item: Mink_Coat
+            Rate: 1000
+          - Index: 49
+            Item: Ninja_Suit_
+            Rate: 1000
+          - Index: 50
+            Item: Improved_Arm_Guard_
+            Rate: 1000
+          - Index: 51
+            Item: Angel's_Safeguard
+            Rate: 1000
+          - Index: 52
+            Item: Buckler_
+            Rate: 1000
+          - Index: 53
+            Item: Guard_
+            Rate: 1000
+          - Index: 54
+            Item: Memorize_Book_
+            Rate: 1000
+          - Index: 55
+            Item: Mirror_Shield_
+            Rate: 1000
+          - Index: 56
+            Item: Thief_Clothes_
+            Rate: 1000
+          - Index: 57
+            Item: Sandals_
+            Rate: 1000
+          - Index: 58
+            Item: Shoes_
+            Rate: 1000
+          - Index: 59
+            Item: Hood_
+            Rate: 1000
+          - Index: 60
+            Item: Manteau_
+            Rate: 1000
+          - Index: 61
+            Item: Muffler_
+            Rate: 1000
+          - Index: 62
+            Item: Leather_Jacket_
+            Rate: 1000
+          - Index: 63
+            Item: Boots_
+            Rate: 1000
+          - Index: 64
+            Item: Saint_Robe_
+            Rate: 1000
+          - Index: 65
+            Item: Tights_
+            Rate: 1000
+          - Index: 66
+            Item: Grave_
+            Rate: 1000
+          - Index: 67
+            Item: High_Fashion_Sandals
+            Rate: 1000
+          - Index: 68
+            Item: Wooden_Mail_
+            Rate: 1000
+          - Index: 69
+            Item: Novice_Shoes
+            Rate: 1000
+          - Index: 70
+            Item: Apple_Of_Archer
+            Rate: 1000
+          - Index: 71
+            Item: Sahkkat
+            Rate: 1000
+          - Index: 72
+            Item: Bunny_Band
+            Rate: 1000
+          - Index: 73
+            Item: Blinker
+            Rate: 1000
+          - Index: 74
+            Item: Elven_Ears
+            Rate: 1000
+          - Index: 75
+            Item: Centimental_Flower
+            Rate: 1000
+          - Index: 76
+            Item: Centimental_Leaf
+            Rate: 1000
+          - Index: 77
+            Item: Asura_
+            Rate: 1000
+          - Index: 78
+            Item: Six_Shooter_
+            Rate: 1000
+          - Index: 79
+            Item: Arm_Guard_
+            Rate: 1000
+          - Index: 80
+            Item: Kamaitachi
+            Rate: 1000
+          - Index: 81
+            Item: Black_Rose
+            Rate: 1000
+
+      
+      - SubGroup: 3
+      # Made for Uncommom Chest (lvl 31-60) - More advanced itens for specific classes or builds
+        List:
+          - Index: 0
+            Item: Angel's_Safeguard
+            Rate: 1000
+          - Index: 1
+            Item: Two_Hand_Sword_
+            Rate: 1000
+          - Index: 2
+            Item: Arc_Wand_
+            Rate: 1000
+          - Index: 3
+            Item: Arbalest_
+            Rate: 1000
+          - Index: 4
+            Item: Morning_Star_
+            Rate: 1000
+          - Index: 5
+            Item: Buster_
+            Rate: 1000
+          - Index: 6
+            Item: Broad_Sword_
+            Rate: 1000
+          - Index: 7
+            Item: Damascus_
+            Rate: 1000
+          - Index: 8
+            Item: Bastard_Sword_
+            Rate: 1000
+          - Index: 9
+            Item: Mighty_Staff
+            Rate: 1000
+          - Index: 10
+            Item: Hunter_Bow
+            Rate: 1000
+          - Index: 11
+            Item: Gungnir_
+            Rate: 1000
+          - Index: 12
+            Item: Two_Handed_Axe_
+            Rate: 1000
+          - Index: 13
+            Item: Full_Plate_Armor_
+            Rate: 1000
+          - Index: 14
+            Item: Novice_Shield
+            Rate: 1000
+          - Index: 15
+            Item: Claymore_
+            Rate: 1000
+          - Index: 16
+            Item: Ring_
+            Rate: 1000
+          - Index: 17
+            Item: Valkyrja's_Shield
+            Rate: 1000
+          - Index: 18
+            Item: Glove_
+            Rate: 1000
+          - Index: 19
+            Item: Brooch_
+            Rate: 1000
+          - Index: 20
+            Item: Rosary_
+            Rate: 1000
+          - Index: 21
+            Item: Safety_Ring
+            Rate: 1000
+          - Index: 22
+            Item: Crown
+            Rate: 1000
+          - Index: 23
+            Item: Holy_Robe
+            Rate: 1000
+          - Index: 24
+            Item: Glittering_Clothes
+            Rate: 1000
+          - Index: 25
+            Item: Flame_Sprits_Armor_
+            Rate: 1000
+          - Index: 26
+            Item: Water_Sprits_Armor_
+            Rate: 1000
+          - Index: 27
+            Item: Wind_Sprits_Armor_
+            Rate: 1000
+          - Index: 28
+            Item: Earth_Sprits_Armor_
+            Rate: 1000
+          - Index: 29
+            Item: Padded_Armor_
+            Rate: 1000
+          - Index: 30
+            Item: Chain_Mail_
+            Rate: 1000
+          - Index: 31
+            Item: Plate_Armor_
+            Rate: 1000
+          - Index: 32
+            Item: Silk_Robe_
+            Rate: 1000
+          - Index: 33
+            Item: Shoes_
+            Rate: 1000
+          - Index: 34
+            Item: Sleipnir
+            Rate: 1000
+          - Index: 35
+            Item: Tights_
+            Rate: 1000
+          - Index: 36
+            Item: Silver_Robe_
+            Rate: 1000
+          - Index: 37
+            Item: Mage_Coat_
+            Rate: 1000
+          - Index: 38
+            Item: Thief_Clothes_
+            Rate: 1000
+          - Index: 39
+            Item: Muffler_
+            Rate: 1000
+          - Index: 40
+            Item: Shoes_
+            Rate: 1000
+          - Index: 41
+            Item: Boots_
+            Rate: 1000
+          - Index: 42
+            Item: Helm_
+            Rate: 1000
+          - Index: 43
+            Item: Plate_Armor_
+            Rate: 1000
+          - Index: 44
+            Item: Boots_
+            Rate: 1000
+          - Index: 45
+            Item: Leather_Jacket_
+            Rate: 1000
+          - Index: 46
+            Item: Necklace_
+            Rate: 1000
+          - Index: 47
+            Item: Glove_
+            Rate: 1000
+          - Index: 48
+            Item: Mink_Coat
+            Rate: 1000
+          - Index: 49
+            Item: Ninja_Suit_
+            Rate: 1000
+          - Index: 50
+            Item: Ring_
+            Rate: 1000
+          - Index: 51
+            Item: Necklace_
+            Rate: 1000
+          - Index: 52
+            Item: Buckler_
+            Rate: 1000
+          - Index: 53
+            Item: Glove_
+            Rate: 1000
+          - Index: 54
+            Item: Brooch_
+            Rate: 1000
+          - Index: 55
+            Item: Rosary_
+            Rate: 1000
+          - Index: 59
+            Item: Pauldron
+            Rate: 1000
+          - Index: 60
+            Item: Manteau_
+            Rate: 1000
+          - Index: 61
+            Item: Cyclops_Visor
+            Rate: 1000
+          - Index: 62
+            Item: Phantom_Of_Opera
+            Rate: 1000
+          - Index: 63
+            Item: Welding_Mask
+            Rate: 1000
+          - Index: 64
+            Item: Alarm_Mask
+            Rate: 1000
+          - Index: 65
+            Item: Goblini_Mask
+            Rate: 1000
+          - Index: 66
+            Item: Sahkkat
+            Rate: 1000
+          - Index: 67
+            Item: Dark_Blindfold
+            Rate: 1000
+          - Index: 68
+            Item: Mask_Of_Fox
+            Rate: 1000
+          - Index: 69
+            Item: Corsair
+            Rate: 1000
+          - Index: 70
+            Item: Magestic_Goat
+            Rate: 1000
+          - Index: 71
+            Item: Star_Sparkling
+            Rate: 1000
+          - Index: 72
+            Item: Hat_Of_Cook
+            Rate: 1000
+          - Index: 73
+            Item: Feather_Bonnet
+            Rate: 1000
+          - Index: 74
+            Item: Smokie_Hat
+            Rate: 1000
+          - Index: 75
+            Item: Panda_Cap
+            Rate: 1000
+          - Index: 76
+            Item: Spore_Hat
+            Rate: 1000
+          - Index: 77
+            Item: Matyr's_Flea_Guard
+            Rate: 1000
+          
+
+      - SubGroup: 4
+      # Made for Magic Chest (lvl 61-100) - More advanced itens for specific classes or builds
+        List:
+          - Index: 0
+            Item: Nagan
+            Rate: 1000
+          - Index: 1
+            Item: Haedonggum
+            Rate: 1000
+          - Index: 2
+            Item: Ice_Falchon
+            Rate: 1000
+          - Index: 3
+            Item: Fire_Brand
+            Rate: 1000
+          - Index: 4
+            Item: Excalibur
+            Rate: 1000
+          - Index: 5
+            Item: Tale_Fing_
+            Rate: 1000
+          - Index: 6
+            Item: Byeorrun_Gum
+            Rate: 1000
+          - Index: 7
+            Item: Holy_Avenger
+            Rate: 1000
+          - Index: 8
+            Item: Mysteltainn_
+            Rate: 1000
+          - Index: 9
+            Item: Zweihander_
+            Rate: 1000
+          - Index: 10
+            Item: Edge
+            Rate: 1000
+          - Index: 11
+            Item: Immaterial_Sword
+            Rate: 1000
+          - Index: 12
+            Item: Gaia_Sword
+            Rate: 1000
+          - Index: 13
+            Item: Veteran_Sword
+            Rate: 1000
+          - Index: 14
+            Item: Scissores_Sword
+            Rate: 1000
+          - Index: 15
+            Item: Cutlas
+            Rate: 1000
+          - Index: 16
+            Item: Balmung
+            Rate: 1000
+          - Index: 17
+            Item: Muramasa
+            Rate: 1000
+          - Index: 18
+            Item: Masamune
+            Rate: 1000
+          - Index: 19
+            Item: Fist_
+            Rate: 1000
+          - Index: 20
+            Item: Assasin_Dagger
+            Rate: 1000
+          - Index: 21
+            Item: Infiltrator
+            Rate: 1000
+          - Index: 22
+            Item: Dragon_Slayer
+            Rate: 1000
+          - Index: 23
+            Item: Katzbalger
+            Rate: 1000
+          - Index: 24
+            Item: Altas_Weapon
+            Rate: 1000
+          - Index: 25
+            Item: Tae_Goo_Lyeon
+            Rate: 1000
+          - Index: 26
+            Item: Bloody_Eater
+            Rate: 1000
+          - Index: 27
+            Item: Violet_Fear
+            Rate: 1000
+          - Index: 28
+            Item: Krasnaya
+            Rate: 1000
+          - Index: 29
+            Item: Combat_Knife
+            Rate: 1000
+          - Index: 30
+            Item: Azoth
+            Rate: 1000
+          - Index: 31
+            Item: Sucsamad
+            Rate: 1000
+          - Index: 32
+            Item: Grimtooth_
+            Rate: 1000
+          - Index: 33
+            Item: Holy_Dagger
+            Rate: 1000
+          - Index: 34
+            Item: Nail_Of_Loki
+            Rate: 1000
+          - Index: 35
+            Item: Unholy_Touch
+            Rate: 1000
+          - Index: 36
+            Item: Various_Jur
+            Rate: 1000
+          - Index: 37
+            Item: Bloody_Roar
+            Rate: 1000
+          - Index: 38
+            Item: Zephyrus
+            Rate: 1000
+          - Index: 39
+            Item: Wizardy_Staff
+            Rate: 1000
+          - Index: 40
+            Item: Ahlspiess
+            Rate: 1000
+          - Index: 41
+            Item: Chain_Mail_
+            Rate: 1000
+          - Index: 42
+            Item: Coat_
+            Rate: 1000
+          - Index: 43
+            Item: Plate_Armor_
+            Rate: 1000
+          - Index: 44
+            Item: Inverse_Scale
+            Rate: 1000
+          - Index: 45
+            Item: Katar_Of_Speed
+            Rate: 1000
+          - Index: 46
+            Item: War_Axe
+            Rate: 1000
+          - Index: 47
+            Item: Quadrille
+            Rate: 1000
+          - Index: 48
+            Item: Golden_Axe
+            Rate: 1000
+          - Index: 49
+            Item: Ninja_Suit_
+            Rate: 1000
+          - Index: 50
+            Item: Right_Epsilon
+            Rate: 1000
+          - Index: 51
+            Item: Tomahawk
+            Rate: 1000
+          - Index: 52
+            Item: Buckler_
+            Rate: 1000
+          - Index: 53
+            Item: Guillotine
+            Rate: 1000
+          - Index: 54
+            Item: Hunting_Spear
+            Rate: 1000
+          - Index: 55
+            Item: Hurricane_Fury
+            Rate: 1000
+          - Index: 56
+            Item: Cape_Of_Ancient_Lord_
+            Rate: 1000
+          - Index: 57
+            Item: Crescent_Scythe
+            Rate: 1000
+          - Index: 58
+            Item: Zephyrus
+            Rate: 1000
+          - Index: 59
+            Item: Staff_Of_Soul
+            Rate: 1000
+          - Index: 60
+            Item: Manteau_
+            Rate: 1000
+          - Index: 61
+            Item: Long_Mace
+            Rate: 1000
+          - Index: 62
+            Item: Warrior_Balmung
+            Rate: 1000
+          - Index: 63
+            Item: Grand_Cross_
+            Rate: 1000
+          - Index: 64
+            Item: Legacy_Of_Dragon
+            Rate: 1000
+          - Index: 65
+            Item: Diary_Of_Great_Sage
+            Rate: 1000
+          - Index: 66
+            Item: Encyclopedia
+            Rate: 1000
+          - Index: 67
+            Item: Blessed_Wand
+            Rate: 1000
+          - Index: 68
+            Item: Bone_Wand
+            Rate: 1000
+          - Index: 69
+            Item: Lich_Bone_Wand
+            Rate: 1000
+          - Index: 70
+            Item: Staff_Of_Darkness
+            Rate: 1000
+          - Index: 71
+            Item: Ring_
+            Rate: 1000
+          - Index: 72
+            Item: Earring_
+            Rate: 1000
+          - Index: 73
+            Item: Brooch_
+            Rate: 1000
+          - Index: 74
+            Item: Glove_
+            Rate: 1000
+          - Index: 75
+            Item: Necklace_
+            Rate: 1000
+          - Index: 76
+            Item: Rosary_
+            Rate: 1000
+          - Index: 77
+            Item: Bow_Of_Rudra
+            Rate: 1000
+          - Index: 78
+            Item: Luna_Bow
+            Rate: 1000
+          - Index: 79
+            Item: Dragon_Wing
+            Rate: 1000
+          - Index: 80
+            Item: Apple_Of_Archer
+            Rate: 1000
+          - Index: 81
+            Item: Orc_Archer_Bow
+            Rate: 1000
+          - Index: 82
+            Item: Ixion_Wing
+            Rate: 1000
+          - Index: 83
+            Item: Kaiser_Knuckle
+            Rate: 1000
+          - Index: 84
+            Item: Berserk
+            Rate: 1000
+          - Index: 85
+            Item: Claw_Of_Garm
+            Rate: 1000
+          - Index: 86
+            Item: Monk_Knuckle
+            Rate: 1000
+          - Index: 87
+            Item: Electronic_Guitar
+            Rate: 1000
+          - Index: 88
+            Item: Guitar_Of_Passion
+            Rate: 1000
+          - Index: 89
+            Item: Oriental_Lute
+            Rate: 1000
+          - Index: 90
+            Item: Corsair_
+            Rate: 1000
+          - Index: 91
+            Item: Valkyrie_Feather_Band
+            Rate: 1000
+          - Index: 92
+            Item: Guh_Moon_Gom
+            Rate: 1000
+          - Index: 93
+            Item: Ghost_Bandana
+            Rate: 1000
+          - Index: 94
+            Item: Lariat
+            Rate: 1000
+          - Index: 95
+            Item: Rapture_Rose
+            Rate: 1000
+          - Index: 96
+            Item: Binoculars
+            Rate: 1000
+          - Index: 97
+            Item: Blinker
+            Rate: 1000
+          - Index: 98
+            Item: Dark_Blindfold
+            Rate: 1000
+          - Index: 99
+            Item: Elven_Ears
+            Rate: 1000
+          - Index: 100
+            Item: Ear_Of_Devil's_Wing
+            Rate: 1000
+          - Index: 101
+            Item: Fin_Helm
+            Rate: 1000
+          - Index: 102
+            Item: Masquerade
+            Rate: 1000
+          - Index: 103
+            Item: Ganster_Mask
+            Rate: 1000
+          - Index: 104
+            Item: Goblini_Mask
+            Rate: 1000
+          - Index: 105
+            Item: Mask_Of_Fox
+            Rate: 1000
+          - Index: 106
+            Item: Loki_Mask
+            Rate: 1000
+          - Index: 107
+            Item: Opera_Ghost_Mask
+            Rate: 1000
+          - Index: 108
+            Item: Goblin_Mask_02
+            Rate: 1000
+          - Index: 109
+            Item: Beard
+            Rate: 1000
+          - Index: 110
+            Item: Cigar
+            Rate: 1000
+          - Index: 111
+            Item: Well_Baked_Toast
+            Rate: 1000
+          - Index: 112
+            Item: Iron_Cane
+            Rate: 1000
+          - Index: 113
+            Item: Centimental_Flower
+            Rate: 1000
+          - Index: 114
+            Item: Centimental_Leaf
+            Rate: 1000
+          - Index: 115
+            Item: Chemeti
+            Rate: 1000
+          - Index: 116
+            Item: Queen's_Whip
+            Rate: 1000
+          - Index: 117
+            Item: Carrot_Whip
+            Rate: 1000
+          - Index: 118
+            Item: Destruction_Rod
+            Rate: 1000
+          - Index: 119
+            Item: Orleans_Server
+            Rate: 1000
+          - Index: 120
+            Item: Thorny_Buckler
+            Rate: 1000
+          - Index: 121
+            Item: Strong_Shield
+            Rate: 1000
+          - Index: 122
+            Item: Guyak_Shield
+            Rate: 1000
+          - Index: 123
+            Item: Secular_Mission
+            Rate: 1000
+          - Index: 124
+            Item: Cross_Shield
+            Rate: 1000
+          - Index: 125
+            Item: Shelter_Resistance
+            Rate: 1000
+          - Index: 126
+            Item: Shadow_Guard
+            Rate: 1000
+          - Index: 127
+            Item: Bradium_Shield
+            Rate: 1000
+          - Index: 128
+            Item: Ganster_Mask
+            Rate: 1000
+          - Index: 129
+            Item: Iron_Cane
+            Rate: 1000
+          - Index: 130
+            Item: Smoking_Pipe
+            Rate: 1000
+          - Index: 131
+            Item: Eagle_Eyes
+            Rate: 1000
+          - Index: 132
+            Item: Nurse_Cap
+            Rate: 1000
+          - Index: 133
+            Item: Sahkkat
+            Rate: 1000
+          - Index: 134
+            Item: Phantom_Of_Opera
+            Rate: 1000
+          - Index: 135
+            Item: Ear_Mufs
+            Rate: 1000
+          - Index: 136
+            Item: Apple_Of_Archer
+            Rate: 1000
+          - Index: 137
+            Item: Pirate_Bandana
+            Rate: 1000
+          - Index: 138
+            Item: Poo_Poo_Hat
+            Rate: 1000
+          - Index: 139
+            Item: Masquerade
+            Rate: 1000
+          - Index: 140
+            Item: Ninja_Suit
+            Rate: 1000
+          - Index: 141
+            Item: Vestment_Of_Grace
+            Rate: 1000
+          - Index: 142
+            Item: Meteo_Plate_Armor
+            Rate: 1000
+          - Index: 143
+            Item: Diabolus_Robe
+            Rate: 1000
+          - Index: 144
+            Item: Diabolus_Armor
+            Rate: 1000
+
+
+      - SubGroup: 5
+      # Made for Rare Chest (lvl 101-150) - Item Sets for characters lvl 100-150
+        List:
+          - Index: 0
+            Item: Time_Overload_Boots
+            Rate: 1000
+          - Index: 1
+            Item: Temporal_Boots
+            Rate: 1000
+          - Index: 2
+            Item: Time_Overload_Hood
+            Rate: 1000
+          - Index: 3
+            Item: Temporal_Agi_Boots_
+            Rate: 1000
+          - Index: 4
+            Item: Temporal_Dex_Boots_
+            Rate: 1000
+          - Index: 5
+            Item: Temporal_Int_Boots_
+            Rate: 1000
+          - Index: 6
+            Item: Temporal_Luk_Boots_
+            Rate: 1000
+          - Index: 7
+            Item: Temporal_STR_Boots_
+            Rate: 1000
+          - Index: 8
+            Item: Temporal_Vit_Boots_
+            Rate: 1000
+          - Index: 9
+            Item: Temporal_M_Agi
+            Rate: 1000
+          - Index: 10
+            Item: Temporal_M_Dex
+            Rate: 1000
+          - Index: 11
+            Item: Temporal_M_Int
+            Rate: 1000
+          - Index: 12
+            Item: Temporal_M_Luk
+            Rate: 1000
+          - Index: 13
+            Item: Temporal_Manteau
+            Rate: 1000
+          - Index: 14
+            Item: Temporal_M_Str
+            Rate: 1000
+          - Index: 15
+            Item: Temporal_M_Vit
+            Rate: 1000
+          - Index: 16
+            Item: Time_Overload_Ring
+            Rate: 1000
+          - Index: 17
+            Item: Time_Overload_Robe
+            Rate: 1000
+          - Index: 18
+            Item: S_Timeoverload_Armor
+            Rate: 1000
+          - Index: 19
+            Item: S_Timeoverload_Earing
+            Rate: 1000
+          - Index: 20
+            Item: S_Timeoverload_Pandent
+            Rate: 1000
+          - Index: 21
+            Item: S_Timeoverload_Shield
+            Rate: 1000
+          - Index: 22
+            Item: S_Timeoverload_Shoes
+            Rate: 1000
+          - Index: 23
+            Item: S_Timeoverload_Weapon
+            Rate: 1000
+          - Index: 24
+            Item: S_Absorb_Weapon
+            Rate: 1000
+          - Index: 25
+            Item: S_AB_B_Weapon
+            Rate: 1000
+          - Index: 26
+            Item: S_Booster_Armor
+            Rate: 1000
+          - Index: 27
+            Item: S_Booster_Earing
+            Rate: 1000
+          - Index: 28
+            Item: S_Booster_Pandent
+            Rate: 1000
+          - Index: 29
+            Item: S_Booster_Shield
+            Rate: 1000
+          - Index: 30
+            Item: S_Booster_Shoes
+            Rate: 1000
+          - Index: 31
+            Item: S_GN_B_Weapon
+            Rate: 1000
+          - Index: 32
+            Item: S_GC_B_Weapon
+            Rate: 1000
+          - Index: 33
+            Item: S_KO_Weapon
+            Rate: 1000
+          - Index: 34
+            Item: S_NC_B_Weapon
+            Rate: 1000
+          - Index: 35
+            Item: S_WM_B_Weapon
+            Rate: 1000
+          - Index: 36
+            Item: S_RA_B_Weapon
+            Rate: 1000
+          - Index: 37
+            Item: S_RL_Weapon
+            Rate: 1000
+          - Index: 38
+            Item: S_LG_B_Weapon
+            Rate: 1000
+          - Index: 39
+            Item: S_RK_B_Weapon
+            Rate: 1000
+          - Index: 40
+            Item: S_SC_B_Weapon
+            Rate: 1000
+          - Index: 41
+            Item: S_SO_B_Weapon
+            Rate: 1000
+          - Index: 42
+            Item: S_SP_Weapon
+            Rate: 1000
+          - Index: 43
+            Item: S_SJ_Weapon
+            Rate: 1000
+          - Index: 44
+            Item: S_SU_Weapon
+            Rate: 1000
+          - Index: 45
+            Item: S_SNV_Weapon
+            Rate: 1000
+          - Index: 46
+            Item: S_NV_Weapon
+            Rate: 1000
+          - Index: 47
+            Item: S_SR_B_Weapon
+            Rate: 1000
+          - Index: 48
+            Item: S_WL_B_Weapon
+            Rate: 1000
+          - Index: 49
+            Item: S_AutoSpell_Armor
+            Rate: 1000
+          - Index: 50
+            Item: S_AutoSpell_Earring
+            Rate: 1000
+          - Index: 51
+            Item: S_AutoSpell_Pendant
+            Rate: 1000
+          - Index: 52
+            Item: S_AutoSpell_Shield
+            Rate: 1000
+          - Index: 53
+            Item: S_AutoSpell_Shoes
+            Rate: 1000
+          - Index: 54
+            Item: S_AutoSpell_Weapon
+            Rate: 1000
+          - Index: 55
+            Item: S_M_AutoSpell_Armor
+            Rate: 1000
+          - Index: 56
+            Item: S_M_AutoSpell_Earring
+            Rate: 1000
+          - Index: 57
+            Item: S_M_AutoSpell_Pendant
+            Rate: 1000
+          - Index: 58
+            Item: S_M_AutoSpell_Shoes
+            Rate: 1000
+          - Index: 59
+            Item: Noblesse_Attack_Boots
+            Rate: 1000
+          - Index: 60
+            Item: Noblesse_Attack_Manteau
+            Rate: 1000
+          - Index: 61
+            Item: Noblesse_Attack_Ring
+            Rate: 1000
+          - Index: 62
+            Item: Noblesse_Magic_Boots
+            Rate: 1000
+          - Index: 63
+            Item: Noblesse_Magic_Manteau
+            Rate: 1000
+          - Index: 64
+            Item: Noblesse_Magic_Ring
+            Rate: 1000
+          - Index: 65
+            Item: C_Rudra_Wing
+            Rate: 1000
+          - Index: 66
+            Item: Grace_Attack_Boots
+            Rate: 1000
+          - Index: 67
+            Item: Grace_Attack_Manteau
+            Rate: 1000
+          - Index: 68
+            Item: Grace_Attack_Ring
+            Rate: 1000
+          - Index: 69
+            Item: Grace_Magic_Boots
+            Rate: 1000
+          - Index: 70
+            Item: Grace_Magic_Manteau
+            Rate: 1000
+          - Index: 71
+            Item: Grace_Magic_Ring
+            Rate: 1000
+          - Index: 72
+            Item: Imperial_Attack_Boots
+            Rate: 1000
+          - Index: 73
+            Item: C_Imperial_Glory
+            Rate: 1000
+          - Index: 74
+            Item: Imperial_Attack_Manteau
+            Rate: 1000
+          - Index: 75
+            Item: Imperial_Attack_Ring
+            Rate: 1000
+          - Index: 76
+            Item: Imperial_Boots
+            Rate: 1000
+          - Index: 77
+            Item: Imperial_Magic_Boots
+            Rate: 1000
+          - Index: 78
+            Item: Imperial_Magic_Manteau
+            Rate: 1000
+          - Index: 79
+            Item: Imperial_Magic_Ring
+            Rate: 1000
+          - Index: 80
+            Item: Cape_Of_Ancient_Lord_IL
+            Rate: 1000
+          - Index: 81
+            Item: Ancient_Dagger_IL
+            Rate: 1000
+          - Index: 82
+            Item: Apple_Of_Archer_IL
+            Rate: 1000
+          - Index: 83
+            Item: Illusion_Armor_A
+            Rate: 1000
+          - Index: 84
+            Item: Illusion_Armor_B
+            Rate: 1000
+          - Index: 85
+            Item: Balistar_IL
+            Rate: 1000
+          - Index: 86
+            Item: Illusion_BC_L
+            Rate: 1000
+          - Index: 87
+            Item: Illusion_BC_R
+            Rate: 1000
+          - Index: 88
+            Item: Bazerald_IL
+            Rate: 1000
+          - Index: 89
+            Item: Book_Of_The_Apo_IL
+            Rate: 1000
+          - Index: 90
+            Item: Illusion_B_L
+            Rate: 1000
+          - Index: 91
+            Item: Illusion_B_R
+            Rate: 1000
+          - Index: 92
+            Item: Boots_IL
+            Rate: 1000
+          - Index: 93
+            Item: Brionac_IL
+            Rate: 1000
+          - Index: 94
+            Item: Butcher_IL
+            Rate: 1000
+          - Index: 95
+            Item: Cap_IL
+            Rate: 1000
+          - Index: 96
+            Item: Chain_Mail_IL
+            Rate: 1000
+          - Index: 97
+            Item: Combo_Battle_Glove_IL
+            Rate: 1000
+          - Index: 98
+            Item: Counter_Dagger_IL
+            Rate: 1000
+          - Index: 99
+            Item: Dea_Staff_IL
+            Rate: 1000
+          - Index: 100
+            Item: Death_Guidance_IL
+            Rate: 1000
+          - Index: 101
+            Item: Doom_Slayer_IL
+            Rate: 1000
+          - Index: 102
+            Item: Electric_Eel_IL
+            Rate: 1000
+          - Index: 103
+            Item: Electronic_Guitar_IL
+            Rate: 1000
+          - Index: 104
+            Item: Illusion_Engine_A
+            Rate: 1000
+          - Index: 105
+            Item: Illusion_Engine_B
+            Rate: 1000
+          - Index: 106
+            Item: Excalibur_IL
+            Rate: 1000
+          - Index: 107
+            Item: Fancy_Flower_IL
+            Rate: 1000
+          - Index: 108
+            Item: Gate_KeeperDD_IL
+            Rate: 1000
+          - Index: 109
+            Item: Gelerdria_IL
+            Rate: 1000
+          - Index: 110
+            Item: Goibne_Armor_IL
+            Rate: 1000
+          - Index: 111
+            Item: Goibne_Helmet_IL
+            Rate: 1000
+          - Index: 112
+            Item: Goibne_Shoulder_IL
+            Rate: 1000
+          - Index: 113
+            Item: Goibne_Boots_IL
+            Rate: 1000
+          - Index: 114
+            Item: Guard_IL
+            Rate: 1000
+          - Index: 115
+            Item: Headband_Of_Power_IL
+            Rate: 1000
+          - Index: 116
+            Item: Hunter_Bow_IL
+            Rate: 1000
+          - Index: 117
+            Item: Huuma_Flutter_Snow_IL
+            Rate: 1000
+          - Index: 118
+            Item: Immaterial_Sword_IL
+            Rate: 1000
+          - Index: 119
+            Item: Infiltrator_IL
+            Rate: 1000
+          - Index: 120
+            Item: Iron_Driver_IL
+            Rate: 1000
+          - Index: 121
+            Item: Illusion_Leg_A
+            Rate: 1000
+          - Index: 122
+            Item: Illusion_Leg_B
+            Rate: 1000
+          - Index: 123
+            Item: Morpheus_Armlet_IL
+            Rate: 1000
+          - Index: 124
+            Item: Morpheus_Hood_IL
+            Rate: 1000
+          - Index: 125
+            Item: Morpheus_Ring_IL
+            Rate: 1000
+          - Index: 126
+            Item: Morpheus_Shawl_IL
+            Rate: 1000
+          - Index: 127
+            Item: Morrigane_Belt_IL
+            Rate: 1000
+          - Index: 128
+            Item: Morrigane_Helm_IL
+            Rate: 1000
+          - Index: 129
+            Item: Morrigane_Manyeau_IL
+            Rate: 1000
+          - Index: 130
+            Item: Morrigane_Pendant_IL
+            Rate: 1000
+          - Index: 131
+            Item: Muffler_IL
+            Rate: 1000
+          - Index: 132
+            Item: Ring_IL
+            Rate: 1000
+          - Index: 133
+            Item: Herald_Of_GOD_IL
+            Rate: 1000
+          - Index: 134
+            Item: Saint_Robe_IL
+            Rate: 1000
+          - Index: 135
+            Item: Ghoul_Leg_IL
+            Rate: 1000
+          - Index: 136
+            Item: Siver_Guard_IL
+            Rate: 1000
+          - Index: 137
+            Item: Spectral_Spear_IL
+            Rate: 1000
+          - Index: 138
+            Item: Sprint_Glove_IL
+            Rate: 1000
+          - Index: 139
+            Item: Sprint_Mail_IL
+            Rate: 1000
+          - Index: 140
+            Item: Sprint_Ring_IL
+            Rate: 1000
+          - Index: 141
+            Item: Sprint_Shoes_IL
+            Rate: 1000
+          - Index: 142
+            Item: Staff_Of_Bordeaux_IL
+            Rate: 1000
+          - Index: 143
+            Item: Clack_Of_Servival_IL
+            Rate: 1000
+          - Index: 144
+            Item: Survival_Staff_IL
+            Rate: 1000
+          - Index: 145
+            Item: Tablet_IL
+            Rate: 1000
+          - Index: 146
+            Item: Taegoolyeon_IL
+            Rate: 1000
+          - Index: 147
+            Item: War_Axe_IL
+            Rate: 1000
+          - Index: 148
+            Item: Huuma_Bird_Wing_IL
+            Rate: 1000
+          - Index: 149
+            Item: Wizardy_Staff_IL
+            Rate: 1000
+          - Index: 150
+            Item: Zephyrus_IL
+            Rate: 1000
+          - Index: 151
+            Item: C_Demi_Freyja_Hair
+            Rate: 1000
+          - Index: 152
+            Item: C_Brabery_Hat
+            Rate: 1000
+          - Index: 153
+            Item: C_DancingButterfly_TW
+            Rate: 1000
+          - Index: 154
+            Item: C_Alice_Doll
+            Rate: 1000
+          - Index: 155
+            Item: C_Amistr_Cap
+            Rate: 1000
+          - Index: 156
+            Item: C_Amistr_Beret
+            Rate: 1000
+          - Index: 157
+            Item: C_Bubble_A_Angel_H
+            Rate: 1000
+          - Index: 158
+            Item: C_Angelic_Chain
+            Rate: 1000
+          - Index: 159
+            Item: C_Angeling_Hat
+            Rate: 1000
+          - Index: 160
+            Item: C_Blue_Fairy_Wing
+            Rate: 1000
+          - Index: 161
+            Item: C_B_Dragon_Hat
+            Rate: 1000
+          - Index: 162
+            Item: C_Bloody_Wing
+            Rate: 1000
+          - Index: 163
+            Item: C_Angel_Spirit
+            Rate: 1000
+          - Index: 164
+            Item: C_Disguise_Mantle
+            Rate: 1000
+          - Index: 165
+            Item: C_Baby_Polar_Bear
+            Rate: 1000
+          - Index: 166
+            Item: C_Black_Cat
+            Rate: 1000
+          - Index: 167
+            Item: C_Black_Magenta_Ribbon
+            Rate: 1000
+          - Index: 168
+            Item: Glacier_Earring
+            Rate: 1000
+          - Index: 169
+            Item: C_Analyze_Eye
+            Rate: 1000
+          - Index: 170
+            Item: C_Assassin_Mask_
+            Rate: 1000
+          - Index: 171
+            Item: C_Cons_Of_Wind
+            Rate: 1000
+          - Index: 172
+            Item: C_Black_Dragon_Style
+            Rate: 1000
+          - Index: 173
+            Item: C_Book_Of_Magic
+            Rate: 1000
+          - Index: 174
+            Item: Cons_Of_Earth
+            Rate: 1000
+          - Index: 175
+            Item: C_Cookie_PinkRibbon
+            Rate: 1000
+          - Index: 176
+            Item: C_ROS2024_Wing_1
+            Rate: 1000
+          - Index: 177
+            Item: C_Deviruchi_Balloon
+            Rate: 1000
+          - Index: 178
+            Item: C_20th_Anniversary_Hat
+            Rate: 1000
+          - Index: 179
+            Item: C_Eremes_Scarf
+            Rate: 1000
+          - Index: 180
+            Item: C_Flame_Muffler
+            Rate: 1000
+
+
+      - SubGroup: 6
+      # Made for Unique Chest (lvl 151-200) - Item Sets for characters lvl 150-200
+        List:
+          - Index: 0
+            Item: Gray_W_Boots
+            Rate: 1000
+          - Index: 1
+            Item: Gray_W_Earing
+            Rate: 1000
+          - Index: 2
+            Item: Gray_W_Manteau
+            Rate: 1000
+          - Index: 3
+            Item: Gray_W_Muffler
+            Rate: 1000
+          - Index: 4
+            Item: Gray_W_Necklace
+            Rate: 1000
+          - Index: 5
+            Item: Gray_W_Pendant
+            Rate: 1000
+          - Index: 6
+            Item: Gray_W_Ring
+            Rate: 1000
+          - Index: 7
+            Item: Gray_W_Robe
+            Rate: 1000
+          - Index: 8
+            Item: Gray_W_Shoes
+            Rate: 1000
+          - Index: 9
+            Item: Gray_W_Suits
+            Rate: 1000
+          - Index: 10
+            Item: E_Auto_Armor_A
+            Rate: 1000
+          - Index: 11
+            Item: E_Auto_Armor_B
+            Rate: 1000
+          - Index: 12
+            Item: Auto_Armor_A
+            Rate: 1000
+          - Index: 13
+            Item: Auto_Armor_B
+            Rate: 1000
+          - Index: 14
+            Item: Auto_B_L
+            Rate: 1000
+          - Index: 15
+            Item: Auto_B_R
+            Rate: 1000
+          - Index: 16
+            Item: Auto_Engine_A
+            Rate: 1000
+          - Index: 17
+            Item: Auto_Engine_B
+            Rate: 1000
+          - Index: 18
+            Item: Auto_Leg_A
+            Rate: 1000
+          - Index: 19
+            Item: Auto_Leg_B
+            Rate: 1000
+          - Index: 20
+            Item: AC_B44_OS
+            Rate: 1000
+          - Index: 21
+            Item: AC_B44_AD
+            Rate: 1000
+          - Index: 22
+            Item: Beam_Claymore_OS
+            Rate: 1000
+          - Index: 23
+            Item: Beam_Claymore_AD
+            Rate: 1000
+          - Index: 24
+            Item: Blasti_OS
+            Rate: 1000
+          - Index: 25
+            Item: Blasti_AD
+            Rate: 1000
+          - Index: 26
+            Item: Boost_Lance_OS
+            Rate: 1000
+          - Index: 27
+            Item: Boost_Lance_AD
+            Rate: 1000
+          - Index: 28
+            Item: Burning_Knuckle_OS
+            Rate: 1000
+          - Index: 29
+            Item: Burning_Knuckle_AD
+            Rate: 1000
+          - Index: 30
+            Item: Cannon_Rapier_OS
+            Rate: 1000
+          - Index: 31
+            Item: Cannon_Rapier_AD
+            Rate: 1000
+          - Index: 32
+            Item: Circuit_Board_OS
+            Rate: 1000
+          - Index: 33
+            Item: Circuit_Board_AD
+            Rate: 1000
+          - Index: 34
+            Item: ElectricFox_OS
+            Rate: 1000
+          - Index: 35
+            Item: ElectricFox_AD
+            Rate: 1000
+          - Index: 36
+            Item: HR_S55_AD
+            Rate: 1000
+          - Index: 37
+            Item: HR_S55_OS
+            Rate: 1000
+          - Index: 38
+            Item: Kuroiro_OS
+            Rate: 1000
+          - Index: 39
+            Item: Kuroiro_AD
+            Rate: 1000
+          - Index: 40
+            Item: Meuchler_OS
+            Rate: 1000
+          - Index: 41
+            Item: Meuchler_AD
+            Rate: 1000
+          - Index: 42
+            Item: MH_P89_OS
+            Rate: 1000
+          - Index: 43
+            Item: MH_P89_AD
+            Rate: 1000
+          - Index: 44
+            Item: Rutilus_Stick_OS
+            Rate: 1000
+          - Index: 45
+            Item: Rutilus_Stick_AD
+            Rate: 1000
+          - Index: 46
+            Item: Saphir_Hall_AD
+            Rate: 1000
+          - Index: 47
+            Item: Saphir_Hall_OS
+            Rate: 1000
+          - Index: 48
+            Item: Ultio_Spes_OS
+            Rate: 1000
+          - Index: 49
+            Item: Ultio_Spes_AD
+            Rate: 1000
+          - Index: 50
+            Item: Virtual_Bow_OS
+            Rate: 1000
+          - Index: 51
+            Item: Virtual_Bow_AD
+            Rate: 1000
+          - Index: 52
+            Item: Dragon_Boots
+            Rate: 1000
+          - Index: 53
+            Item: Drag_Manteau
+            Rate: 1000
+          - Index: 54
+            Item: DragonA_Blue
+            Rate: 1000
+          - Index: 55
+            Item: DragonA_Gold
+            Rate: 1000
+          - Index: 56
+            Item: DragonA_Green
+            Rate: 1000
+          - Index: 57
+            Item: DragonA_Purple
+            Rate: 1000
+          - Index: 58
+            Item: DragonA_Red
+            Rate: 1000
+          - Index: 59
+            Item: DragonA_Silver
+            Rate: 1000
+          - Index: 60
+            Item: CassockA_AGI
+            Rate: 1000
+          - Index: 61
+            Item: CassockA_DEX
+            Rate: 1000
+          - Index: 62
+            Item: CassockA_INT
+            Rate: 1000
+          - Index: 63
+            Item: CassockA_LUK
+            Rate: 1000
+          - Index: 64
+            Item: CassockA_STR
+            Rate: 1000
+          - Index: 65
+            Item: CassockA_VIT
+            Rate: 1000
+          - Index: 66
+            Item: Up_Dragonic_Slayer
+            Rate: 1000
+          - Index: 67
+            Item: Up_Sword_Of_Bluefire
+            Rate: 1000
+          - Index: 68
+            Item: Up_Slate_Sword
+            Rate: 1000
+          - Index: 69
+            Item: Up_Light_Blade
+            Rate: 1000
+          - Index: 70
+            Item: Up_Magic_Sword
+            Rate: 1000
+          - Index: 71
+            Item: Up_Fatalist
+            Rate: 1000
+          - Index: 72
+            Item: Up_Fog_Dew_Sword
+            Rate: 1000
+          - Index: 73
+            Item: Up_Blessed_Knife
+            Rate: 1000
+          - Index: 74
+            Item: Up_Undine_Spear_K
+            Rate: 1000
+          - Index: 75
+            Item: Up_OneSkyOneSun
+            Rate: 1000
+          - Index: 76
+            Item: Up_Demon_Hunting_Bible
+            Rate: 1000
+          - Index: 77
+            Item: Up_Shadow_Staff_K
+            Rate: 1000
+          - Index: 78
+            Item: Up_Freezing_Rod
+            Rate: 1000
+          - Index: 79
+            Item: Up_MeawFoxtail
+            Rate: 1000
+          - Index: 80
+            Item: Up_SoulWeight
+            Rate: 1000
+          - Index: 81
+            Item: Up_Freedom_Stick
+            Rate: 1000
+          - Index: 82
+            Item: Up_Iron_Nail_K
+            Rate: 1000
+          - Index: 83
+            Item: Up_Ray_Knuckle
+            Rate: 1000
+          - Index: 84
+            Item: Up_Trumpet_Shell_K
+            Rate: 1000
+          - Index: 85
+            Item: Ein_SAFETY_EPAULR
+            Rate: 1000
+          - Index: 86
+            Item: Ein_SAFETY_EPAULL
+            Rate: 1000
+          - Index: 87
+            Item: Ein_1HSPEAR
+            Rate: 1000
+          - Index: 88
+            Item: Ein_BHKATAR
+            Rate: 1000
+          - Index: 89
+            Item: Ein_BHSWORD
+            Rate: 1000
+          - Index: 90
+            Item: Ein_BHSTAFF
+            Rate: 1000
+          - Index: 91
+            Item: Ein_BHHuuma
+            Rate: 1000
+          - Index: 92
+            Item: Ein_1HMAGGER
+            Rate: 1000
+          - Index: 93
+            Item: Ein_1HDAGGER
+            Rate: 1000
+          - Index: 94
+            Item: Ein_1HHAMMER
+            Rate: 1000
+          - Index: 95
+            Item: Ein_1H_Foxtail
+            Rate: 1000
+          - Index: 96
+            Item: Ein_1HKNUCK
+            Rate: 1000
+          - Index: 97
+            Item: Ein_1HLUTE
+            Rate: 1000
+          - Index: 98
+            Item: Ein_1HBOOK
+            Rate: 1000
+          - Index: 99
+            Item: Ein_1HSWORD
+            Rate: 1000
+          - Index: 100
+            Item: Ein_BHAXE
+            Rate: 1000
+          - Index: 102
+            Item: Ein_1HWAND
+            Rate: 1000
+          - Index: 103
+            Item: Adulter_F_A_Bow
+            Rate: 1000
+          - Index: 104
+            Item: Adulter_F_G_Sword
+            Rate: 1000
+          - Index: 105
+            Item: Adulter_F_Lapier
+            Rate: 1000
+          - Index: 106
+            Item: Adulter_F_Dagger
+            Rate: 1000
+          - Index: 107
+            Item: Adulter_F_Axe
+            Rate: 1000
+          - Index: 108
+            Item: Adulter_F_G_Spear
+            Rate: 1000
+          - Index: 109
+            Item: Adulter_F_M_Book
+            Rate: 1000
+          - Index: 110
+            Item: Adulter_F_P_Book
+            Rate: 1000
+          - Index: 111
+            Item: Adulter_F_Bible
+            Rate: 1000
+          - Index: 112
+            Item: Adulter_F_Wand
+            Rate: 1000
+          - Index: 113
+            Item: Adulter_F_S_Stick
+            Rate: 1000
+          - Index: 114
+            Item: Adulter_F_D_Wand
+            Rate: 1000
+          - Index: 115
+            Item: Adulter_F_Knuckle
+            Rate: 1000
+          - Index: 116
+            Item: Adulter_F_Claw
+            Rate: 1000
+          - Index: 117
+            Item: Adulter_F_Violin
+            Rate: 1000
+          - Index: 118
+            Item: Adulter_F_Mace
+            Rate: 1000
+          - Index: 119
+            Item: Adulter_F_Hall
+            Rate: 1000
+          - Index: 120
+            Item: Adulter_F_T_Sword
+            Rate: 1000
+          - Index: 121
+            Item: Adulter_F_Cakram
+            Rate: 1000
+          - Index: 122
+            Item: Adulter_F_Katar
+            Rate: 1000
+          - Index: 123
+            Item: Adulter_F_Lance
+            Rate: 1000
+          - Index: 124
+            Item: Adulter_F_T_Staff
+            Rate: 1000
+          - Index: 125
+            Item: Adulter_F_Rod
+            Rate: 1000
+          - Index: 126
+            Item: Adulter_F_Humma
+            Rate: 1000
+          - Index: 127
+            Item: Adulter_F_Ballista
+            Rate: 1000
+          - Index: 128
+            Item: Adulter_F_A_Bow
+            Rate: 1000
+          - Index: 129
+            Item: C_Black_Magenta_Ribbon
+            Rate: 1000
+          - Index: 130
+            Item: Glacier_Earring
+            Rate: 1000
+          - Index: 131
+            Item: C_Analyze_Eye
+            Rate: 1000
+          - Index: 132
+            Item: C_Assassin_Mask_
+            Rate: 1000
+          - Index: 133
+            Item: C_Cons_Of_Wind
+            Rate: 1000
+          - Index: 134
+            Item: C_Black_Dragon_Style
+            Rate: 1000
+          - Index: 135
+            Item: C_Book_Of_Magic
+            Rate: 1000
+          - Index: 136
+            Item: Cons_Of_Earth
+            Rate: 1000
+          - Index: 137
+            Item: C_Cookie_PinkRibbon
+            Rate: 1000
+          - Index: 138
+            Item: C_ROS2024_Wing_1
+            Rate: 1000
+          - Index: 139
+            Item: C_Deviruchi_Balloon
+            Rate: 1000
+          - Index: 140
+            Item: C_20th_Anniversary_Hat
+            Rate: 1000
+          - Index: 141
+            Item: C_Eremes_Scarf
+            Rate: 1000
+          - Index: 142
+            Item: C_Flame_Muffler
+            Rate: 1000
+          - Index: 143
+            Item: S_M_Mammoth_Armor
+            Rate: 1000
+          - Index: 144
+            Item: S_M_Mammoth_Earring
+            Rate: 1000
+          - Index: 145
+            Item: S_M_Mammoth_Pendant
+            Rate: 1000
+          - Index: 146
+            Item: S_M_Mammoth_Shoes
+            Rate: 1000
+          - Index: 150
+            Item: S_M_Mammoth_Pendant
+            Rate: 1000
+          - Index: 151
+            Item: S_Durable_Weapon
+            Rate: 1000
+          - Index: 152
+            Item: S_Durable_Shield
+            Rate: 1000
+          - Index: 153
+            Item: S_Reload_Armor
+            Rate: 1000
+          - Index: 154
+            Item: S_Reload_Shoes
+            Rate: 1000
+          - Index: 155
+            Item: S_Reload_Shield
+            Rate: 1000
+          - Index: 156
+            Item: S_ABC_AF_Earring
+            Rate: 1000
+          - Index: 157
+            Item: S_ABC_AF_Pendant
+            Rate: 1000
+          - Index: 158
+            Item: S_BO_AC_Earring
+            Rate: 1000
+          - Index: 159
+            Item: S_BO_AC_Pendant
+            Rate: 1000
+          - Index: 160
+            Item: S_AllMighty_Earring
+            Rate: 1000
+          - Index: 161
+            Item: S_AllMighty_Pendant
+            Rate: 1000
+          - Index: 162
+            Item: S_CD_AR_Earring
+            Rate: 1000
+          - Index: 163
+            Item: S_CD_AR_Pendant
+            Rate: 1000
+          - Index: 164
+            Item: S_IQ_BFB_Armor
+            Rate: 1000
+          - Index: 165
+            Item: S_IQ_BFB_Shoes
+            Rate: 1000
+          - Index: 166
+            Item: S_Spell_M_Pendant
+            Rate: 1000
+          - Index: 167
+            Item: S_Sorcery_M_Armor
+            Rate: 1000
+          - Index: 168
+            Item: S_Sorcery_M_Shoes
+            Rate: 1000
+          - Index: 169
+            Item: S_Sorcery_M_Earring
+            Rate: 1000
+          - Index: 170
+            Item: S_Sorcery_M_Pendant
+            Rate: 1000
+          - Index: 171
+            Item: S_Sword_M_Armor
+            Rate: 1000
+          - Index: 172
+            Item: S_Sword_M_Shoes
+            Rate: 1000
+          - Index: 173
+            Item: S_Sword_M_Earring
+            Rate: 1000
+          - Index: 174
+            Item: S_Sword_M_Pendant
+            Rate: 1000
+          - Index: 175
+            Item: S_Bow_M_Armor
+            Rate: 1000
+          - Index: 176
+            Item: S_Bow_M_Shoes
+            Rate: 1000
+          - Index: 177
+            Item: S_Bow_M_Earring
+            Rate: 1000
+          - Index: 178
+            Item: S_Bow_M_Pendant
+            Rate: 1000
+          - Index: 179
+            Item: S_Fatal_M_Armor
+            Rate: 1000
+          - Index: 180
+            Item: S_Fatal_M_Shoes
+            Rate: 1000
+          - Index: 181
+            Item: S_Fatal_M_Earring
+            Rate: 1000
+          - Index: 182
+            Item: S_Fatal_M_Pendant
+            Rate: 1000
+          - Index: 183
+            Item: Sin_Necklace_A
+            Rate: 1000
+          - Index: 184
+            Item: Sin_Ring_A
+            Rate: 1000
+          - Index: 185
+            Item: Sin_Necklace_E
+            Rate: 1000
+          - Index: 186
+            Item: Sin_Ring_E
+            Rate: 1000
+          - Index: 187
+            Item: Sin_Necklace_O
+            Rate: 1000
+          - Index: 188
+            Item: Sin_Ring_O
+            Rate: 1000
+          - Index: 189
+            Item: Sin_Necklace_R
+            Rate: 1000
+          - Index: 190
+            Item: Sin_Ring_R
+            Rate: 1000
+          - Index: 191
+            Item: Sin_Necklace_S
+            Rate: 1000
+          - Index: 192
+            Item: Sin_Ring_S
+            Rate: 1000
+          - Index: 193
+            Item: Sin_Necklace_T
+            Rate: 1000
+          - Index: 194
+            Item: Sin_Ring_T
+            Rate: 1000
+          - Index: 195
+            Item: Sin_Necklace_E
+            Rate: 1000
+          - Index: 196
+            Item: Up_Barb_Wire_K
+            Rate: 1000
+          - Index: 197
+            Item: Up_Meteor_Striker
+            Rate: 1000
+          - Index: 198
+            Item: Up_Saint_Hall
+            Rate: 1000
+          - Index: 199
+            Item: Up_Oriental_Sword
+            Rate: 1000
+          - Index: 200
+            Item: Up_Shiver_Katar_K
+            Rate: 1000
+          - Index: 201
+            Item: Up_Blade_Katar
+            Rate: 1000
+          - Index: 202
+            Item: Up_Avenger
+            Rate: 1000
+          - Index: 203
+            Item: Up_Iron_Staff
+            Rate: 1000
+          - Index: 204
+            Item: Up_Blue_Crystal_Staff
+            Rate: 1000
+          - Index: 205
+            Item: Up_Humma_Clear
+            Rate: 1000
+          - Index: 206
+            Item: Up_Narcis_Bow
+            Rate: 1000
+          - Index: 207
+            Item: Up_Royal_Bow_K
+            Rate: 1000
+          - Index: 208
+            Item: Up_Scalet_Dragon_L_Bow
+            Rate: 1000
+          - Index: 209
+            Item: Up_Crimson_Rose
+            Rate: 1000
+          - Index: 210
+            Item: Up_Master_Soul_Rifle
+            Rate: 1000
+          - Index: 211
+            Item: Up_Demon_S_Shot
+            Rate: 1000
+          - Index: 212
+            Item: Up_The_Black_Gatling
+            Rate: 1000
+          - Index: 213
+            Item: Up_Golden_L_Launcher
+            Rate: 1000
+          - Index: 214
+            Item: Up_Blue_Crystal_Staff
+            Rate: 1000
+          
+
+
+      - SubGroup: 7
+      # Made for Legendary Chest (lvl 200-250) - Item Sets for characters lvl 200-250
+        List:
+          - Index: 0
+            Item: D_Glacier_Armor
+            Rate: 1000
+          - Index: 1
+            Item: D_Glacier_Boots
+            Rate: 1000
+          - Index: 2
+            Item: D_Glacier_Manteau
+            Rate: 1000
+          - Index: 3
+            Item: D_Glacier_Muffler
+            Rate: 1000
+          - Index: 4
+            Item: D_Glacier_Robe
+            Rate: 1000
+          - Index: 5
+            Item: Snowflower_Manteau
+            Rate: 1000
+          - Index: 6
+            Item: Snowflower_Earring
+            Rate: 1000
+          - Index: 7
+            Item: Snowflower_Necklace
+            Rate: 1000
+          - Index: 8
+            Item: Snowflower_Pendant
+            Rate: 1000
+          - Index: 9
+            Item: Snowflower_Ring
+            Rate: 1000
+          - Index: 10
+            Item: Snowflower_Armor
+            Rate: 1000
+          - Index: 11
+            Item: Snowflower_Boots
+            Rate: 1000
+          - Index: 12
+            Item: Snowflower_Muffler
+            Rate: 1000
+          - Index: 13
+            Item: Snowflower_Robe
+            Rate: 1000
+          - Index: 14
+            Item: Snowflower_Shoes
+            Rate: 1000
+          - Index: 15
+            Item: Fourth_Bh_Axe
+            Rate: 1000
+          - Index: 16
+            Item: Fourth_1h_Sword
+            Rate: 1000
+          - Index: 17
+            Item: Fourth_1h_Manual
+            Rate: 1000
+          - Index: 18
+            Item: Fourth_1h_Mace
+            Rate: 1000
+          - Index: 19
+            Item: Fourth_1h_Dagger
+            Rate: 1000
+          - Index: 20
+            Item: Fourth_1h_Nindo2
+            Rate: 1000
+          - Index: 21
+            Item: Fourth_Bh_Katar
+            Rate: 1000
+          - Index: 22
+            Item: Fourth_1h_Plant
+            Rate: 1000
+          - Index: 23
+            Item: Vivatus_F_A_Bow
+            Rate: 1000
+          - Index: 24
+            Item: Vivatus_F_Axe
+            Rate: 1000
+          - Index: 25
+            Item: Vivatus_F_Ballista
+            Rate: 1000
+          - Index: 26
+            Item: Vivatus_F_Bible
+            Rate: 1000
+          - Index: 27
+            Item: Vivatus_F_C_Rope
+            Rate: 1000
+          - Index: 28
+            Item: Vivatus_F_Cakram
+            Rate: 1000
+          - Index: 29
+            Item: Vivatus_F_Claw
+            Rate: 1000
+          - Index: 30
+            Item: Vivatus_F_C_Bow
+            Rate: 1000
+          - Index: 31
+            Item: Vivatus_F_C_Humma
+            Rate: 1000
+          - Index: 32
+            Item: Vivatus_F_Dagger
+            Rate: 1000
+          - Index: 33
+            Item: Vivatus_F_D_Wand
+            Rate: 1000
+          - Index: 34
+            Item: Vivatus_F_F_model
+            Rate: 1000
+          - Index: 35
+            Item: Vivatus_F_F_Wand
+            Rate: 1000
+          - Index: 36
+            Item: Vivatus_F_Gatling
+            Rate: 1000
+          - Index: 37
+            Item: Vivatus_F_G_Spear
+            Rate: 1000
+          - Index: 38
+            Item: Vivatus_F_G_Sword
+            Rate: 1000
+          - Index: 39
+            Item: Vivatus_F_Harp
+            Rate: 1000
+          - Index: 40
+            Item: Vivatus_F_Humma
+            Rate: 1000
+          - Index: 41
+            Item: Vivatus_F_Katar
+            Rate: 1000
+          - Index: 42
+            Item: Vivatus_F_Knuckle
+            Rate: 1000
+          - Index: 43
+            Item: Vivatus_F_Lance
+            Rate: 1000
+          - Index: 44
+            Item: Vivatus_F_Launcher
+            Rate: 1000
+          - Index: 45
+            Item: Vivatus_F_Mace
+            Rate: 1000
+          - Index: 46
+            Item: Vivatus_F_M_Book
+            Rate: 1000
+          - Index: 47
+            Item: Vivatus_F_Moon_B
+            Rate: 1000
+          - Index: 48
+            Item: Vivatus_F_P_Book
+            Rate: 1000
+          - Index: 49
+            Item: Vivatus_F_Lapier
+            Rate: 1000
+          - Index: 50
+            Item: Vivatus_F_Revolver
+            Rate: 1000
+          - Index: 51
+            Item: Vivatus_F_Ribbon
+            Rate: 1000
+          - Index: 52
+            Item: Vivatus_F_Rifle
+            Rate: 1000
+          - Index: 53
+            Item: Vivatus_F_Rod
+            Rate: 1000
+          - Index: 54
+            Item: Vivatus_F_Hall
+            Rate: 1000
+          - Index: 55
+            Item: Vivatus_F_Shotgun
+            Rate: 1000
+          - Index: 56
+            Item: Vivatus_F_S_Stick
+            Rate: 1000
+          - Index: 57
+            Item: Vivatus_F_Star_B
+            Rate: 1000
+          - Index: 58
+            Item: Vivatus_F_T_Staff
+            Rate: 1000
+          - Index: 59
+            Item: Vivatus_F_T_Sword
+            Rate: 1000
+          - Index: 60
+            Item: Vivatus_F_Violin
+            Rate: 1000
+          - Index: 61
+            Item: Vivatus_F_Wand
+            Rate: 1000
+          - Index: 62
+            Item: Vivatus_Weapon_Hammer
+            Rate: 1000
+          - Index: 63
+            Item: Poenetentia_Aegis
+            Rate: 1000
+          - Index: 64
+            Item: Poenitentia_Ascia
+            Rate: 1000
+          - Index: 65
+            Item: Poenetentia_Attendo
+            Rate: 1000
+          - Index: 66
+            Item: Poenitentia_Caestus
+            Rate: 1000
+          - Index: 67
+            Item: Poenitentia_Catapulta
+            Rate: 1000
+          - Index: 68
+            Item: Poenitentia_Chorda
+            Rate: 1000
+          - Index: 69
+            Item: Poenitentia_Clava
+            Rate: 1000
+          - Index: 70
+            Item: Poenitentia_Codex
+            Rate: 1000
+          - Index: 71
+            Item: Poenitentia_Crystallum
+            Rate: 1000
+          - Index: 72
+            Item: Poenetentia_Dilacero
+            Rate: 1000
+          - Index: 73
+            Item: Poenitentia_Ensis
+            Rate: 1000
+          - Index: 74
+            Item: Poenitentia_Ferrum
+            Rate: 1000
+          - Index: 75
+            Item: Poenitentia_Flagellum
+            Rate: 1000
+          - Index: 76
+            Item: Poenitentia_Foramen
+            Rate: 1000
+          - Index: 77
+            Item: Poenitentia_Gladius
+            Rate: 1000
+          - Index: 78
+            Item: Poenitentia_Hasta
+            Rate: 1000
+          - Index: 79
+            Item: Poenitentia_Jana
+            Rate: 1000
+          - Index: 80
+            Item: Poenitentia_Liber
+            Rate: 1000
+          - Index: 81
+            Item: Poenitentia_Ligula
+            Rate: 1000
+          - Index: 82
+            Item: Poenitentia_Manus
+            Rate: 1000
+          - Index: 83
+            Item: Poenitentia_Mucro
+            Rate: 1000
+          - Index: 84
+            Item: Poenitentia_Nervus
+            Rate: 1000
+          - Index: 85
+            Item: Poenitentia_Orbis
+            Rate: 1000
+          - Index: 86
+            Item: Poenitentia_Pendulus
+            Rate: 1000
+          - Index: 87
+            Item: Poenitentia_Penet
+            Rate: 1000
+          - Index: 88
+            Item: Poenitentia_Ramus
+            Rate: 1000
+          - Index: 89
+            Item: Poenitentia_Radius
+            Rate: 1000
+          - Index: 90
+            Item: Poenitentia_Planta
+            Rate: 1000
+          - Index: 91
+            Item: Poenitentia_Hammer
+            Rate: 1000
+          - Index: 92
+            Item: Poenitentia_Ruina
+            Rate: 1000
+          - Index: 93
+            Item: Poenitentia_Scipio
+            Rate: 1000
+          - Index: 94
+            Item: Poenitentia_Sol
+            Rate: 1000
+          - Index: 95
+            Item: Poenitentia_Tenon
+            Rate: 1000
+          - Index: 96
+            Item: Poenitentia_Termes
+            Rate: 1000
+          - Index: 97
+            Item: Poenitentia_Ungula
+            Rate: 1000
+          - Index: 98
+            Item: Poenetentia_Vatia
+            Rate: 1000
+          - Index: 99
+            Item: Poenitentia_Veloci
+            Rate: 1000
+          - Index: 100
+            Item: Poenitentia_Virga
+            Rate: 1000
+          - Index: 101
+            Item: FateSin_Boots_ABC
+            Rate: 1000
+          - Index: 102
+            Item: FateSin_Boots_AG
+            Rate: 1000
+          - Index: 103
+            Item: FateSin_Boots_BO
+            Rate: 1000
+          - Index: 104
+            Item: FateSin_Boots_CD
+            Rate: 1000
+          - Index: 105
+            Item: FateSin_Boots_DK
+            Rate: 1000
+          - Index: 106
+            Item: FateSin_Boots_EM
+            Rate: 1000
+          - Index: 107
+            Item: FateSin_Boots_HN
+            Rate: 1000
+          - Index: 108
+            Item: FateSin_Boots_IG
+            Rate: 1000
+          - Index: 109
+            Item: FateSin_Boots_IQ
+            Rate: 1000
+          - Index: 110
+            Item: FateSin_Boots_MT
+            Rate: 1000
+          - Index: 111
+            Item: FateSin_Boots_NW
+            Rate: 1000
+          - Index: 112
+            Item: FateSin_Boots_SHC
+            Rate: 1000
+          - Index: 113
+            Item: FateSin_Boots_SS
+            Rate: 1000
+          - Index: 114
+            Item: FateSin_Boots_SKE
+            Rate: 1000
+          - Index: 115
+            Item: FateSin_Boots_SOA
+            Rate: 1000
+          - Index: 116
+            Item: FateSin_Boots_SH
+            Rate: 1000
+          - Index: 117
+            Item: FateSin_Boots_TR
+            Rate: 1000
+          - Index: 118
+            Item: FateSin_Boots_WH
+            Rate: 1000
+          - Index: 119
+            Item: GoodnEvil_Circlet_ABC
+            Rate: 1000
+          - Index: 120
+            Item: GoodnEvil_Circlet_AG
+            Rate: 1000
+          - Index: 121
+            Item: GoodnEvil_Circlet_BO
+            Rate: 1000
+          - Index: 122
+            Item: GoodnEvil_Circlet_CD
+            Rate: 1000
+          - Index: 123
+            Item: GoodnEvil_Circlet_DK
+            Rate: 1000
+          - Index: 124
+            Item: GoodnEvil_Circlet_EM
+            Rate: 1000
+          - Index: 125
+            Item: GoodnEvil_Circlet_HN
+            Rate: 1000
+          - Index: 126
+            Item: GoodnEvil_Circlet_IG
+            Rate: 1000
+          - Index: 127
+            Item: GoodnEvil_Circlet_IQ
+            Rate: 1000
+          - Index: 128
+            Item: GoodnEvil_Circlet_MT
+            Rate: 1000
+          - Index: 129
+            Item: GoodnEvil_Circlet_NW3
+            Rate: 1000
+          - Index: 130
+            Item: GoodnEvil_Circlet_NW
+            Rate: 1000
+          - Index: 131
+            Item: GoodnEvil_Circlet_NW2
+            Rate: 1000
+          - Index: 132
+            Item: GoodnEvil_Circlet_NW5
+            Rate: 1000
+          - Index: 133
+            Item: GoodnEvil_Circlet_NW4
+            Rate: 1000
+          - Index: 134
+            Item: GoodnEvil_Circlet_SHC
+            Rate: 1000
+          - Index: 135
+            Item: GoodnEvil_Circlet_SS
+            Rate: 1000
+          - Index: 136
+            Item: GoodnEvil_Circlet_SKE
+            Rate: 1000
+          - Index: 137
+            Item: GoodnEvil_Circlet_SOA
+            Rate: 1000
+          - Index: 138
+            Item: GoodnEvil_Circlet_SH
+            Rate: 1000
+          - Index: 139
+            Item: GoodnEvil_Circlet_TR
+            Rate: 1000
+          - Index: 140
+            Item: GoodnEvil_Circlet_WH
+            Rate: 1000
+          - Index: 141
+            Item: Barmund_Death_Boots
+            Rate: 1000
+          - Index: 142
+            Item: Barmund_Death_Hood
+            Rate: 1000
+          - Index: 143
+            Item: Barmund_Death_Armor
+            Rate: 1000
+          - Index: 144
+            Item: Barmund_Flame_Armor
+            Rate: 1000
+          - Index: 145
+            Item: Barmund_Flame_Boots
+            Rate: 1000
+          - Index: 146
+            Item: Barmund_Flame_Hood
+            Rate: 1000
+          - Index: 147
+            Item: Barmund_Plain_Armor
+            Rate: 1000
+          - Index: 148
+            Item: Barmund_Plain_Boots
+            Rate: 1000
+          - Index: 149
+            Item: Barmund_Plain_Hood
+            Rate: 1000
+          - Index: 150
+            Item: Barmund_Ice_Armor
+            Rate: 1000
+          - Index: 151
+            Item: Barmund_Ice_Boots
+            Rate: 1000
+          - Index: 152
+            Item: Barmund_Ice_Hood
+            Rate: 1000
+          - Index: 153
+            Item: Barmund_Soul_Ring
+            Rate: 1000
+          - Index: 154
+            Item: Barmund_Temple_Ring
+            Rate: 1000
+          - Index: 155
+            Item: Barmund_Venom_Ring
+            Rate: 1000
+          - Index: 156
+            Item: Star_Armor_Of_Pow
+            Rate: 1000
+          - Index: 157
+            Item: Star_Armor_Of_Sta
+            Rate: 1000
+          - Index: 158
+            Item: Star_Robe_Of_Spl
+            Rate: 1000
+          - Index: 159
+            Item: Star_Robe_Of_Wis
+            Rate: 1000
+          - Index: 160
+            Item: Star_Suit_Of_Con
+            Rate: 1000
+          - Index: 161
+            Item: Star_Suit_Of_Crt
+            Rate: 1000
+          - Index: 162
+            Item: C_ROS2024_Wing_1
+            Rate: 1000
+          - Index: 163
+            Item: C_Blue_Fairy_Wing
+            Rate: 1000
+          - Index: 164
+            Item: Brilliant_Golden_Wings
+            Rate: 1000
+          - Index: 165
+            Item: C_Archangel_Wing
+            Rate: 1000
+          - Index: 166
+            Item: C_FlutterButterfly_BL
+            Rate: 1000
+          - Index: 167
+            Item: C_BlueAngeling_Wing
+            Rate: 1000
+          - Index: 168
+            Item: C_Wing_Of_Angel_Move_RD
+            Rate: 1000
+          - Index: 169
+            Item: C_Bloody_Wing
+            Rate: 1000
+          - Index: 170
+            Item: C_Flower_Wing
+            Rate: 1000
+          - Index: 171
+            Item: C_GreatDevilWing
+            Rate: 1000
+          - Index: 172
+            Item: C_Wing_Of_Happiness
+            Rate: 1000
+          - Index: 173
+            Item: C_Wing_Of_Angel_Move_BK
+            Rate: 1000
+          - Index: 174
+            Item: C_Kirin_Wing
+            Rate: 1000
+          - Index: 175
+            Item: C_Wings_Of_Lucifer
+            Rate: 1000
+          - Index: 176
+            Item: C_Melody_Wing
+            Rate: 1000
+          - Index: 177
+            Item: C_Wings_Of_Raguel
+            Rate: 1000
+          - Index: 178
+            Item: C_Wings_Of_Raphael
+            Rate: 1000
+          - Index: 179
+            Item: C_SwordWing
+            Rate: 1000
+          - Index: 180
+            Item: C_Wing_Of_Spider
+            Rate: 1000
+          - Index: 181
+            Item: C_Valkyrie_Wing
+            Rate: 1000
+          - Index: 182
+            Item: C_Wings_of_Gabriel
+            Rate: 1000
+          - Index: 183
+            Item: C_Wings_of_Uriel
+            Rate: 1000
+          - Index: 184
+            Item: C_Power_Of_Thor
+            Rate: 1000
+          
+
+

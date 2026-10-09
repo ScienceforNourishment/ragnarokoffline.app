@@ -1,0 +1,55 @@
+// ARPG Equipments Mod - Made by Iguera
+// 
+// ARPG Hub Map Flags & NPC Layout
+//
+arpg_hub	mapflag	town
+arpg_hub	mapflag	nomemo
+arpg_hub	mapflag	noteleport
+arpg_hub	mapflag	pvp_nopenalty
+
+// Entrance Warp in Prontera
+prontera,140,174,4	script	ARPG Hub Teleporter	404,{
+	mes "[ARPG MOD Hub Teleporter]";
+	mes "Warp to the ^0000FFARPG MOD Hub^000000 for Equipment Crafting and Custom Endgame Maps Access?";
+	next;
+	if (select("Warp to ARPG Hub:Cancel") == 1) {
+		warp "arpg_hub", 159, 120;
+	}
+	close;
+}
+
+// Return Portal inside the Hub
+arpg_hub,157,124,4	script	Return to Prontera	404,{
+	mes "[Portal]";
+	mes "Return to Prontera?";
+	next;
+	if (select("Yes:No") == 1) {
+		warp "prontera", 156, 180;
+	}
+	close;
+}
+
+// Equipment Dismantler (Item Essence)
+arpg_hub,165,120,4	script	Equipment Dismantler	63,{
+	callfunc "F_ARPG_Extract_Essence";
+	end;
+}
+
+// Bonus Stats Extractor (Extract Option Scroll)
+arpg_hub,165,116,4	script	Bonus Stats Extractor	85,{
+	callfunc "F_ARPG_Extract_Bonus_Stats";
+	end;
+}
+
+// Bonus Stats Crafter (Imbue Equipment)
+arpg_hub,165,112,4	script	Bonus Stat Crafter	84,{
+	callfunc "F_ARPG_Imbue_Bonus_Stats";
+	end;
+}
+
+// ============================================================
+// ARPG Hub QoL NPCs - Map Spawn
+// ============================================================
+
+// Tool Dealer Shop
+arpg_hub,153,116,4	shop	Tool Dealer#hub	497,6635:10000,501:-1,502:-1,503:-1,504:-1,505:-1,506:-1,601:-1,602:-1,1750:-1,1751:-1,1752:-1,1753:-1,1754:-1,1755:-1,1756:-1,13200:-1,13201:-1,1065:-1,645:-1,656:-1,657:-1,611:-1,678:-1,6123:-1,7136:-1,7135:-1,7139:-1,7138:-1,7137:-1
