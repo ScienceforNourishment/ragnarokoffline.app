@@ -30,12 +30,26 @@ solo se activa cuando ambos mods están habilitados.
 survival/
 ├── mod.json
 ├── README.md
+├── System/
+│   └── itemInfo.lua
 ├── client/
 │   ├── index.js
 │   └── thirst.js
+├── data/
+│   └── texture/
+│       └── ui/
+│           ├── collection/
+│           │   ├── canteen_0.bmp
+│           │   ├── canteen_1.bmp
+│           │   └── canteen_3.bmp
+│           └── item/
+│               ├── canteen_0.bmp
+│               ├── canteen_1.bmp
+│               └── canteen_3.bmp
 ├── db/
 │   └── item_db.yml
 └── npc/
+    ├── canteen_vendor.txt
     └── survival.txt
 ```
 
@@ -98,7 +112,8 @@ Comportamiento actual:
 |---|---:|---|
 | Alimentos | 68 objetos ya modificados en la tabla | Recuperan hambre según el incremento escrito en su script; no recuperan sed |
 | Bebidas | 519, 531–534, 573, 11506–11509, 11521, 11525, 11531, 11534 | Recuperan solo sed: de 5 a 25 puntos, según el objeto |
-| Pociones | 501–506 | Recuperan solo sed: Red 5, Orange 10, Yellow 15, White 20, Blue 10, Green 5 |
+| Cantimplora | 50834–50836 | Objeto custom con 3 usos (3/3, 2/3, 1/3); recupera 10 de sed por uso. Al agotarse se transforma en Cantimplora vacía (50837) |
+| Cantimplora vacía | 50837 | Objeto utilizable; al usarse cerca de agua (ríos, fuentes, estanques) se rellena y se transforma en Cantimplora (3/3) |
 
 Para añadir o cambiar una recuperación:
 
@@ -136,6 +151,117 @@ Si la redefinición de un objeto compite con la de otro mod, revisa el orden de
 carga: las tablas se combinan por ID y la definición aplicada después prevalece
 en los campos que redefina. Mantén juntos en la entrada los efectos que deban
 coexistir.
+
+## Guía: Objetos custom con fases, recarga e imágenes propias
+
+Esta sección resume la arquitectura técnica de la **Cantimplora** (IDs 50834–50837) como referencia y guía para crear nuevos objetos consumibles con usos limitados, interacción con el terreno y arte personalizado.
+
+### 1. Múltiples usos en consumibles (Cadena de IDs)
+
+En rAthena los consumibles de inventario son apilables (*stackable*). Rastrear las cargas de un recipiente mediante variables de jugador (`set canteen_charges, ...`) produce anomalías: la variable queda ligada al personaje y no al objeto físico, mezclando los usos si el jugador lleva varias cantimploras o almacena una en Kafra.
+
+El patrón estándar en Ragnarok Online es una **cadena de estados con IDs consecutivos**:
+
+1. **`50834` (Cantimplora 3/3):** al usarse recupera sed, se consume y otorga `getitem 50835, 1;`.
+2. **`50835` (Cantimplora 2/3):** al usarse recupera sed, se consume y otorga `getitem 50836, 1;`.
+3. **`50836` (Cantimplora 1/3):** al usarse recupera sed, se consume y otorga `getitem 50837, 1;`.
+4. **`50837` (Cantimplora vacía):** versión vacía reutilizable de tipo `Usable` para rellenar en fuentes de agua.
+
+De este modo cada unidad en el inventario mantiene su estado de forma autónoma y puede comerciarse, guardarse o consumirse sin desincronización.
+
+### 2. Detección de agua en el mapa
+
+Para interactuar con cuerpos de agua desde el inventario:
+
+* **Tipo de objeto:** configúralo como `Type: Usable`. Al hacer doble clic sobre un objeto `Usable`, rAthena descuenta 1 unidad del inventario y ejecuta su bloque `Script:`.
+* **Comprobación de celdas:** utiliza `checkcell(.@map$, .@x, .@y, cell_chkwater)`.
+* **Radio de búsqueda:** en la mayoría de mapas de Ragnarok Online (fuentes de Prontera, estanques de Payon, costas de Alberta o ríos de campos), el agua profunda no es transitable (`cell_chknopass`). El jugador se sitúa en la orilla a varias celdas de distancia del agua. Escanear un radio de **6 celdas** (`-6` a `+6` en X e Y, cubriendo una cuadrícula de 13×13 celdas) alrededor del personaje con `getmapxy(.@map$, .@x, .@y, BL_PC)` permite una recarga cómoda.
+* **Patrón de consumo seguro:**
+  * Si se detecta agua: reproduce el efecto (`specialeffect2 EF_POTION_HEAL;`), envía el mensaje informativo y entrega el objeto lleno (`getitem 50834, 1;`).
+  * Si no hay agua cerca: muestra el mensaje de aviso y devuelve la unidad vacía al inventario (`getitem 50837, 1;`) para evitar que el jugador la pierda.
+
+```yaml
+  - Id: 50837
+    AegisName: Survival_Canteen_Empty
+    Name: Cantimplora vacía
+    Type: Usable
+    Weight: 40
+    Buy: 100
+    Flags:
+      BuyingStore: true
+    Script: |
+      getmapxy(.@map$, .@x, .@y, BL_PC);
+      .@has_water = 0;
+      for (.@dx = -6; .@dx <= 6; .@dx++) {
+        for (.@dy = -6; .@dy <= 6; .@dy++) {
+          if (checkcell(.@map$, .@x + .@dx, .@y + .@dy, cell_chkwater)) {
+            .@has_water = 1;
+            break;
+          }
+        }
+        if (.@has_water) {
+          break;
+        }
+      }
+      if (.@has_water) {
+        specialeffect2 EF_POTION_HEAL;
+        dispbottom "Llenas la cantimplora con agua fresca.";
+        getitem 50834, 1;
+      } else {
+        dispbottom "No hay agua cerca para llenar la cantimplora.";
+        getitem 50837, 1;
+      }
+```
+
+### 3. Recursos visuales de cliente (Iconos e Ilustraciones)
+
+El cliente roBrowser carga los gráficos a partir del campo `identifiedResourceName` configurado en `System/itemInfo.lua`:
+
+* **Ilustración grande de descripción:** se busca en `data/texture/ui/collection/<resourceName>.bmp`.
+* **Icono pequeño de inventario:** se busca en `data/texture/ui/item/<resourceName>.bmp`.
+* *Ruta interna:* el entorno de la aplicación traduce automáticamente el alias `data/texture/ui` a la ruta coreana `data/texture/유저인터페이스`.
+
+#### Reglas para los archivos BMP:
+1. **Formato:** deben ser estrictamente **BMP de 24 bits** (`.bmp`). El cliente no carga archivos `.png` para objetos de inventario.
+2. **Dimensiones:**
+   * **Ilustración (`collection/`):** **75 × 100 píxeles** (proporción 3:4).
+   * **Icono (`item/`):** **24 × 24 píxeles**.
+3. **Transparencia por color clave (Magenta `#FF00FF`):**
+   * El cliente de Ragnarok Online no utiliza canal alfa en las texturas de objetos; la transparencia se define mediante el color magenta puro **RGB (255, 0, 255) / `#FF00FF`**.
+   * Todo fondo alrededor de la ilustración debe ser `#FF00FF`. Para evitar halos púrpuras en los bordes:
+     * Escala la imagen con canal alfa sobre fondo transparente.
+     * Binariza el canal alfa (píxeles con alfa < 50% pasan a `#FF00FF` magenta; píxeles con alfa >= 50% mantienen su color opaco).
+     * Guarda en formato BMP de 24 bits sin compresión.
+
+#### Reutilizar arte stock vs arte custom:
+* **Para reutilizar arte existente del juego:** copia el nombre exacto en coreano desde la tabla base del cliente (`System/itemInfo.lua`), por ejemplo `이속증가포션` (ID 12017) o `빈포션병` (ID 1093). **Nunca traduzcas literalmente nombres de objetos al coreano**, ya que los nombres de recursos en el GRF son propios.
+* **Para usar arte custom:** guarda los archivos BMP con un nombre ASCII simple (por ejemplo `canteen_3.bmp`) en `data/texture/ui/collection/` y `data/texture/ui/item/` dentro de la carpeta del mod, y asigna ese mismo nombre en `itemInfo.lua`:
+
+```lua
+tbl = {
+	[50834] = {
+		unidentifiedDisplayName = "Cantimplora",
+		unidentifiedResourceName = "canteen_3",
+		identifiedDisplayName = "Cantimplora (3/3)",
+		identifiedResourceName = "canteen_3",
+		identifiedDescriptionName = {
+			"Una cantimplora de viaje bien sellada.",
+			"",
+			"Contiene ^0055FF3 sorbos^000000 de agua fresca.",
+			"Cada uso recupera ^0055FF10 puntos de sed^000000.",
+			"",
+			"Peso: ^77777710^000000",
+		},
+		slotCount = 0,
+		ClassNum = 0,
+	},
+}
+```
+
+### 4. Ciclo de recarga y pruebas
+
+* **Cambios en `db/item_db.yml`:** recarga los mods del servidor o reinicia el servidor rAthena.
+* **Cambios en `System/itemInfo.lua` o `data/texture/`:** reinicia la aplicación de escritorio para que el cargador de assets y el cliente web vinculen los nuevos archivos.
 
 ## Cambiar ritmos, límites y penalizaciones
 

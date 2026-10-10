@@ -1417,3 +1417,81 @@ Body:
       }
       dispbottom "Hambre: " + hm_hunger + " / 100.";
       dispbottom "@@event hunger update " + hm_hunger;
+  - Id: 50834
+    AegisName: Survival_Canteen
+    Name: Cantimplora (3/3)
+    Type: Healing
+    Buy: 500
+    Weight: 100
+    Flags:
+      BuyingStore: true
+    Script: |
+      set thirst_value, thirst_value + 10;
+      if (thirst_value > 100) {
+        set thirst_value, 100;
+      }
+      dispbottom "Sed: " + thirst_value + " / 100.";
+      dispbottom "@@event thirst update " + thirst_value;
+      getitem 50835, 1;
+  - Id: 50835
+    AegisName: Survival_Canteen_2
+    Name: Cantimplora (2/3)
+    Type: Healing
+    Weight: 80
+    Flags:
+      BuyingStore: true
+    Script: |
+      set thirst_value, thirst_value + 10;
+      if (thirst_value > 100) {
+        set thirst_value, 100;
+      }
+      dispbottom "Sed: " + thirst_value + " / 100.";
+      dispbottom "@@event thirst update " + thirst_value;
+      getitem 50836, 1;
+  - Id: 50836
+    AegisName: Survival_Canteen_1
+    Name: Cantimplora (1/3)
+    Type: Healing
+    Weight: 60
+    Flags:
+      BuyingStore: true
+    Script: |
+      set thirst_value, thirst_value + 10;
+      if (thirst_value > 100) {
+        set thirst_value, 100;
+      }
+      dispbottom "Sed: " + thirst_value + " / 100.";
+      dispbottom "@@event thirst update " + thirst_value;
+      getitem 50837, 1;
+  - Id: 50837
+    AegisName: Survival_Canteen_Empty
+    Name: Cantimplora vacía
+    Type: Usable
+    Weight: 40
+    Buy: 100
+    Flags:
+      BuyingStore: true
+    Script: |
+      getmapxy(.@map$, .@x, .@y, BL_PC);
+      .@has_water = 0;
+      for (.@dx = -6; .@dx <= 6; .@dx++) {
+        for (.@dy = -6; .@dy <= 6; .@dy++) {
+          if (checkcell(.@map$, .@x + .@dx, .@y + .@dy, cell_chkwater)) {
+            .@has_water = 1;
+            break;
+          }
+        }
+        if (.@has_water) {
+          break;
+        }
+      }
+      if (.@has_water) {
+        specialeffect2 EF_POTION_HEAL;
+        dispbottom "Llenas la cantimplora con agua fresca.";
+        getitem 50834, 1;
+      } else {
+        dispbottom "No hay agua cerca para llenar la cantimplora.";
+        getitem 50837, 1;
+      }
+
+

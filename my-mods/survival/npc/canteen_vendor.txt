@@ -1,0 +1,2 @@
+// Vendedor de Cantimploras de viaje junto a la fuente central de Prontera
+prontera,147,187,4	shop	Vendedor de Cantimploras#survival	4_M_ORIENT01,50834:500,50837:100
