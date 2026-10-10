@@ -11,22 +11,22 @@ probar su integración opcional con Survival.
 
 Cada objeto protege una combinación por su ID estable, no por mapa ni solo
 por el estado alterado. Funciona en cualquier mapa que use esa combinación,
-incluidos los que se asignen más adelante. Los nueve objetos nuevos usan IDs
+incluidos los que se asignen más adelante. Los diez objetos nuevos usan IDs
 custom del rango 50000–99999; todos permiten cualquier trabajo y clase, no
 tienen nivel mínimo ni requisitos de atributos.
 
-| ID custom | Combinación protegida | Objeto | Basado en ID | Ranura equipada |
-|---:|---|---|---:|---|
-| 50824 | `lluvia_toxica` | Manto de Lluvia | 2524 | Garment |
-| 50825 | `ventisca` | Armadura Horno | 2344 | Garment |
-| 50826 | `neblina_densa` | Gafas de Claridad | 2276 | Middle Head |
-| 50827 | `vapores_asfixiantes` | Máscara de Gas Etéreo | 5005 | Middle o Lower Head |
-| 50828 | `terreno_fangoso` | Botas de Estabilidad | 2447 | Footgear |
-| 50829 | `tierra_maldita` | Manto Bendecido | 2356 | Garment |
-| 50830 | `polen_somnifero` | Máscara de Hierba Neutralizante | 5004 | Lower Head |
-| 50831 | `hojas_petrificantes` | Scriptum Petreum | 2656 | Cualquiera de los dos Accessory |
-| 50832 | `calor_intenso` | Sombrero del Desierto | 5591 | Upper Head |
-| 50833 | `frio_extremo` | Abrigo Polar | 2309 | Garment |
+| ID custom | Combinación protegida | Objeto | Basado en ID | Ranura equipada | `View` |
+|---:|---|---|---:|---|---:|
+| 50824 | `lluvia_toxica` | Manto de Lluvia | 2524 | Garment | — |
+| 50825 | `ventisca` | Armadura Horno | 2344 | Garment | — |
+| 50826 | `neblina_densa` | Gafas de Claridad | 2276 | Middle Head | 63 |
+| 50827 | `vapores_asfixiantes` | Máscara de Gas Etéreo | 5005 | Middle o Lower Head | 91 |
+| 50828 | `terreno_fangoso` | Botas de Estabilidad | 2447 | Footgear | — |
+| 50829 | `tierra_maldita` | Manto Bendecido | 2356 | Garment | — |
+| 50830 | `polen_somnifero` | Máscara de Hierba Neutralizante | 5004 | Lower Head | 90 |
+| 50831 | `hojas_petrificantes` | Scriptum Petreum | 2656 | Cualquiera de los dos Accessory | — |
+| 50832 | `calor_intenso` | Sombrero del Desierto | 5591 | Upper Head | 567 |
+| 50833 | `frio_extremo` | Abrigo Polar | 2309 | Garment | — |
 
 Las propiedades base del objeto de referencia se conservan cuando aplican,
 incluidas sus diferencias de defensa y bonificaciones por era; las
@@ -40,6 +40,14 @@ del cliente, sin añadir arte. Los cuatro objetos de cabeza también declaran en
 ambas eras el `View` de su referencia, necesario para que su aspecto aparezca
 al equiparlos.
 
+En la tabla, `View` es la apariencia que el servidor comunica al cliente al
+equipar el objeto; para los cuatro objetos de cabeza coincide con `ClassNum` y
+con el aspecto stock del objeto de referencia. Tener el recurso correcto en
+`itemInfo.lua` permite mostrar su icono e imagen, pero no sustituye ese `View`.
+En este mod, los únicos objetos custom cuyo aspecto equipado debe aparecer en
+el personaje son los cuatro objetos de cabeza de la tabla. Los demás usan
+ranuras de manto, calzado o accesorio.
+
 En rAthena los objetos equipables usan `Type: Armor`; la ranura real se
 configura con `Locations` (`Garment`, `Head_Mid`, `Shoes`, etc.). Por eso los
 objetos cuyo destino difiere del objeto de referencia mantienen el tipo de
@@ -52,6 +60,78 @@ con `@item <ID custom>` y equípalo en la ranura indicada. En calor y frío, el
 objeto bloquea la pérdida extra de Survival, pero no la pérdida normal.
 Reinicia el servidor tras cambios en `db/` o `npc/`; reinicia la aplicación
 tras cambios en `System/`.
+
+## Guía: añadir un objeto de protección
+
+Usa estos pasos al sumar otro objeto para una combinación existente. La
+protección se vincula a la combinación y al objeto equipado, no a un mapa
+concreto ni únicamente al estado alterado.
+
+1. **Elige la combinación y el espacio de equipo.** Reutiliza la combinación
+   existente si el objeto debe bloquear ese mismo evento en todos sus mapas.
+   Anota el slot real de rAthena (`Head_Top`, `Head_Mid`, `Head_Low`,
+   `Garment`, `Shoes` o `Both_Accessory`). Si puede equiparse en más de un
+   slot, decide cuál será el principal y cuál el alternativo que comprobará el
+   controlador.
+2. **Reserva un ID custom libre.** Los objetos de este mod están en el rango
+   `50000–99999`; confirma que el ID no esté usado por otro objeto del mod o
+   por otro mod que se instale junto a él. Usa el mismo ID y `AegisName` en
+   las dos eras.
+3. **Crea la entrada de servidor en ambas eras.** Añade el objeto a
+   `renewal/db/item_db.yml` y `pre-renewal/db/item_db.yml`. Los equipables
+   usan `Type: Armor`; el slot efectivo se define en `Locations`. Conserva
+   únicamente las estadísticas y efectos del objeto base que correspondan,
+   y define expresamente `Jobs: All: true` y `Classes: All: true`. No añadas
+   requisitos de nivel o atributos. Mantén las diferencias legítimas de
+   Renewal y Pre-Renewal cuando existan; si el objeto fuente no existe en una
+   era, elige y documenta qué datos base se usarán allí.
+4. **Copia los recursos de cliente del objeto fuente.** En
+   `System/itemInfo.lua`, añade el nuevo ID con el nombre y la descripción
+   propios. Copia literalmente del objeto original los campos
+   `unidentifiedResourceName` e `identifiedResourceName`, y conserva su
+   `ClassNum` cuando se reutilice ese aspecto. Los nombres de recursos deben
+   corresponder a la traducción fijada del cliente; no los deduzcas del nombre
+   mostrado ni los traduzcas. Conserva `slotCount` según las ranuras para
+   cartas del objeto fuente y haz que la descripción indique la combinación
+   protegida, el slot de equipo y las estadísticas relevantes.
+5. **Configura la apariencia equipada cuando corresponda.** Que el icono y la
+   imagen de descripción se vean no garantiza que el objeto se dibuje sobre el
+   personaje. Para un headgear que reutiliza una apariencia stock, añade
+   `View:` a la entrada de servidor en ambas eras con el `View` del headgear
+   fuente y usa el mismo número como `ClassNum` en `itemInfo.lua`. Este mod
+   confirmó ese requisito con los cuatro objetos de cabeza existentes:
+   `50826` → `63`, `50827` → `91`, `50830` → `90` y `50832` → `567`.
+   Verifica que el `View` pertenezca al headgear deseado; no uses el ID custom
+   como `View`. Los iconos, `View` y apariencia del personaje son datos
+   distintos. No asumas que un objeto de manto, calzado o accesorio tendrá un
+   sprite visible en el personaje por copiar recursos de otro tipo de equipo.
+6. **Vincula el objeto al controlador.** En `npc/clima.txt`, asigna su ID a
+   `.combo_protection_item[<combinación>]` y su slot a
+   `.combo_protection_slot[<combinación>]`. Para aceptar otro slot, asigna
+   también `.combo_protection_slot_alt[<combinación>]`; inicialízalo como
+   `-1` si no se usa. La comprobación busca el ID exacto en esos slots. Si se
+   quiere que dos objetos distintos protejan la misma combinación, el
+   controlador actual no tiene una lista de IDs: extiende esa comprobación de
+   forma explícita en vez de sustituir silenciosamente el objeto existente.
+7. **Mantén la descripción y el alcance correctos.** El equipo evita nuevas
+   aplicaciones del estado o la penalización del controlador para esa
+   combinación. No quita un estado que ya estaba activo, no protege contra
+   otras combinaciones y no debe purgar estados procedentes de otras fuentes.
+   Bonificaciones propias del objeto, como resistencia genérica a Poison,
+   siguen funcionando por separado y pueden afectar a estados de cualquier
+   fuente.
+8. **Prueba las capas por separado.** Entrega el objeto con
+   `@item <ID custom>`. Comprueba que el nombre, icono e imagen sean correctos;
+   equípalo en el slot documentado y confirma su apariencia en el personaje
+   cuando sea headgear. Durante el evento, prueba sin el objeto y luego con
+   él, y verifica además que no borre estados activos ni altere otros climas.
+   Reinicia el servidor después de cambios en `db/` o `npc/`; reinicia la
+   aplicación después de cambios en `System/`.
+
+Antes de declarar el trabajo terminado, compara las entradas de ambas eras,
+el ID/slot que consulta el NPC y los datos visuales del objeto fuente. Un
+`View` debe verificarse en la base del servidor fijada y los recursos y
+`ClassNum` en la tabla del cliente fijada que usa la aplicación.
 
 ## Catálogo de combinaciones climáticas
 
@@ -107,6 +187,96 @@ para probar su integración opcional con `survival`. `terreno_fangoso` y
 | 12 | `prontera` | `tierra_maldita` | Nubes (`cloud8`) | Curse |
 | 13 | `izlude` | `polen_somnifero` | Sakura (`sakura`) | Sleep |
 | 14 | `geffen` | `polen_somnifero` | Sakura (`sakura`) | Sleep |
+
+## Guía: añadir una combinación climática
+
+Una combinación es la unidad reusable del sistema: reúne un nombre/ID estable,
+una visual opcional, un estado de servidor opcional, protección opcional,
+mensajes y uno o más mapas. No copies la lógica de aplicación por mapa. Añade
+la combinación una vez y haz que los mapas apunten a su índice.
+
+1. **Elige un ID estable y un índice nuevo.** Los IDs legibles como
+   `tormenta_electrica` se usan en documentación y objetos; el NPC identifica
+   internamente las combinaciones con índices numéricos. Añádela al final de
+   `OnInit` y aumenta `.combo_count`. No renumeres ni reutilices índices
+   existentes: las referencias de mapas y la integración con Survival usan
+   esos índices.
+2. **Completa todos los datos de la combinación** en `npc/clima.txt`:
+
+   ```text
+   .combo_name$[N] = "Nombre visible";
+   .combo_weather$[N] = "rain";
+   .combo_status[N] = SC_POISON;
+   .combo_status_name$[N] = "Poison";
+   .combo_status_duration[N] = .effect_lease;
+   .combo_protection_item[N] = ID_OBJETO;
+   .combo_protection_slot[N] = EQI_GARMENT;
+   .combo_protection_slot_alt[N] = -1;
+   .combo_start_message$[N] = "Texto narrativo al comenzar.";
+   .combo_end_message$[N] = "Texto narrativo al terminar.";
+   ```
+
+   Sustituye los valores de ejemplo. Si no lleva estado, asigna
+   `.combo_status[N] = 0`, un nombre como `"ninguno"` y duración `0`; el
+   controlador solo llama `sc_start` si hay estado. Si todavía no tiene objeto,
+   deja `.combo_protection_item[N] = 0`, slot principal `-1` y alternativo
+   `-1`. Para una protección en dos ranuras, configura el slot alternativo.
+   El NPC compara el ID exacto del objeto en esos slots. La guía anterior
+   explica cómo crear el objeto y enlazarlo.
+3. **Decide la duración con cuidado.** Los estados se revisan cada 10 segundos
+   y suelen tener una duración de 12 segundos, que deja una pausa antes de la
+   siguiente aplicación. Freeze, Stun y Stone Curse están limitados a 4
+   segundos por aplicación. rAthena reduce a la mitad la duración de
+   `SC_DECREASEAGI` en jugadores; para obtener 12 segundos, el script solicita
+   24. Comprueba la semántica del estado en la versión fijada de rAthena y
+   evita duraciones que bloqueen el control del personaje durante mucho tiempo.
+4. **Asigna la combinación a mapas** en la sección de arreglos de `OnInit`.
+   Añade cada mapa nuevo (si aún no figura allí) a la lista de
+   `mapflag loadevent` al inicio del archivo, incrementa `.map_count` y
+   agrega, usando índices de mapa nuevos y
+   consecutivos, `.map$[i]`, `.map_name$[i]` y `.combination[i] = N`. El
+   índice del mapa no es el ID de combinación. Mantén exactamente la misma
+   asociación en la tabla «Asignación de prueba por mapa» de este README.
+5. **Configura la visual de cliente, si aplica.** Para las combinaciones con
+   un efecto visual soportado, asigna ese nombre a `.combo_weather$[N]` y
+   agrega `"<mapa>": { "weather": "<visual>" }` por cada mapa asignado en
+   `mod.json`. Usa únicamente valores admitidos por
+   [`CUSTOM_MAPS.md`](../../docs/mods/CUSTOM_MAPS.md). Los efectos de `mod.json`
+   son estáticos: permanecen visibles mientras se está en el mapa, aunque el
+   evento de servidor haya terminado. Si la combinación no tiene visual, no
+   agregues `weather` para esos mapas. No declares la misma combinación con
+   visuales distintos según el mapa.
+6. **Si cambia hambre o sed**, no añadas otro temporizador. Survival es dueño
+   de los ticks; amplía la integración explícita entre `clima/npc/clima.txt` y
+   `survival/npc/survival.txt` para activar el modificador solo durante el
+   evento, limpiarlo al finalizar/salir/desconectarse y comprobar el mapa de
+   exposición. Actualmente esa lógica identifica Calor intenso y Frío extremo
+   por sus índices 9 y 10 en `S_ApplyWeatherStatus` y
+   `OnPCLoadMapEvent`; si sus índices o los de otras combinaciones cambian,
+   actualiza conjuntamente ambos sitios y conserva los IDs de objetos
+   configurados. El objeto protector debe bloquear solo la pérdida extra de
+   esa combinación, no la pérdida normal de Survival.
+7. **Escribe y documenta los mensajes.** Define un texto de inicio y otro de
+   término en primera persona o enfocado en lo que percibe el personaje.
+   Actualiza la tabla «Los mensajes actuales» y la fila del catálogo con el
+   ID, visual, estado, duración y objeto protector. Si aún no se asigna a un
+   mapa, deja claro que los textos y la visual no se mostrarán en juego. Si se
+   agrega un objeto protector, actualiza también la tabla de equipo y sigue la
+   guía «añadir un objeto de protección».
+8. **Prueba todas las rutas afectadas.** Comprueba con y sin protección: que el
+   anuncio corresponda a la combinación, que el estado o modificador se
+   aplique durante el evento, que no se renueve un estado todavía activo, que
+   la protección no borre estados de otras fuentes y que al terminar o cambiar
+   de mapa no quede una exposición de Survival activa. Verifica también la
+   entrada a un mapa con un evento ya activo. Si cambia una visual, recarga la
+   configuración del cliente; cambios de NPC requieren reiniciar el servidor.
+
+El scheduler actual tiene una probabilidad de inicio de 100%, espera 30
+segundos antes del primer chequeo, ejecuta chequeos cada 60 segundos y deja
+cada evento activo durante 5 minutos. Se inicializan por mapa en el bucle
+posterior a las asignaciones; evita modificar esos valores globales al añadir
+una combinación salvo que quieras cambiar el comportamiento de todos los
+mapas.
 
 ## Criterios para los estados
 
@@ -176,7 +346,8 @@ estados está en `npc/clima.txt`.
 
 Activa `clima` en **Settings → Mods**. Los cambios de `mod.json` requieren
 recargar la configuración del cliente (reinicia la app si Settings lo solicita);
-los cambios de `npc/` requieren reiniciar el servidor.
+los cambios de `db/` o `npc/` requieren reiniciar el servidor, y los de
+`System/` requieren reiniciar la aplicación.
 
 Después de iniciar el servidor, espera los anuncios y visita los mapas en el
 orden de la tabla. En cada clima asignado prueba primero sin protección y luego
@@ -198,10 +369,13 @@ por este mod. Esa limitación del cliente sigue pendiente de una mejora futura.
 ## Observaciones visuales
 
 En las pruebas anteriores, `cloud` se percibió como niebla y `cloud6` como
-vapor. `cloud8` produjo un gas naranja en Izlude, visible solo sobre el agua.
-La apariencia puede variar según el mapa y la superficie. Las combinaciones de
-calor y frío no tienen efecto visual asignado; `terreno_fangoso` y
-`hojas_petrificantes` tampoco se asignan actualmente a mapas.
+vapor. `cloud8` se observó como un gas naranja, visible solo sobre el agua,
+durante una prueba anterior en Izlude. Esa ya no es su asignación actual:
+Izlude usa `sakura`, mientras `cloud8` está asignado a `prt_fild11` y
+`prontera`. La apariencia puede variar según el mapa y la superficie. Las
+combinaciones de calor y frío no tienen efecto visual asignado;
+`terreno_fangoso` y `hojas_petrificantes` tampoco se asignan actualmente a
+mapas.
 
 Para confirmar la carga del NPC, revisa el log del map-server: debe mostrar
 `[clima] <mapa> asignado a <combinación>...` y luego

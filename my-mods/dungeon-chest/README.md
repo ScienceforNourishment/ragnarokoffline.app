@@ -55,4 +55,77 @@ en ese índice: `alb2trea`, `clock_01`, `ice_dun04`, `izlu2dun`, `moc_prydb1`,
 3. Entra a varios mapas, como `pay_dun00`, `pay_dun04` y `abyss_04`, y confirma
    que el cofre muestre el Tier y entregue la comida correspondiente.
 
+## Guía: agregar un cofre a otro mapa
+
+Cada mapa tiene una definición `script` en `npc/dungeon-chests.txt`; todas
+reutilizan las tres funciones globales del inicio del archivo. Antes de
+agregar una:
+
+1. **Confirma que el mapa es válido para el servidor.** Debe estar cargado por
+   rAthena y aparecer en la lista de mapas del mundo. Para mantener el alcance
+   del mod, confirma también que sea un mapa de dungeon y que tenga spawns
+   normales en el índice de monstruos; no lo agregues solo porque su nombre
+   parezca un dungeon.
+2. **Asigna el Tier según el criterio documentado.** La tabla anterior usa el
+   nivel promedio ponderado por cantidad de spawn, no un nivel oficial del
+   mapa. Si el mapa no aparece en el índice o requiere otro criterio, deja la
+   estimación clara y actualiza la tabla de Tier y su cantidad de mapas.
+3. **Elige una recompensa existente y compatible.** Usa el ID del item del
+   Tier en la tabla. Antes de introducir un item distinto, confirma que exista
+   en la era soportada y que el personaje pueda recibirlo; `checkweight` solo
+   evita exceder capacidad, no valida que el ID tenga una definición útil.
+   Armas o equipo mejorado no son la recompensa prevista: `affix-forge` y
+   `arpg-equipments` ya cubren ese tipo de loot.
+4. **Agrega una definición siguiendo esta forma** y sustituyendo mapa, Tier e
+   item:
+
+   ```txt
+   pay_dunXX,0,0,4	script	Cofre T1#dcp_pay_dunXX	3075,{
+       .@opened = callfunc("F_DungeonChest_Open", strnpcinfo(3), 1, 12041);
+       if (.@opened) {
+           stopnpctimer;
+           initnpctimer;
+       }
+       close;
+
+   OnInit:
+       .opened = 0;
+       .relocated = 0;
+       callfunc("F_DungeonChest_Move", strnpcinfo(3), "pay_dunXX");
+       initnpctimer;
+       end;
+
+   OnTimer600000:
+       callfunc("F_DungeonChest_Tick", strnpcinfo(3), "pay_dunXX");
+       initnpctimer;
+       end;
+   }
+   ```
+
+   El nombre interno después de `#` debe ser único. Conserva los tabuladores
+   entre los campos de una declaración `function script` al editar las
+   funciones globales: rAthena los necesita para reconocer esa sintaxis.
+5. **Conserva el ciclo y las protecciones existentes.** `F_DungeonChest_Open`
+   comprueba si ya se abrió, vuelve a comprobarlo después del diálogo y valida
+   el peso antes de marcarlo abierto y entregar el item. No quites estas
+   comprobaciones: así solo el primer jugador recibe el botín. `OnTimer600000`
+   son 600 000 ms (10 minutos); sin abrir, el cofre se reubica una vez, y al
+   abrirse se repone en otra ubicación tras ese intervalo. Un reinicio del
+   servidor reinicia su estado y temporizador.
+6. **Ten en cuenta los límites de colocación.** `F_DungeonChest_Move` intenta
+   hasta 500 coordenadas aleatorias entre 20 y 280 y usa `checkcell` para
+   elegir una celda transitable antes de `movenpc`. En mapas pequeños, mapas
+   cuya geometría no cubre ese rango u otros mapas con pocas celdas válidas,
+   esos intentos podrían fallar; revisa el `debugmes` del map-server y no
+   declares el cofre probado hasta confirmar su posición en el juego.
+7. **Valida la carga, no solo el archivo.** Comprueba que haya una sola
+   definición para el mapa, que mapa/Tier/item coincidan y que el total de
+   cofres y las cantidades por Tier en este README estén actualizados.
+   Reinicia o recarga los scripts del servidor y revisa
+   `ragnarok-stack logs map 100`. Un `Unknown syntax` al principio del archivo
+   puede impedir que se carguen todos sus cofres; que el archivo esté listado
+   en `map_conf.txt` no prueba que rAthena lo haya parseado. Finalmente,
+   encuentra el cofre en el mapa, ábrelo con espacio en inventario y vuelve a
+   hablar con el para comprobar que ya no entregue otro objeto.
+
 Este mod no cambia ni requiere `affix-forge` o `arpg-equipments`.

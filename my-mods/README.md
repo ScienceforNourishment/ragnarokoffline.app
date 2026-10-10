@@ -21,6 +21,44 @@ comportamiento de los mods es [`docs/MODDING.md`](../docs/MODDING.md); hay que
 consultarla cuando la implementación dependa de detalles del cargador o de las
 API.
 
+## Dirección de diseño
+
+Las ideas para estos mods buscan que el mundo se sienta más activo, aventurero
+y personal. Al proponer una función nueva, úsala como guía de diseño, no como
+requisito para forzarla dentro de cada mod:
+
+- **Dar más uso a los mapas.** Crear motivos para explorar y permanecer en
+  distintos lugares, más allá de llegar para farmear monstruos. Cada zona puede
+  ofrecer actividades y riesgos propios; por ejemplo, una región nevada y una
+  selva deberían plantear desafíos diferentes y hacer que el jugador considere
+  adónde ir y qué llevar.
+- **Aumentar la sensación de aventura.** Hacer que un viaje exigente pueda
+  ofrecer recompensas acordes a su riesgo. La preparación, los recursos
+  limitados y las decisiones difíciles importan: continuar o volver, y cómo
+  responder cuando un evento inesperado cambia el plan.
+- **Hacer funcionales las ciudades.** Repartir NPC, tableros y actividades en
+  lugares concretos, en vez de concentrarlo todo en el centro de Prontera.
+  Crear razones para regresar a la ciudad, especialmente cuando los riesgos o
+  desafíos de una expedición superen lo que el jugador puede afrontar todavía.
+- **Dar vida al mundo con narrativa.** Aprovechar que la partida es offline
+  para añadir detalles narrativos personales en los momentos adecuados y
+  reforzar la inmersión sin depender de largos bloques de texto.
+
+### Influencias
+
+Son referencias de diseño para orientar ideas; toma los principios que encajen
+con Ragnarok Online, no hace falta reproducir mecánicas de estos juegos:
+
+- **Outward:** preparación, recursos limitados, rutas peligrosas, campamentos y
+  decisiones sobre cuándo continuar o regresar.
+- **Dragon's Dogma:** exploración, monstruos peligrosos, preparación,
+  compañeros y encuentros inesperados capaces de cambiar el rumbo de una
+  expedición.
+- **Ultima Online:** actividades secundarias, libertad para experimentar y un
+  mundo con más posibilidades sandbox.
+- **Dark Souls:** narrativa ambiental e historias sugeridas por objetos y
+  detalles del mundo, sin tener que explicarlo todo con texto extenso.
+
 ## Dónde van los cambios
 
 - Esta carpeta, `my-mods/`, contiene mis mods de trabajo y pruebas.
@@ -78,12 +116,41 @@ API.
 - Mantén aislados los nombres de variables, eventos, selectores CSS, elementos
   DOM y temporizadores para evitar conflictos con otros mods.
 
-## Aprendizajes: equipo y cofres de dungeon
+## Relación entre los mods de `my-mods/`
 
-- `affix-forge` y `arpg-equipments` ya ofrecen equipo con entre 1 y 4 opciones.
-  Los cofres no deberían duplicar esa recompensa con más armas o equipo
-  mejorado; su botín distintivo aún está por decidir. Las comidas distintas
-  por Tier del mod `dungeon-chest` son recompensas temporales para probarlo.
+Estos mods forman parte de un espacio de trabajo compartido, pero no todos son
+contenido propio ni todas sus interacciones están implementadas. Al crear o
+modificar uno, conserva clara la diferencia entre el comportamiento actual y
+las ideas para futuras iteraciones:
+
+- **`affix-forge` y `arpg-equipments`** son mods externos que trajimos como
+  referencia para estudiar ideas de mejora del botín. Sirven para consulta y
+  para una futura extracción de datos; no los trates como código propio ni
+  asumas que `dungeon-chest` ya entrega sus objetos.
+- **`clima`** genera eventos climáticos en mapas específicos. Cada evento tiene
+  un efecto visual y un efecto de estado; ciertos objetos personalizados,
+  definidos dentro del propio mod, permiten bloquear esos efectos. Esos
+  objetos podrían convertirse en recompensas de `dungeon-chest` más adelante.
+  Algunos eventos también interactúan con `survival` y aceleran la pérdida de
+  sed o hambre.
+- **`dungeon-chest`** añade cofres a mapas de dungeon. Sus cofres están
+  categorizados para entregar distintos tipos de recompensa. A futuro, el
+  botín podría incluir objetos de `clima` o equipo inspirado en los mods de
+  referencia `arpg-equipments` y `affix-forge`; no des por hecha esa integración
+  ni cambies el botín sin que lo pida el alcance del trabajo. Las comidas
+  distintas por Tier son recompensas temporales de prueba.
+- **`survival`** añade barras de hambre y sed a la interfaz, además de alimentos
+  y bebidas que las restauran. Ambos valores disminuyen con el tiempo, y los
+  eventos de `clima` pueden acelerar esa reducción.
+
+Una relación funcional no significa necesariamente que exista una dependencia
+de carga entre mods. Antes de añadir o cambiar `requires.mods` o `after`, revisa
+los `mod.json` y el cargador descrito en [`docs/MODDING.md`](../docs/MODDING.md).
+Mantén cada función en el mod que la posee y coordina los cambios entre mods
+solo cuando el comportamiento solicitado requiera esa integración.
+
+## Notas operativas de `dungeon-chest`
+
 - `my-mods/dungeon-chest/` es la identidad actual del mod: el nombre de la
   carpeta debe coincidir con `name` en `mod.json`. Al renombrar un mod, actualiza
   también referencias internas y la copia instalada; cambiar la identidad no
@@ -102,6 +169,13 @@ API.
   Para diagnosticar cofres ausentes, revisa el log del map-server: que el
   archivo esté incluido en `map_conf.txt` no demuestra que rAthena lo haya
   parseado; un error de sintaxis puede detener la carga del archivo entero.
+- Para añadir un mapa a los cofres, valida primero que el servidor lo cargue,
+  que cumpla el alcance de dungeon y que tenga spawns normales en el índice;
+  asigna el Tier con el criterio existente, usa un ID interno de NPC único,
+  conserva el flujo de temporizador y reclamación del primer jugador y
+  actualiza los totales. La receta completa, incluida la forma de validar el
+  spawn aleatorio y la carga del script, está en
+  [`my-mods/dungeon-chest/README.md`](./dungeon-chest/README.md#guia-agregar-un-cofre-a-otro-mapa).
 
 ## Reglas de implementación
 
