@@ -23,75 +23,113 @@ OnInit:
 	.effect_refresh_interval = 10;
 	.effect_lease = 12;
 
+	.combo_name$[1] = "Lluvia tóxica";
+	.combo_weather$[1] = "rain";
+	.combo_status[1] = SC_POISON;
+	.combo_status_name$[1] = "Poison";
+	.combo_status_duration[1] = .effect_lease;
+	.combo_protection_item[1] = 50824;
+	.combo_start_message$[1] = "Sientes como la lluvia comienza a irritarte la piel; hasta los animales parecen evitarla.";
+	.combo_end_message$[1] = "La lluvia parece amainar y ya no sientes que te afecte.";
+
+	.combo_name$[2] = "Ventisca";
+	.combo_weather$[2] = "snow";
+	.combo_status[2] = SC_FREEZE;
+	.combo_status_name$[2] = "Freeze";
+	.combo_status_duration[2] = 4;
+	.combo_start_message$[2] = "Una ventisca helada te golpea; el frío entumece tus miembros y apenas puedes moverte.";
+	.combo_end_message$[2] = "La ventisca pierde fuerza y recuperas poco a poco la movilidad.";
+
+	.combo_name$[3] = "Neblina densa";
+	.combo_weather$[3] = "cloud";
+	.combo_status[3] = SC_BLIND;
+	.combo_status_name$[3] = "Blind";
+	.combo_status_duration[3] = .effect_lease;
+	.combo_start_message$[3] = "Una neblina espesa te envuelve; distingues cada vez menos lo que tienes delante.";
+	.combo_end_message$[3] = "La neblina se disipa y vuelves a ver con claridad.";
+
+	.combo_name$[4] = "Vapores asfixiantes";
+	.combo_weather$[4] = "cloud6";
+	.combo_status[4] = SC_STUN;
+	.combo_status_name$[4] = "Stun";
+	.combo_status_duration[4] = 4;
+	.combo_start_message$[4] = "Una nube de vapores asfixiantes te cubre; te falta el aire y pierdes el equilibrio.";
+	.combo_end_message$[4] = "Los vapores se dispersan y consigues respirar con más facilidad.";
+
+	.combo_name$[5] = "Terreno fangoso";
+	.combo_weather$[5] = "rain";
+	.combo_status[5] = SC_DECREASEAGI;
+	.combo_status_name$[5] = "Decrease Agi";
+	.combo_status_duration[5] = .effect_lease * 2;
+	.combo_start_message$[5] = "La lluvia empapa el terreno y el barro vuelve cada paso más pesado.";
+	.combo_end_message$[5] = "El terreno comienza a secarse y vuelves a moverte con más soltura.";
+
+	.combo_name$[6] = "Tierra maldita";
+	.combo_weather$[6] = "cloud8";
+	.combo_status[6] = SC_CURSE;
+	.combo_status_name$[6] = "Curse";
+	.combo_status_duration[6] = .effect_lease;
+	.combo_start_message$[6] = "Un gas extraño se eleva del suelo; una sensación sombría debilita tu cuerpo.";
+	.combo_end_message$[6] = "El gas se disipa y la opresión que sentías comienza a desaparecer.";
+
+	.combo_name$[7] = "Polen somnífero";
+	.combo_weather$[7] = "sakura";
+	.combo_status[7] = SC_SLEEP;
+	.combo_status_name$[7] = "Sleep";
+	.combo_status_duration[7] = .effect_lease;
+	.combo_start_message$[7] = "El polen flota en el aire; tus párpados pesan y el sueño empieza a vencerte.";
+	.combo_end_message$[7] = "El polen se aleja y consigues despejarte del sopor.";
+
+	.combo_name$[8] = "Hojas Petrificantes";
+	.combo_weather$[8] = "leaves";
+	.combo_status[8] = SC_STONE;
+	.combo_status_name$[8] = "Stone Curse";
+	.combo_status_duration[8] = 4;
+	.combo_start_message$[8] = "Hojas extrañas giran a tu alrededor; sientes cómo tu cuerpo empieza a endurecerse.";
+	.combo_end_message$[8] = "Las hojas se dispersan y la rigidez abandona poco a poco tu cuerpo.";
+
 	.map$[0] = "prt_fild01";
 	.map_name$[0] = "Prontera Field 01";
-	.status[0] = SC_POISON;
-	.status_name$[0] = "Poison";
-
+	.combination[0] = 1;
 	.map$[1] = "prt_fild02";
 	.map_name$[1] = "Prontera Field 02";
-	.status[1] = SC_CURSE;
-	.status_name$[1] = "Curse";
-
+	.combination[1] = 1;
 	.map$[2] = "prt_fild03";
 	.map_name$[2] = "Prontera Field 03";
-	.status[2] = SC_BLIND;
-	.status_name$[2] = "Blind";
-
+	.combination[2] = 2;
 	.map$[3] = "prt_fild04";
 	.map_name$[3] = "Prontera Field 04";
-	.status[3] = SC_FREEZE;
-	.status_name$[3] = "Freeze";
-
+	.combination[3] = 2;
 	.map$[4] = "prt_fild05";
 	.map_name$[4] = "Prontera Field 05";
-	.status[4] = SC_STONE;
-	.status_name$[4] = "Stone Curse";
-
+	.combination[4] = 3;
 	.map$[5] = "prt_fild06";
 	.map_name$[5] = "Prontera Field 06";
-	.status[5] = SC_STUN;
-	.status_name$[5] = "Stun";
-
+	.combination[5] = 3;
 	.map$[6] = "prt_fild07";
 	.map_name$[6] = "Prontera Field 07";
-	.status[6] = SC_SLEEP;
-	.status_name$[6] = "Sleep";
-
+	.combination[6] = 4;
 	.map$[7] = "prt_fild08";
 	.map_name$[7] = "Prontera Field 08";
-	.status[7] = SC_BLEEDING;
-	.status_name$[7] = "Bleeding";
-
+	.combination[7] = 4;
 	.map$[8] = "prt_fild09";
 	.map_name$[8] = "Prontera Field 09";
-	.status[8] = SC_BURNING;
-	.status_name$[8] = "Burning";
-
+	.combination[8] = 5;
 	.map$[9] = "prt_fild10";
 	.map_name$[9] = "Prontera Field 10";
-	.status[9] = SC_DECREASEAGI;
-	.status_name$[9] = "Decrease Agi";
-
+	.combination[9] = 5;
 	.map$[10] = "prt_fild11";
 	.map_name$[10] = "Prontera Field 11";
-	.status[10] = SC_POISON;
-	.status_name$[10] = "Poison";
-
+	.combination[10] = 6;
 	.map$[11] = "prontera";
 	.map_name$[11] = "Prontera";
-	.status[11] = SC_CURSE;
-	.status_name$[11] = "Curse";
-
+	.combination[11] = 6;
 	.map$[12] = "izlude";
 	.map_name$[12] = "Izlude";
-	.status[12] = SC_BLIND;
-	.status_name$[12] = "Blind";
-
+	.combination[12] = 7;
 	.map$[13] = "geffen";
-	.map_name$[13] = "Geffen (control sin clima visual)";
-	.status[13] = SC_FREEZE;
-	.status_name$[13] = "Freeze";
+	.map_name$[13] = "Geffen";
+	.combination[13] = 7;
 
 	for (.@i = 0; .@i < .map_count; .@i++) {
 		.event_active[.@i] = 0;
@@ -99,7 +137,7 @@ OnInit:
 		.next_check[.@i] = gettimetick(2) + .first_check_delay;
 		.chance[.@i] = 100;
 		.duration[.@i] = 300;
-		debugmes "[clima] Controlador cargado para " + .map$[.@i] + "; primer chequeo en " + .first_check_delay + " segundos.";
+		debugmes "[clima] " + .map$[.@i] + " asignado a " + .combo_name$[.combination[.@i]] + " (visual " + .combo_weather$[.combination[.@i]] + "); primer chequeo en " + .first_check_delay + " segundos.";
 	}
 
 	initnpctimer;
@@ -114,8 +152,8 @@ OnTimer1000:
 			.event_end[.@i] = 0;
 			if (.next_check[.@i] <= .@now)
 				.next_check[.@i] = .@now + .check_interval;
-			debugmes "[clima] Evento terminado en " + .map$[.@i] + ".";
-			mapannounce .map$[.@i], "El evento de clima en " + .map_name$[.@i] + " ha terminado.", bc_map;
+			debugmes "[clima] Evento " + .combo_name$[.combination[.@i]] + " terminado en " + .map$[.@i] + ".";
+			mapannounce .map$[.@i], .combo_end_message$[.combination[.@i]], bc_map;
 		}
 
 		if (.event_active[.@i] && .@now >= .next_effect_refresh[.@i]) {
@@ -123,7 +161,7 @@ OnTimer1000:
 			.@player_count = getmapunits(BL_PC, .map$[.@i], .@player_ids[0]);
 			freeloop(1);
 			for (.@j = 0; .@j < .@player_count; .@j++) {
-				callsub S_ApplyWeatherStatus, .@i, .@player_ids[.@j], .effect_lease * 1000;
+				callsub S_ApplyWeatherStatus, .@i, .@player_ids[.@j];
 			}
 			freeloop(0);
 		}
@@ -137,13 +175,13 @@ OnTimer1000:
 				.@player_count = getmapunits(BL_PC, .map$[.@i], .@player_ids[0]);
 				freeloop(1);
 				for (.@j = 0; .@j < .@player_count; .@j++) {
-					callsub S_ApplyWeatherStatus, .@i, .@player_ids[.@j], .effect_lease * 1000;
+					callsub S_ApplyWeatherStatus, .@i, .@player_ids[.@j];
 				}
 				freeloop(0);
-				debugmes "[clima] Evento iniciado en " + .map$[.@i] + "; estado " + .status_name$[.@i] + "; personajes afectados: " + .@player_count + ".";
-				mapannounce .map$[.@i], "El clima en " + .map_name$[.@i] + " aplica " + .status_name$[.@i] + ".", bc_map;
+				debugmes "[clima] Evento " + .combo_name$[.combination[.@i]] + " iniciado en " + .map$[.@i] + "; visual " + .combo_weather$[.combination[.@i]] + "; estado " + .combo_status_name$[.combination[.@i]] + "; personajes afectados: " + .@player_count + ".";
+				mapannounce .map$[.@i], .combo_start_message$[.combination[.@i]], bc_map;
 			} else {
-				debugmes "[clima] Revisión de " + .map$[.@i] + ": no comenzó evento (probabilidad " + .chance[.@i] + "%).";
+				debugmes "[clima] Revisión de " + .map$[.@i] + ": no comenzó " + .combo_name$[.combination[.@i]] + " (probabilidad " + .chance[.@i] + "%).";
 			}
 		}
 	}
@@ -151,16 +189,24 @@ OnTimer1000:
 	initnpctimer;
 	end;
 
+S_IsWeatherProtected:
+	.@map_index = getarg(0);
+	.@combo_id = .combination[.@map_index];
+	if (.combo_protection_item[.@combo_id] && getequipid(EQI_GARMENT) == .combo_protection_item[.@combo_id])
+		return 1;
+	return 0;
+
 S_ApplyWeatherStatus:
 	.@map_index = getarg(0);
 	.@player_id = getarg(1);
-	.@lease = getarg(2);
 	if (!attachrid(.@player_id)) {
 		debugmes "[clima] No se pudo adjuntar al personaje " + .@player_id + " para revisar su estado.";
 		return;
 	}
-	if (!getstatus(.status[.@map_index]))
-		sc_start .status[.@map_index], .@lease, 0, 10000, SCSTART_NOAVOID;
+	.@combo_id = .combination[.@map_index];
+	.@protected = callsub(S_IsWeatherProtected, .@map_index);
+	if (!.@protected && !getstatus(.combo_status[.@combo_id]))
+		sc_start .combo_status[.@combo_id], .combo_status_duration[.@combo_id] * 1000, 0, 10000, SCSTART_NOAVOID;
 	detachrid;
 	return;
 
@@ -170,10 +216,12 @@ OnPCLoadMapEvent:
 		if (.@map$ == .map$[.@i] && .event_active[.@i]) {
 			.@remaining = (.event_end[.@i] - gettimetick(2)) * 1000;
 			if (.@remaining > 0) {
-				.@lease = min(.effect_lease * 1000, .@remaining);
-				if (!getstatus(.status[.@i]))
-					sc_start .status[.@i], .@lease, 0, 10000, SCSTART_NOAVOID;
-				debugmes "[clima] " + .status_name$[.@i] + " al entrar a " + .@map$ + "; activo: " + getstatus(.status[.@i]) + "; lease: " + .@lease + " ms.";
+				.@combo_id = .combination[.@i];
+				.@lease = min(.combo_status_duration[.@combo_id] * 1000, .@remaining);
+				.@protected = callsub(S_IsWeatherProtected, .@i);
+				if (!.@protected && !getstatus(.combo_status[.@combo_id]))
+					sc_start .combo_status[.@combo_id], .@lease, 0, 10000, SCSTART_NOAVOID;
+				debugmes "[clima] " + .combo_status_name$[.@combo_id] + " al entrar a " + .@map$ + "; activo: " + getstatus(.combo_status[.@combo_id]) + "; protegido: " + .@protected + "; lease: " + .@lease + " ms.";
 			}
 			break;
 		}

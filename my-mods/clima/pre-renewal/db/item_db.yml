@@ -1,0 +1,26 @@
+Header:
+  Type: ITEM_DB
+  Version: 3
+
+Body:
+  - Id: 50824
+    AegisName: Clima_Rain_Manteau
+    Name: Manto de Lluvia
+    Type: Armor
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    Refineable: true
+    Script: |
+      bonus bUnbreakableGarment;
+      if (BaseClass == Job_Mage || BaseClass == Job_Archer || BaseClass == Job_Acolyte)
+         bonus bFlee2,5+(getequiprefinerycnt(EQI_GARMENT)*2);
+      else if (BaseClass == Job_Swordman || BaseClass == Job_Merchant || BaseClass == Job_Thief)
+         bonus bShortWeaponDamageReturn,5+(getequiprefinerycnt(EQI_GARMENT)*2);

@@ -1,0 +1,26 @@
+tbl = {
+	[50824] = {
+		unidentifiedDisplayName = "Manto",
+		unidentifiedResourceName = "망토",
+		identifiedDisplayName = "Manto de Lluvia",
+		identifiedResourceName = "망토",
+		identifiedDescriptionName = {
+			"Prenda irrompible.",
+			"",
+			"Evita el Poison aplicado por el clima",
+			"de lluvia; no protege de otras fuentes.",
+			"",
+			"Magos, Arqueros y Acólitos: esquiva perfecta +5,",
+			"+2 por refinamiento (máximo +25).",
+			"Espadachines, Mercantes y Ladrones: devuelve",
+			"daño cuerpo a cuerpo +5%, +2% por refinamiento",
+			"(máximo +25%).",
+			"",
+			"Defensa y restricciones según la era.",
+			"Peso: 50",
+			"Ranura: 1",
+		},
+		slotCount = 1,
+		ClassNum = 0,
+	},
+}
