@@ -1,36 +1,104 @@
-prontera	mapflag	loadevent
+prt_fild01	mapflag	loadevent
+prt_fild02	mapflag	loadevent
+prt_fild03	mapflag	loadevent
+prt_fild04	mapflag	loadevent
+prt_fild05	mapflag	loadevent
+prt_fild06	mapflag	loadevent
+prt_fild07	mapflag	loadevent
 prt_fild08	mapflag	loadevent
+prt_fild09	mapflag	loadevent
+prt_fild10	mapflag	loadevent
+prt_fild11	mapflag	loadevent
+prontera	mapflag	loadevent
+izlude	mapflag	loadevent
+geffen	mapflag	loadevent
 
 prontera,0,0,0	script	Clima#clima	-1,{
 	end;
 
 OnInit:
-	.map_count = 2;
+	.map_count = 14;
 	.check_interval = 60;
 	.first_check_delay = 30;
 	.effect_refresh_interval = 10;
 	.effect_lease = 12;
 
-	.map$[0] = "prontera";
+	.map$[0] = "prt_fild01";
+	.map_name$[0] = "Prontera Field 01";
 	.status[0] = SC_POISON;
 	.status_name$[0] = "Poison";
-	.start_message$[0] = "Un clima tóxico afecta Prontera.";
-	.end_message$[0] = "El evento de clima en Prontera ha terminado.";
-	.chance[0] = 100;
-	.duration[0] = 30;
 
-	.map$[1] = "prt_fild08";
+	.map$[1] = "prt_fild02";
+	.map_name$[1] = "Prontera Field 02";
 	.status[1] = SC_CURSE;
 	.status_name$[1] = "Curse";
-	.start_message$[1] = "Una maldición afecta Prontera Field 08.";
-	.end_message$[1] = "La maldición en Prontera Field 08 ha terminado.";
-	.chance[1] = 100;
-	.duration[1] = 30;
+
+	.map$[2] = "prt_fild03";
+	.map_name$[2] = "Prontera Field 03";
+	.status[2] = SC_BLIND;
+	.status_name$[2] = "Blind";
+
+	.map$[3] = "prt_fild04";
+	.map_name$[3] = "Prontera Field 04";
+	.status[3] = SC_FREEZE;
+	.status_name$[3] = "Freeze";
+
+	.map$[4] = "prt_fild05";
+	.map_name$[4] = "Prontera Field 05";
+	.status[4] = SC_STONE;
+	.status_name$[4] = "Stone Curse";
+
+	.map$[5] = "prt_fild06";
+	.map_name$[5] = "Prontera Field 06";
+	.status[5] = SC_STUN;
+	.status_name$[5] = "Stun";
+
+	.map$[6] = "prt_fild07";
+	.map_name$[6] = "Prontera Field 07";
+	.status[6] = SC_SLEEP;
+	.status_name$[6] = "Sleep";
+
+	.map$[7] = "prt_fild08";
+	.map_name$[7] = "Prontera Field 08";
+	.status[7] = SC_BLEEDING;
+	.status_name$[7] = "Bleeding";
+
+	.map$[8] = "prt_fild09";
+	.map_name$[8] = "Prontera Field 09";
+	.status[8] = SC_BURNING;
+	.status_name$[8] = "Burning";
+
+	.map$[9] = "prt_fild10";
+	.map_name$[9] = "Prontera Field 10";
+	.status[9] = SC_DECREASEAGI;
+	.status_name$[9] = "Decrease Agi";
+
+	.map$[10] = "prt_fild11";
+	.map_name$[10] = "Prontera Field 11";
+	.status[10] = SC_POISON;
+	.status_name$[10] = "Poison";
+
+	.map$[11] = "prontera";
+	.map_name$[11] = "Prontera";
+	.status[11] = SC_CURSE;
+	.status_name$[11] = "Curse";
+
+	.map$[12] = "izlude";
+	.map_name$[12] = "Izlude";
+	.status[12] = SC_BLIND;
+	.status_name$[12] = "Blind";
+
+	.map$[13] = "geffen";
+	.map_name$[13] = "Geffen (control sin clima visual)";
+	.status[13] = SC_FREEZE;
+	.status_name$[13] = "Freeze";
 
 	for (.@i = 0; .@i < .map_count; .@i++) {
 		.event_active[.@i] = 0;
 		.event_end[.@i] = 0;
 		.next_check[.@i] = gettimetick(2) + .first_check_delay;
+		.chance[.@i] = 100;
+		.duration[.@i] = 300;
 		debugmes "[clima] Controlador cargado para " + .map$[.@i] + "; primer chequeo en " + .first_check_delay + " segundos.";
 	}
 
@@ -47,7 +115,7 @@ OnTimer1000:
 			if (.next_check[.@i] <= .@now)
 				.next_check[.@i] = .@now + .check_interval;
 			debugmes "[clima] Evento terminado en " + .map$[.@i] + ".";
-			mapannounce .map$[.@i], .end_message$[.@i], bc_map;
+			mapannounce .map$[.@i], "El evento de clima en " + .map_name$[.@i] + " ha terminado.", bc_map;
 		}
 
 		if (.event_active[.@i] && .@now >= .next_effect_refresh[.@i]) {
@@ -73,7 +141,7 @@ OnTimer1000:
 				}
 				freeloop(0);
 				debugmes "[clima] Evento iniciado en " + .map$[.@i] + "; estado " + .status_name$[.@i] + "; personajes afectados: " + .@player_count + ".";
-				mapannounce .map$[.@i], .start_message$[.@i], bc_map;
+				mapannounce .map$[.@i], "El clima en " + .map_name$[.@i] + " aplica " + .status_name$[.@i] + ".", bc_map;
 			} else {
 				debugmes "[clima] Revisión de " + .map$[.@i] + ": no comenzó evento (probabilidad " + .chance[.@i] + "%).";
 			}
@@ -103,15 +171,9 @@ OnPCLoadMapEvent:
 			.@remaining = (.event_end[.@i] - gettimetick(2)) * 1000;
 			if (.@remaining > 0) {
 				.@lease = min(.effect_lease * 1000, .@remaining);
-				if (.@i == 0) {
-					if (!getstatus(SC_POISON))
-						sc_start SC_POISON, .@lease, 0, 10000, SCSTART_NOAVOID;
-					debugmes "[clima] Poison al entrar a " + .map$[.@i] + "; activo: " + getstatus(SC_POISON) + "; lease: " + .@lease + " ms.";
-				} else if (.@i == 1) {
-					if (!getstatus(SC_CURSE))
-						sc_start SC_CURSE, .@lease, 0, 10000, SCSTART_NOAVOID;
-					debugmes "[clima] Curse al entrar a " + .@map$ + "; activo: " + getstatus(SC_CURSE) + "; lease: " + .@lease + " ms.";
-				}
+				if (!getstatus(.status[.@i]))
+					sc_start .status[.@i], .@lease, 0, 10000, SCSTART_NOAVOID;
+				debugmes "[clima] " + .status_name$[.@i] + " al entrar a " + .@map$ + "; activo: " + getstatus(.status[.@i]) + "; lease: " + .@lease + " ms.";
 			}
 			break;
 		}

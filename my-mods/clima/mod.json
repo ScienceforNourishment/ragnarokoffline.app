@@ -2,5 +2,20 @@
   "name": "clima",
   "version": "0.1.0",
   "author": "Ragnarok Offline",
-  "description": "Prototipo de eventos de clima en Prontera con efectos de estado."
+  "description": "Prueba de efectos visuales y estados de clima en 14 mapas.",
+  "maps": {
+    "prt_fild01": { "weather": "rain" },
+    "prt_fild02": { "weather": "snow" },
+    "prt_fild03": { "weather": "fireworks" },
+    "prt_fild04": { "weather": "leaves" },
+    "prt_fild05": { "weather": "sakura" },
+    "prt_fild06": { "weather": "cloud" },
+    "prt_fild07": { "weather": "cloud2" },
+    "prt_fild08": { "weather": "cloud3" },
+    "prt_fild09": { "weather": "cloud4" },
+    "prt_fild10": { "weather": "cloud5" },
+    "prt_fild11": { "weather": "cloud6" },
+    "prontera": { "weather": "cloud7" },
+    "izlude": { "weather": "cloud8" }
+  }
 }
