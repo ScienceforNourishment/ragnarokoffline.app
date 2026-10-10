@@ -1,76 +1,95 @@
 # Clima
 
-Prueba de combinaciones climáticas reutilizables en 14 mapas. Cada mapa usa un
-ID de combinación que determina su efecto visual, estado de servidor y
-protección compatible. Las combinaciones se repiten en dos mapas para probar
-que la protección dependa de la combinación, no del mapa.
+Prototipo de combinaciones climáticas reutilizables en 14 mapas. Cada mapa usa
+un ID que determina su efecto de servidor y, cuando corresponde, su efecto
+visual y protección compatible. Las combinaciones con estados alterados se
+repiten en dos mapas para probar que la protección dependa de la combinación,
+no del mapa; Calor intenso y Frío extremo se asignan a un mapa cada una para
+probar su integración opcional con Survival.
 
-## Objeto personalizado de prueba
+## Equipo de protección por combinación
 
-El mod añade **Manto de Lluvia**, ID `50824`, basado en el objeto
-original `2524` (Valkyrian Manteau). Es una prenda equipable en la ubicación
-`Garment`, tiene una ranura y permite equiparla a todas las clases, sin
-restricción de nivel ni requisitos de atributos. Conserva la defensa y los
-efectos del original según la era. Mientras está equipado, evita que la
-combinación `lluvia_toxica` aplique Poison en cualquiera de los mapas que
-tengan esa combinación.
+Cada objeto protege una combinación por su ID estable, no por mapa ni solo
+por el estado alterado. Funciona en cualquier mapa que use esa combinación,
+incluidos los que se asignen más adelante. Los nueve objetos nuevos usan IDs
+custom del rango 50000–99999; todos permiten cualquier trabajo y clase, no
+tienen nivel mínimo ni requisitos de atributos.
 
-La protección solo afecta a ese Poison climático: no da inmunidad global,
-no elimina un Poison que ya estuviera activo al equipar el manto y no afecta
-Poison de otras fuentes ni una combinación distinta que comparta lluvia como
-efecto visual.
+| ID custom | Combinación protegida | Objeto | Basado en ID | Ranura equipada |
+|---:|---|---|---:|---|
+| 50824 | `lluvia_toxica` | Manto de Lluvia | 2524 | Garment |
+| 50825 | `ventisca` | Armadura Horno | 2344 | Garment |
+| 50826 | `neblina_densa` | Gafas de Claridad | 2276 | Middle Head |
+| 50827 | `vapores_asfixiantes` | Máscara de Gas Etéreo | 5005 | Middle o Lower Head |
+| 50828 | `terreno_fangoso` | Botas de Estabilidad | 2447 | Footgear |
+| 50829 | `tierra_maldita` | Manto Bendecido | 2356 | Garment |
+| 50830 | `polen_somnifero` | Máscara de Hierba Neutralizante | 5004 | Lower Head |
+| 50831 | `hojas_petrificantes` | Scriptum Petreum | 2656 | Cualquiera de los dos Accessory |
+| 50832 | `calor_intenso` | Sombrero del Desierto | 5591 | Upper Head |
+| 50833 | `frio_extremo` | Abrigo Polar | 2309 | Garment |
 
-Los datos Renewal y Pre-Renewal están separados para respetar las diferencias
-del objeto original entre eras. El nombre y la descripción del cliente están en
-`System/itemInfo.lua`; el icono reutiliza el recurso genérico de manto y no
-incluye arte nuevo.
+Las propiedades base del objeto de referencia se conservan cuando aplican,
+incluidas sus diferencias de defensa y bonificaciones por era; las
+restricciones de clase y nivel se eliminan. Esas bonificaciones propias
+permanecen independientes de la protección climática y pueden seguir afectando
+estados de cualquier fuente (por ejemplo, la resistencia a Poison de las
+máscaras). El ID 5591 no existe en la base Pre-Renewal fijada, así que el
+Sombrero del Desierto usa allí sus datos base de Renewal. Los nombres y
+descripciones están en `System/itemInfo.lua`; se reutilizan recursos visuales
+del cliente, sin añadir arte. Los cuatro objetos de cabeza también declaran en
+ambas eras el `View` de su referencia, necesario para que su aspecto aparezca
+al equiparlos.
 
-Para probarlo, entrega el objeto con una herramienta GM, por ejemplo
-`@item 50824`, y equípalo en la ranura de prenda. En `prt_fild01` y
-`prt_fild02`, ambos asignados a `lluvia_toxica`, no debe aplicarse el Poison
-climático. En `prt_fild09` y `prt_fild10`, la combinación es `terreno_fangoso`:
-el manto no debe bloquear Decrease Agi aunque ambos climas usen lluvia visual.
-También comprueba que Poison obtenido de otra fuente no desaparece al llevar
-el manto. Los cambios de `db/` y `npc/` requieren reiniciar el servidor; los
-cambios de `System/` requieren reiniciar la aplicación para recargar los datos
-del cliente.
+En rAthena los objetos equipables usan `Type: Armor`; la ranura real se
+configura con `Locations` (`Garment`, `Head_Mid`, `Shoes`, etc.). Por eso los
+objetos cuyo destino difiere del objeto de referencia mantienen el tipo de
+servidor Armor y cambian su ubicación equipable.
+
+La protección del controlador omite solo las aplicaciones y penalizaciones de
+esa combinación. No elimina estados ya activos ni bloquea por sí misma el mismo
+estado de otras fuentes o combinaciones. Para probarlos, entrega cada objeto
+con `@item <ID custom>` y equípalo en la ranura indicada. En calor y frío, el
+objeto bloquea la pérdida extra de Survival, pero no la pérdida normal.
+Reinicia el servidor tras cambios en `db/` o `npc/`; reinicia la aplicación
+tras cambios en `System/`.
 
 ## Catálogo de combinaciones climáticas
 
 Cada combinación tiene un ID compartido por los mapas y las protecciones. La
-tabla es la fuente de configuración del prototipo en `npc/clima.txt`; el clima
-visual equivalente también está asignado a cada mapa en `mod.json`.
+tabla es la fuente de configuración del prototipo en `npc/clima.txt`; cuando
+una combinación tiene efecto visual, este también se asigna al mapa en
+`mod.json`.
 
 | ID estable | Combinación | Componentes | Protección o ajuste |
 |---|---|---|---|
 | `lluvia_toxica` | Lluvia tóxica | Lluvia (`rain`) + Poison | Manto de Lluvia; bloquea Poison climático. |
-| `ventisca` | Ventisca | Nieve (`snow`) + Freeze | Freeze dura 4 segundos por aplicación en esta prueba. |
-| `neblina_densa` | Neblina densa | Nubes (`cloud`) + Blind | Sin protección asignada todavía. |
-| `vapores_asfixiantes` | Vapores asfixiantes | Nubes (`cloud6`) + Stun | Stun dura 4 segundos por aplicación en esta prueba. |
-| `terreno_fangoso` | Terreno fangoso | Lluvia (`rain`) + Decrease Agi | Duración efectiva de 12 segundos para jugadores. |
-| `tierra_maldita` | Tierra maldita | Nubes (`cloud8`) + Curse | Sin protección asignada todavía. |
-| `polen_somnifero` | Polen somnífero | Sakura (`sakura`) + Sleep | Sin protección asignada todavía. |
-| `hojas_petrificantes` | Hojas Petrificantes | Hojas (`leaves`) + Stone Curse | Sin protección asignada; Stone Curse dura 4 segundos por aplicación. Aún no está asignada a ningún mapa. |
-| `calor_intenso` | Calor intenso | Sin efecto visual + aumento del consumo de sed | Pendiente; requiere integración con `survival`. |
-| `frio_extremo` | Frío extremo | Sin efecto visual + aumento del consumo de hambre | Pendiente; requiere integración con `survival`. |
+| `ventisca` | Ventisca | Nieve (`snow`) + Freeze | Armadura Horno; bloquea Freeze climático, que dura 4 segundos por aplicación. |
+| `neblina_densa` | Neblina densa | Nubes (`cloud`) + Blind | Gafas de Claridad; bloquean Blind climático. |
+| `vapores_asfixiantes` | Vapores asfixiantes | Nubes (`cloud6`) + Stun | Máscara de Gas Etéreo; bloquea Stun climático, que dura 4 segundos por aplicación. |
+| `terreno_fangoso` | Terreno fangoso | Lluvia (`rain`) + Decrease Agi | Botas de Estabilidad; duración efectiva de 12 segundos para jugadores. Aún sin mapa asignado. |
+| `tierra_maldita` | Tierra maldita | Nubes (`cloud8`) + Curse | Manto Bendecido; bloquea Curse climático. |
+| `polen_somnifero` | Polen somnífero | Sakura (`sakura`) + Sleep | Máscara de Hierba Neutralizante; bloquea Sleep climático. |
+| `hojas_petrificantes` | Hojas Petrificantes | Hojas (`leaves`) + Stone Curse | Scriptum Petreum; bloquea Stone Curse (4 segundos por aplicación). Aún sin mapa asignado. |
+| `calor_intenso` | Calor intenso | Sin efecto visual + aumento del consumo de sed | Sombrero del Desierto bloquea la pérdida extra. Sin protección, `survival` consume 2 puntos de sed por tick de 15 segundos durante el evento. |
+| `frio_extremo` | Frío extremo | Sin efecto visual + aumento del consumo de hambre | Abrigo Polar bloquea la pérdida extra. Sin protección, `survival` consume 2 puntos de hambre por tick de 15 segundos durante el evento. |
 
 Un mapa referencia la combinación completa, no una pareja independiente de
 clima y estado. Por eso el Manto de Lluvia protege en los dos mapas asignados
 a `lluvia_toxica`, pero no bloquea `terreno_fangoso`, aunque también tenga
 lluvia visual. Freeze y Stun son efectos cortos de prueba, de 4 segundos por
-aplicación. Las combinaciones de calor y frío no están asignadas a mapas ni
-activas hasta su integración con `survival`.
+aplicación. Calor intenso y Frío extremo no tienen estado alterado ni efecto
+visual propio; aumentan el consumo de una necesidad si ambos mods están activos.
 
-`hojas_petrificantes` ya está definida en el NPC, pero no se activa hasta
-asignarla a uno o más mapas; su visual tampoco se declara en `mod.json` por
-ahora.
+`hojas_petrificantes` ya está definida en el NPC y tiene objeto de protección,
+pero no se activa hasta asignarla a uno o más mapas; su visual tampoco se
+declara en `mod.json` por ahora.
 
 ## Asignación de prueba por mapa
 
-Cada una de las siete combinaciones actualmente asignadas se usa en dos mapas.
-Esta distribución facilita comprobar que un mismo ID produce los mismos
-efectos en distintos mapas y que las protecciones funcionan allí sin
-configuración adicional.
+Las seis combinaciones con estados alterados actualmente asignadas se usan en
+dos mapas cada una. Calor intenso y Frío extremo se asignan a un mapa cada una
+para probar su integración opcional con `survival`. `terreno_fangoso` y
+`hojas_petrificantes` están definidas, pero todavía no se asignan a mapas.
 
 | # | Mapa | ID de combinación | Efecto visual | Estado |
 |---:|---|---|---|---|
@@ -82,8 +101,8 @@ configuración adicional.
 | 6 | `prt_fild06` | `neblina_densa` | Nubes (`cloud`) | Blind |
 | 7 | `prt_fild07` | `vapores_asfixiantes` | Nubes (`cloud6`) | Stun (4 s) |
 | 8 | `prt_fild08` | `vapores_asfixiantes` | Nubes (`cloud6`) | Stun (4 s) |
-| 9 | `prt_fild09` | `terreno_fangoso` | Lluvia (`rain`) | Decrease Agi |
-| 10 | `prt_fild10` | `terreno_fangoso` | Lluvia (`rain`) | Decrease Agi |
+| 9 | `prt_fild09` | `calor_intenso` | Sin efecto visual | Sed: 2 puntos por tick (requiere `survival`) |
+| 10 | `prt_fild10` | `frio_extremo` | Sin efecto visual | Hambre: 2 puntos por tick (requiere `survival`) |
 | 11 | `prt_fild11` | `tierra_maldita` | Nubes (`cloud8`) | Curse |
 | 12 | `prontera` | `tierra_maldita` | Nubes (`cloud8`) | Curse |
 | 13 | `izlude` | `polen_somnifero` | Sakura (`sakura`) | Sleep |
@@ -107,28 +126,33 @@ y se reservarían para contenido de nivel alto.
 - El primer chequeo de cada mapa ocurre 30 segundos después de iniciar el
   servidor. La probabilidad está al 100% para esta prueba.
 - Cada evento dura 5 minutos para dar tiempo de visitar los 14 mapas en una
-  sesión. Los eventos de todos los mapas empiezan en el mismo primer chequeo.
+  sesión. Los eventos de todos los mapas empiezan en el mismo primer chequeo;
+  al terminar, esperan un minuto antes del siguiente chequeo.
 - Durante un evento, el NPC revisa cada 10 segundos a los personajes del mapa y
   aplica el estado de la combinación solo si no está activo. No reinicia
-  estados activos. Freeze y Stun duran 4 segundos por aplicación; las otras
-  combinaciones duran 12 segundos para el jugador. rAthena reduce a la mitad
-  la duración de Decrease Agi para jugadores, así que el script solicita 24
-  segundos para que dure los mismos 12.
+  estados activos. Freeze, Stun y Stone Curse duran 4 segundos por aplicación;
+  Poison, Blind, Curse y Sleep duran 12 segundos. Decrease Agi también dura
+  12 segundos para jugadores: rAthena reduce a la mitad su duración, así que el
+  script solicita 24 segundos. Calor intenso y Frío extremo no aplican estados:
+  con `survival` activo, aumentan a 2 puntos la pérdida de sed o hambre en cada
+  tick de 15 segundos mientras dure el evento.
 - Al expirar un estado, puede haber unos segundos de respiro antes de la
   siguiente aplicación. Esa pausa es intencional y reduce la frecuencia del
   sonido de Poison.
-- En todos los mapas de `lluvia_toxica`, llevar equipado el Manto de Lluvia
-  impide las aplicaciones nuevas de Poison. No se revisan ni eliminan los
-  Poison de otras fuentes.
+- Llevar equipado el objeto de protección correspondiente impide las
+  aplicaciones nuevas y la penalización de su combinación. La protección no
+  elimina estados activos ni afecta a estados de otras fuentes o combinaciones.
 - Si se sale del mapa, el estado aplicado por el clima puede tardar hasta 12
-  segundos en expirar (4 segundos para Freeze y Stun) y ya no se vuelve a
-  aplicar fuera de ese mapa.
-- Freeze, Stun y Sleep pueden impedir temporalmente actuar o moverse. Usa una
-  cuenta de prueba y el warp de GM para continuar el recorrido.
+  segundos en expirar (4 segundos para Freeze, Stun y Stone Curse) y ya no se
+  vuelve a aplicar fuera de ese mapa.
+- Freeze, Stun, Sleep y Stone Curse pueden impedir temporalmente actuar o
+  moverse. Usa una cuenta de prueba y el warp de GM para continuar el recorrido.
 - Al iniciar o terminar cada evento, el mapa recibe un mensaje narrativo
-  dirigido al jugador y adecuado al clima y su efecto. Hojas Petrificantes ya
-  tiene textos definidos, pero no se mostrarán hasta asignar esa combinación
-  a un mapa.
+  dirigido al jugador y adecuado al clima y su efecto. Terreno fangoso y Hojas
+  Petrificantes tienen textos definidos, pero no se mostrarán hasta asignar
+  esas combinaciones a un mapa.
+- El modificador de hambre o sed se activa al iniciar el evento, se limpia al
+  terminarlo o al cambiar de mapa, y no queda guardado entre sesiones.
 
 Los mensajes actuales son:
 
@@ -142,6 +166,8 @@ Los mensajes actuales son:
 | Tierra maldita | Un gas extraño se eleva del suelo; una sensación sombría debilita tu cuerpo. | El gas se disipa y la opresión que sentías comienza a desaparecer. |
 | Polen somnífero | El polen flota en el aire; tus párpados pesan y el sueño empieza a vencerte. | El polen se aleja y consigues despejarte del sopor. |
 | Hojas Petrificantes | Hojas extrañas giran a tu alrededor; sientes cómo tu cuerpo empieza a endurecerse. | Las hojas se dispersan y la rigidez abandona poco a poco tu cuerpo. |
+| Calor intenso | El calor se vuelve sofocante; sientes la garganta seca y la sed aumenta con rapidez. | El calor cede y la sed deja de apremiarte con tanta fuerza. |
+| Frío extremo | Un frío intenso cala hasta los huesos; tu cuerpo consume sus reservas para mantenerse caliente. | El frío extremo se retira y tu cuerpo deja de gastar sus reservas tan deprisa. |
 
 La configuración del cliente está en `mod.json`; la del scheduler y los
 estados está en `npc/clima.txt`.
@@ -152,98 +178,77 @@ Activa `clima` en **Settings → Mods**. Los cambios de `mod.json` requieren
 recargar la configuración del cliente (reinicia la app si Settings lo solicita);
 los cambios de `npc/` requieren reiniciar el servidor.
 
-Después de iniciar el servidor, espera al primer anuncio y visita los mapas en
-el orden de la tabla. Compara los dos mapas asignados a cada ID y prueba su
-estado. El efecto visual se configura estáticamente por mapa en `mod.json` y
+Después de iniciar el servidor, espera los anuncios y visita los mapas en el
+orden de la tabla. En cada clima asignado prueba primero sin protección y luego
+con el objeto indicado en la tabla de equipo: debe bloquear solo la aplicación
+del controlador para esa combinación. `terreno_fangoso` y
+`hojas_petrificantes` todavía no tienen mapas asignados. Activa también
+`survival` para probar Calor intenso y Frío
+extremo. Sin protección, en `prt_fild09` la sed baja 2 puntos cada 15 segundos
+y en `prt_fild10` ocurre lo mismo con el hambre; con el sombrero o el abrigo,
+respectivamente, ambos medidores deben bajar a su ritmo normal de 1 punto cada
+15 segundos. Al acabar el evento o salir del mapa, el consumo también vuelve
+al ritmo normal.
+El efecto visual se configura estáticamente por mapa en `mod.json` y
 permanece visible mientras estés allí; no comienza ni termina junto con el
-evento del estado. Por eso puede seguir viéndose después de que termina dicho
-evento. Esa limitación del cliente sigue pendiente de una mejora futura.
+evento climático. Por eso puede seguir viéndose después de que termina dicho
+evento. `prt_fild09` y `prt_fild10` no tienen un efecto visual de clima asignado
+por este mod. Esa limitación del cliente sigue pendiente de una mejora futura.
 
-## Resultados visuales de la exploración anterior
+## Observaciones visuales
 
-En las pruebas visuales anteriores se observó que `cloud` parece niebla,
-`cloud3` parece contaminación en el aire y `cloud6` parece vapor. `cloud8`
-produce un gas naranja en Izlude, pero solo se alcanza a ver sobre el agua. No
-se observó una señal visible de `cloud2`, `cloud4`, `cloud5` ni `cloud7` en
-aquellos mapas. Esos resultados pertenecen a la exploración previa: algunos de
-esos efectos ya no forman parte de las combinaciones asignadas. La visibilidad
-puede depender de superficies de agua u otras condiciones del mapa, así que
-conviene observar de nuevo las combinaciones actuales.
+En las pruebas anteriores, `cloud` se percibió como niebla y `cloud6` como
+vapor. `cloud8` produjo un gas naranja en Izlude, visible solo sobre el agua.
+La apariencia puede variar según el mapa y la superficie. Las combinaciones de
+calor y frío no tienen efecto visual asignado; `terreno_fangoso` y
+`hojas_petrificantes` tampoco se asignan actualmente a mapas.
 
 Para confirmar la carga del NPC, revisa el log del map-server: debe mostrar
 `[clima] <mapa> asignado a <combinación>...` y luego
 `[clima] Evento <combinación> iniciado en <mapa>`. Al entrar a un mapa durante
-el evento, el log registra si el estado está activo y si el equipo protege al
-personaje.
+el evento, el log registra el estado (si esa combinación aplica uno) y si el
+equipo protege al personaje.
 
 Los efectos visuales admitidos se documentan en
 [`CUSTOM_MAPS.md`](../../docs/mods/CUSTOM_MAPS.md).
 
-## Interacción futura con Survival
+## Integración con Survival
 
-El equipo de protección contra la lluvia ya está implementado en este mod. Una
-posible ampliación sería que el clima también afectara hambre o sed:
+Con ambos mods activos, el evento de **Calor intenso** en `prt_fild09` añade
+una pérdida de sed por tick de Survival; **Frío extremo** en `prt_fild10` hace
+lo mismo con el hambre. El resultado de prueba es 2 puntos cada 15 segundos
+(el punto normal más uno adicional). Survival conserva el control de sus
+medidores y temporizadores; clima solo comunica la exposición mediante las
+variables de jugador `@clima_thirst_extra_loss`,
+`@clima_hunger_extra_loss` y `@clima_exposure_map$`, que limita el efecto al
+mapa de exposición.
 
-- **Interacción con `survival`.** Un clima activo podría acelerar el descenso
-  de hambre o sed según el tipo de exposición. Por ejemplo, calor intenso
-  podría aumentar la sed y el frío aumentar el hambre. El clima debe modificar
-  los ritmos que ya administra `survival`, sin crear medidores ni temporizadores
-  paralelos.
+La exposición comienza con el evento y se limpia al terminar, al cambiar de
+mapa y al desconectarse. Survival también comprueba que el personaje siga en el
+mapa asociado antes de sumar la pérdida extra, para no aplicar exposición
+residual después de salir. Si Survival está desactivado, los eventos siguen
+mostrando sus mensajes, pero no alteran hambre ni sed. Por ahora estas dos
+combinaciones no tienen efecto visual propio.
 
-### Recomendación de organización
+Los efectos visuales asignados siguen declarándose estáticamente por mapa en
+`mod.json`. Conectar su ciclo de vida al inicio y fin del evento sigue
+pendiente; ver la propuesta técnica más abajo.
 
-Como el clima cambiaría directamente hambre y sed, recomiendo integrar las
-combinaciones `calor_intenso` y `frio_extremo` en `survival` cuando se
-implementen: allí ya viven los
-valores, temporizadores, penalizaciones y consumibles de esas necesidades.
-Las definiciones de combinaciones y protecciones pueden permanecer organizadas
-en este mod, pero un solo controlador debe ser responsable de ajustar las
-tasas. Así se evita que `clima` y `survival` mantengan copias de la misma
-lógica o dependan de variables internas frágiles entre mods.
+Cada objeto protege solo contra su combinación, no contra otros climas. Para
+Calor intenso y Frío extremo, clima deja en cero la pérdida extra al detectar
+el sombrero o el abrigo; Survival sigue a cargo de los ticks normales de hambre
+y sed, sin crear temporizadores paralelos.
 
-El mod `clima` puede seguir gestionando el scheduler y las combinaciones
-climáticas. La integración futura con `survival` debe usar una interfaz
-explícita para comunicar la exposición, no escribir directamente en los
-temporizadores internos de otro mod.
-
-### Reglas para futuras ampliaciones
-
-1. Calcular el hambre y la sed con un multiplicador de exposición asociado al
-   clima activo del mapa. Al terminar el evento, salir del mapa o desconectarse,
-   restaurar el ritmo normal sin dejar modificadores pegados.
-2. Mostrar claramente qué equipo protege de qué clima y, si se ajustan las
-   tasas de `survival`, comunicar al jugador cuándo está expuesto y cuál
-   necesidad se consume más rápido.
-3. Mantener separados los efectos por clima: el Manto de Lluvia no protege
-   contra frío, calor, contaminación u otros climas.
-
-### Decisiones que faltan antes de implementarlo
-
-- Qué mapas tendrán cada combinación en el diseño definitivo; la tabla actual
-  es una distribución de prueba.
-- Cuánto aumenta cada clima el consumo de hambre o sed, si hay límites y cómo
-  interactúa con otras penalizaciones de `survival`.
-- Si los efectos visuales siguen siendo permanentes por mapa o si en otra
-  etapa se conectan al inicio y fin de cada evento; el cliente hoy no recibe
-  ese ciclo de vida desde el scheduler.
-- Cómo tratar cambios de mapa durante un evento, reapariciones,
-  desconexiones o más de una fuente de exposición para las futuras mecánicas
-  de hambre y sed.
-
-Estos puntos son propuestas para la próxima etapa, no reglas ya acordadas. Las
-siete combinaciones de estado asignadas siguen implementadas como prueba en dos
-mapas cada una. `hojas_petrificantes` está definida pero aún no tiene mapas
-asignados. Calor intenso y frío extremo siguen sin asignación ni efectos hasta
-la integración con `survival`; `survival` no se ha modificado.
+Los mapas y multiplicadores actuales son de prueba. Aún queda decidir la
+distribución definitiva y cómo acumular varias fuentes simultáneas de
+modificadores.
 
 ## Efecto visual durante el evento: posible trabajo futuro
 
-Hoy el efecto visual de cada combinación está declarado para cada mapa en
-`mod.json`. El cliente lo activa al cargar el mapa y lo mantiene mientras el
-personaje permanece allí; el scheduler de `npc/clima.txt` no puede detenerlo
-al acabar el evento. Por ahora, las asignaciones visuales y las combinaciones
-de servidor coinciden, pero la duración visual sigue siendo independiente del
-evento de estado.
+Hoy los efectos visuales asignados están declarados por mapa en `mod.json`. El
+cliente los activa al cargar el mapa y los mantiene mientras el personaje
+permanece allí; el scheduler de `npc/clima.txt` no puede detenerlos al acabar
+el evento. La duración visual sigue siendo independiente del evento de estado.
 
 Si en el futuro se decide que el efecto visual dure únicamente durante el
 evento, hará falta conectar el servidor y el cliente sin hacer que el mod

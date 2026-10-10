@@ -23,12 +23,17 @@ OnInit:
 	.effect_refresh_interval = 10;
 	.effect_lease = 12;
 
+	.combo_count = 10;
+	for (.@i = 1; .@i <= .combo_count; .@i++)
+		.combo_protection_slot_alt[.@i] = -1;
+
 	.combo_name$[1] = "Lluvia tóxica";
 	.combo_weather$[1] = "rain";
 	.combo_status[1] = SC_POISON;
 	.combo_status_name$[1] = "Poison";
 	.combo_status_duration[1] = .effect_lease;
 	.combo_protection_item[1] = 50824;
+	.combo_protection_slot[1] = EQI_GARMENT;
 	.combo_start_message$[1] = "Sientes como la lluvia comienza a irritarte la piel; hasta los animales parecen evitarla.";
 	.combo_end_message$[1] = "La lluvia parece amainar y ya no sientes que te afecte.";
 
@@ -37,6 +42,8 @@ OnInit:
 	.combo_status[2] = SC_FREEZE;
 	.combo_status_name$[2] = "Freeze";
 	.combo_status_duration[2] = 4;
+	.combo_protection_item[2] = 50825;
+	.combo_protection_slot[2] = EQI_GARMENT;
 	.combo_start_message$[2] = "Una ventisca helada te golpea; el frío entumece tus miembros y apenas puedes moverte.";
 	.combo_end_message$[2] = "La ventisca pierde fuerza y recuperas poco a poco la movilidad.";
 
@@ -45,6 +52,8 @@ OnInit:
 	.combo_status[3] = SC_BLIND;
 	.combo_status_name$[3] = "Blind";
 	.combo_status_duration[3] = .effect_lease;
+	.combo_protection_item[3] = 50826;
+	.combo_protection_slot[3] = EQI_HEAD_MID;
 	.combo_start_message$[3] = "Una neblina espesa te envuelve; distingues cada vez menos lo que tienes delante.";
 	.combo_end_message$[3] = "La neblina se disipa y vuelves a ver con claridad.";
 
@@ -53,6 +62,9 @@ OnInit:
 	.combo_status[4] = SC_STUN;
 	.combo_status_name$[4] = "Stun";
 	.combo_status_duration[4] = 4;
+	.combo_protection_item[4] = 50827;
+	.combo_protection_slot[4] = EQI_HEAD_LOW;
+	.combo_protection_slot_alt[4] = EQI_HEAD_MID;
 	.combo_start_message$[4] = "Una nube de vapores asfixiantes te cubre; te falta el aire y pierdes el equilibrio.";
 	.combo_end_message$[4] = "Los vapores se dispersan y consigues respirar con más facilidad.";
 
@@ -61,6 +73,8 @@ OnInit:
 	.combo_status[5] = SC_DECREASEAGI;
 	.combo_status_name$[5] = "Decrease Agi";
 	.combo_status_duration[5] = .effect_lease * 2;
+	.combo_protection_item[5] = 50828;
+	.combo_protection_slot[5] = EQI_SHOES;
 	.combo_start_message$[5] = "La lluvia empapa el terreno y el barro vuelve cada paso más pesado.";
 	.combo_end_message$[5] = "El terreno comienza a secarse y vuelves a moverte con más soltura.";
 
@@ -69,6 +83,8 @@ OnInit:
 	.combo_status[6] = SC_CURSE;
 	.combo_status_name$[6] = "Curse";
 	.combo_status_duration[6] = .effect_lease;
+	.combo_protection_item[6] = 50829;
+	.combo_protection_slot[6] = EQI_GARMENT;
 	.combo_start_message$[6] = "Un gas extraño se eleva del suelo; una sensación sombría debilita tu cuerpo.";
 	.combo_end_message$[6] = "El gas se disipa y la opresión que sentías comienza a desaparecer.";
 
@@ -77,6 +93,8 @@ OnInit:
 	.combo_status[7] = SC_SLEEP;
 	.combo_status_name$[7] = "Sleep";
 	.combo_status_duration[7] = .effect_lease;
+	.combo_protection_item[7] = 50830;
+	.combo_protection_slot[7] = EQI_HEAD_LOW;
 	.combo_start_message$[7] = "El polen flota en el aire; tus párpados pesan y el sueño empieza a vencerte.";
 	.combo_end_message$[7] = "El polen se aleja y consigues despejarte del sopor.";
 
@@ -85,8 +103,31 @@ OnInit:
 	.combo_status[8] = SC_STONE;
 	.combo_status_name$[8] = "Stone Curse";
 	.combo_status_duration[8] = 4;
+	.combo_protection_item[8] = 50831;
+	.combo_protection_slot[8] = EQI_ACC_L;
+	.combo_protection_slot_alt[8] = EQI_ACC_R;
 	.combo_start_message$[8] = "Hojas extrañas giran a tu alrededor; sientes cómo tu cuerpo empieza a endurecerse.";
 	.combo_end_message$[8] = "Las hojas se dispersan y la rigidez abandona poco a poco tu cuerpo.";
+
+	.combo_name$[9] = "Calor intenso";
+	.combo_weather$[9] = "sin efecto visual";
+	.combo_status[9] = 0;
+	.combo_status_name$[9] = "ninguno";
+	.combo_status_duration[9] = 0;
+	.combo_protection_item[9] = 50832;
+	.combo_protection_slot[9] = EQI_HEAD_TOP;
+	.combo_start_message$[9] = "El calor se vuelve sofocante; sientes la garganta seca y la sed aumenta con rapidez.";
+	.combo_end_message$[9] = "El calor cede y la sed deja de apremiarte con tanta fuerza.";
+
+	.combo_name$[10] = "Frío extremo";
+	.combo_weather$[10] = "sin efecto visual";
+	.combo_status[10] = 0;
+	.combo_status_name$[10] = "ninguno";
+	.combo_status_duration[10] = 0;
+	.combo_protection_item[10] = 50833;
+	.combo_protection_slot[10] = EQI_GARMENT;
+	.combo_start_message$[10] = "Un frío intenso cala hasta los huesos; tu cuerpo consume sus reservas para mantenerse caliente.";
+	.combo_end_message$[10] = "El frío extremo se retira y tu cuerpo deja de gastar sus reservas tan deprisa.";
 
 	.map$[0] = "prt_fild01";
 	.map_name$[0] = "Prontera Field 01";
@@ -114,10 +155,10 @@ OnInit:
 	.combination[7] = 4;
 	.map$[8] = "prt_fild09";
 	.map_name$[8] = "Prontera Field 09";
-	.combination[8] = 5;
+	.combination[8] = 9;
 	.map$[9] = "prt_fild10";
 	.map_name$[9] = "Prontera Field 10";
-	.combination[9] = 5;
+	.combination[9] = 10;
 	.map$[10] = "prt_fild11";
 	.map_name$[10] = "Prontera Field 11";
 	.combination[10] = 6;
@@ -154,6 +195,12 @@ OnTimer1000:
 				.next_check[.@i] = .@now + .check_interval;
 			debugmes "[clima] Evento " + .combo_name$[.combination[.@i]] + " terminado en " + .map$[.@i] + ".";
 			mapannounce .map$[.@i], .combo_end_message$[.combination[.@i]], bc_map;
+			.@player_count = getmapunits(BL_PC, .map$[.@i], .@player_ids[0]);
+			freeloop(1);
+			for (.@j = 0; .@j < .@player_count; .@j++) {
+				callsub S_ApplyWeatherStatus, .@i, .@player_ids[.@j];
+			}
+			freeloop(0);
 		}
 
 		if (.event_active[.@i] && .@now >= .next_effect_refresh[.@i]) {
@@ -192,8 +239,15 @@ OnTimer1000:
 S_IsWeatherProtected:
 	.@map_index = getarg(0);
 	.@combo_id = .combination[.@map_index];
-	if (.combo_protection_item[.@combo_id] && getequipid(EQI_GARMENT) == .combo_protection_item[.@combo_id])
+	.@item_id = .combo_protection_item[.@combo_id];
+	if (!.@item_id)
+		return 0;
+	if (getequipid(.combo_protection_slot[.@combo_id]) == .@item_id)
 		return 1;
+	if (.combo_protection_slot_alt[.@combo_id] >= 0) {
+		if (getequipid(.combo_protection_slot_alt[.@combo_id]) == .@item_id)
+			return 1;
+	}
 	return 0;
 
 S_ApplyWeatherStatus:
@@ -204,13 +258,34 @@ S_ApplyWeatherStatus:
 		return;
 	}
 	.@combo_id = .combination[.@map_index];
+	if (!.event_active[.@map_index]) {
+		set @clima_hunger_extra_loss, 0;
+		set @clima_thirst_extra_loss, 0;
+		set @clima_exposure_map$, "";
+		detachrid;
+		return;
+	}
+
 	.@protected = callsub(S_IsWeatherProtected, .@map_index);
-	if (!.@protected && !getstatus(.combo_status[.@combo_id]))
+	set @clima_hunger_extra_loss, 0;
+	set @clima_thirst_extra_loss, 0;
+	set @clima_exposure_map$, "";
+	if (!.@protected && .@combo_id == 9) {
+		set @clima_thirst_extra_loss, 1;
+		set @clima_exposure_map$, .map$[.@map_index];
+	} else if (!.@protected && .@combo_id == 10) {
+		set @clima_hunger_extra_loss, 1;
+		set @clima_exposure_map$, .map$[.@map_index];
+	}
+	if (.combo_status[.@combo_id] && !.@protected && !getstatus(.combo_status[.@combo_id]))
 		sc_start .combo_status[.@combo_id], .combo_status_duration[.@combo_id] * 1000, 0, 10000, SCSTART_NOAVOID;
 	detachrid;
 	return;
 
 OnPCLoadMapEvent:
+	set @clima_hunger_extra_loss, 0;
+	set @clima_thirst_extra_loss, 0;
+	set @clima_exposure_map$, "";
 	.@map$ = strcharinfo(3);
 	for (.@i = 0; .@i < .map_count; .@i++) {
 		if (.@map$ == .map$[.@i] && .event_active[.@i]) {
@@ -219,9 +294,20 @@ OnPCLoadMapEvent:
 				.@combo_id = .combination[.@i];
 				.@lease = min(.combo_status_duration[.@combo_id] * 1000, .@remaining);
 				.@protected = callsub(S_IsWeatherProtected, .@i);
-				if (!.@protected && !getstatus(.combo_status[.@combo_id]))
+				if (.combo_status[.@combo_id] && !.@protected && !getstatus(.combo_status[.@combo_id]))
 					sc_start .combo_status[.@combo_id], .@lease, 0, 10000, SCSTART_NOAVOID;
-				debugmes "[clima] " + .combo_status_name$[.@combo_id] + " al entrar a " + .@map$ + "; activo: " + getstatus(.combo_status[.@combo_id]) + "; protegido: " + .@protected + "; lease: " + .@lease + " ms.";
+				if (.combo_status[.@combo_id])
+					.@status_active = getstatus(.combo_status[.@combo_id]);
+				else
+					.@status_active = 0;
+				debugmes "[clima] " + .combo_status_name$[.@combo_id] + " al entrar a " + .@map$ + "; activo: " + .@status_active + "; protegido: " + .@protected + "; lease: " + .@lease + " ms.";
+				if (!.@protected && .@combo_id == 9) {
+					set @clima_thirst_extra_loss, 1;
+					set @clima_exposure_map$, .@map$;
+				} else if (!.@protected && .@combo_id == 10) {
+					set @clima_hunger_extra_loss, 1;
+					set @clima_exposure_map$, .@map$;
+				}
 			}
 			break;
 		}

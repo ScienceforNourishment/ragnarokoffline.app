@@ -24,3 +24,151 @@ Body:
          bonus bFlee2,5+(getequiprefinerycnt(EQI_GARMENT)*2);
       else if (BaseClass == Job_Swordman || BaseClass == Job_Merchant || BaseClass == Job_Thief)
          bonus bShortWeaponDamageReturn,5+(getequiprefinerycnt(EQI_GARMENT)*2);
+  - Id: 50825
+    AegisName: Clima_Furnace_Garment
+    Name: Armadura Horno
+    Type: Armor
+    Buy: 136000
+    Weight: 2200
+    Defense: 4
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    Refineable: true
+    Script: |
+      bonus bDefEle,Ele_Fire;
+  - Id: 50826
+    AegisName: Clima_Clear_Vision_Glasses
+    Name: Gafas de Claridad
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 1
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Head_Mid: true
+    View: 63
+    ArmorLevel: 1
+  - Id: 50827
+    AegisName: Clima_Aether_Gas_Mask
+    Name: Máscara de Gas Etéreo
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 1
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Head_Low: true
+      Head_Mid: true
+    View: 91
+    ArmorLevel: 1
+    Script: |
+      bonus2 bResEff,Eff_Poison,3000;
+  - Id: 50828
+    AegisName: Clima_Stability_Boots
+    Name: Botas de Estabilidad
+    Type: Armor
+    Weight: 1000
+    Defense: 5
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    Refineable: true
+  - Id: 50829
+    AegisName: Clima_Blessed_Manteau
+    Name: Manto Bendecido
+    Type: Armor
+    Buy: 20
+    Weight: 2500
+    Defense: 5
+    Slots: 1
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    Refineable: true
+    Script: |
+      bonus bMdef,5;
+      bonus2 bResEff,Eff_Blind,8000;
+  - Id: 50830
+    AegisName: Clima_Neutralizing_Grass_Mask
+    Name: Máscara de Hierba Neutralizante
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Head_Low: true
+    View: 90
+    ArmorLevel: 1
+    Script: |
+      bonus2 bResEff,Eff_Poison,2000;
+  - Id: 50831
+    AegisName: Clima_Petreum_Scriptum
+    Name: Scriptum Petreum
+    Type: Armor
+    Buy: 20000
+    Weight: 1000
+    Defense: 1
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    Script: |
+      bonus bMaxHP,50;
+  - Id: 50832
+    AegisName: Clima_Desert_Hat
+    Name: Sombrero del Desierto
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 3
+    Slots: 1
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Head_Top: true
+    View: 567
+    ArmorLevel: 1
+    Script: |
+      bonus bUnbreakableHelm;
+  - Id: 50833
+    AegisName: Clima_Polar_Coat
+    Name: Abrigo Polar
+    Type: Armor
+    Buy: 22000
+    Weight: 1200
+    Defense: 5
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    Refineable: true
