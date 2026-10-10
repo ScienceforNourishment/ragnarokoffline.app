@@ -61,6 +61,12 @@ API.
 - Los scripts y tablas del servidor se escriben para **rAthena**, no para otro
   emulador. Sigue sus comandos y convenciones. Usa eventos y scripts dentro de
   `npc/` y tablas dentro de `db/` cuando sean suficientes.
+- En rAthena, una funcion global de NPC se declara como
+  `function<TAB>script<TAB>Nombre<TAB>{` (con tabuladores reales entre los
+  campos), no como `function script Nombre {`. Una sintaxis incorrecta puede
+  hacer que rAthena detenga la lectura de todo ese archivo; confirma la carga
+  en `ragnarok-stack logs map 100`, no solo que el archivo aparezca en la
+  configuracion.
 - Los plugins de `client/` son módulos ES con una exportación `default` que
   recibe `(parameters, api)`. Comprueba `api.version` y usa las API soportadas
   en `docs/MODDING.md`; registra recursos con `api.cleanup()` y no dependas de
@@ -71,6 +77,31 @@ API.
   del mod y valida el formato del mensaje.
 - Mantén aislados los nombres de variables, eventos, selectores CSS, elementos
   DOM y temporizadores para evitar conflictos con otros mods.
+
+## Aprendizajes: equipo y cofres de dungeon
+
+- `affix-forge` y `arpg-equipments` ya ofrecen equipo con entre 1 y 4 opciones.
+  Los cofres no deberían duplicar esa recompensa con más armas o equipo
+  mejorado; su botín distintivo aún está por decidir. Las comidas distintas
+  por Tier del mod `dungeon-chest` son recompensas temporales para probarlo.
+- `my-mods/dungeon-chest/` es la identidad actual del mod: el nombre de la
+  carpeta debe coincidir con `name` en `mod.json`. Al renombrar un mod, actualiza
+  también referencias internas y la copia instalada; cambiar la identidad no
+  elimina por sí solo los archivos de la carpeta con el nombre anterior.
+- Al actualizar una instalación, reemplaza la carpeta del mod completa. Copiar
+  encima no quita scripts `.txt` obsoletos, que pueden seguir cargándose como
+  NPC duplicados aunque ya no existan en la versión del proyecto.
+- `dungeon-chest` coloca un cofre por mapa en una celda transitable aleatoria.
+  Su lista actual cubre 179 mapas clasificados provisionalmente por Tier con
+  un promedio ponderado de los niveles de sus spawns normales Renewal; es una
+  estimación para ordenar el contenido, no un nivel recomendado oficial.
+  Quedan fuera 17 mapas de la lista de RateMyServer sin spawns normales en el
+  índice consultado.
+- Los intervalos actuales de 10 minutos para reubicar un cofre no abierto y
+  para reponer uno abierto son valores de prueba, no el balance definitivo.
+  Para diagnosticar cofres ausentes, revisa el log del map-server: que el
+  archivo esté incluido en `map_conf.txt` no demuestra que rAthena lo haya
+  parseado; un error de sintaxis puede detener la carga del archivo entero.
 
 ## Reglas de implementación
 

@@ -1,0 +1,120 @@
+prontera	mapflag	loadevent
+prt_fild08	mapflag	loadevent
+
+prontera,0,0,0	script	Clima#clima	-1,{
+	end;
+
+OnInit:
+	.map_count = 2;
+	.check_interval = 60;
+	.first_check_delay = 30;
+	.effect_refresh_interval = 10;
+	.effect_lease = 12;
+
+	.map$[0] = "prontera";
+	.status[0] = SC_POISON;
+	.status_name$[0] = "Poison";
+	.start_message$[0] = "Un clima tóxico afecta Prontera.";
+	.end_message$[0] = "El evento de clima en Prontera ha terminado.";
+	.chance[0] = 100;
+	.duration[0] = 30;
+
+	.map$[1] = "prt_fild08";
+	.status[1] = SC_CURSE;
+	.status_name$[1] = "Curse";
+	.start_message$[1] = "Una maldición afecta Prontera Field 08.";
+	.end_message$[1] = "La maldición en Prontera Field 08 ha terminado.";
+	.chance[1] = 100;
+	.duration[1] = 30;
+
+	for (.@i = 0; .@i < .map_count; .@i++) {
+		.event_active[.@i] = 0;
+		.event_end[.@i] = 0;
+		.next_check[.@i] = gettimetick(2) + .first_check_delay;
+		debugmes "[clima] Controlador cargado para " + .map$[.@i] + "; primer chequeo en " + .first_check_delay + " segundos.";
+	}
+
+	initnpctimer;
+	end;
+
+OnTimer1000:
+	.@now = gettimetick(2);
+
+	for (.@i = 0; .@i < .map_count; .@i++) {
+		if (.event_active[.@i] && .@now >= .event_end[.@i]) {
+			.event_active[.@i] = 0;
+			.event_end[.@i] = 0;
+			if (.next_check[.@i] <= .@now)
+				.next_check[.@i] = .@now + .check_interval;
+			debugmes "[clima] Evento terminado en " + .map$[.@i] + ".";
+			mapannounce .map$[.@i], .end_message$[.@i], bc_map;
+		}
+
+		if (.event_active[.@i] && .@now >= .next_effect_refresh[.@i]) {
+			.next_effect_refresh[.@i] = .@now + .effect_refresh_interval;
+			.@player_count = getmapunits(BL_PC, .map$[.@i], .@player_ids[0]);
+			freeloop(1);
+			for (.@j = 0; .@j < .@player_count; .@j++) {
+				callsub S_ApplyWeatherStatus, .@i, .@player_ids[.@j], .effect_lease * 1000;
+			}
+			freeloop(0);
+		}
+
+		if (!.event_active[.@i] && .@now >= .next_check[.@i]) {
+			.next_check[.@i] = .@now + .check_interval;
+			if (.chance[.@i] >= 100 || rand(100) < .chance[.@i]) {
+				.event_active[.@i] = 1;
+				.event_end[.@i] = .@now + .duration[.@i];
+				.next_effect_refresh[.@i] = .@now + .effect_refresh_interval;
+				.@player_count = getmapunits(BL_PC, .map$[.@i], .@player_ids[0]);
+				freeloop(1);
+				for (.@j = 0; .@j < .@player_count; .@j++) {
+					callsub S_ApplyWeatherStatus, .@i, .@player_ids[.@j], .effect_lease * 1000;
+				}
+				freeloop(0);
+				debugmes "[clima] Evento iniciado en " + .map$[.@i] + "; estado " + .status_name$[.@i] + "; personajes afectados: " + .@player_count + ".";
+				mapannounce .map$[.@i], .start_message$[.@i], bc_map;
+			} else {
+				debugmes "[clima] Revisión de " + .map$[.@i] + ": no comenzó evento (probabilidad " + .chance[.@i] + "%).";
+			}
+		}
+	}
+
+	initnpctimer;
+	end;
+
+S_ApplyWeatherStatus:
+	.@map_index = getarg(0);
+	.@player_id = getarg(1);
+	.@lease = getarg(2);
+	if (!attachrid(.@player_id)) {
+		debugmes "[clima] No se pudo adjuntar al personaje " + .@player_id + " para revisar su estado.";
+		return;
+	}
+	if (!getstatus(.status[.@map_index]))
+		sc_start .status[.@map_index], .@lease, 0, 10000, SCSTART_NOAVOID;
+	detachrid;
+	return;
+
+OnPCLoadMapEvent:
+	.@map$ = strcharinfo(3);
+	for (.@i = 0; .@i < .map_count; .@i++) {
+		if (.@map$ == .map$[.@i] && .event_active[.@i]) {
+			.@remaining = (.event_end[.@i] - gettimetick(2)) * 1000;
+			if (.@remaining > 0) {
+				.@lease = min(.effect_lease * 1000, .@remaining);
+				if (.@i == 0) {
+					if (!getstatus(SC_POISON))
+						sc_start SC_POISON, .@lease, 0, 10000, SCSTART_NOAVOID;
+					debugmes "[clima] Poison al entrar a " + .map$[.@i] + "; activo: " + getstatus(SC_POISON) + "; lease: " + .@lease + " ms.";
+				} else if (.@i == 1) {
+					if (!getstatus(SC_CURSE))
+						sc_start SC_CURSE, .@lease, 0, 10000, SCSTART_NOAVOID;
+					debugmes "[clima] Curse al entrar a " + .@map$ + "; activo: " + getstatus(SC_CURSE) + "; lease: " + .@lease + " ms.";
+				}
+			}
+			break;
+		}
+	}
+	end;
+}
