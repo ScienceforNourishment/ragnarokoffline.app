@@ -1,0 +1,10 @@
+{
+  "name": "expedition-board",
+  "version": "0.1.0",
+  "author": "Alejandro",
+  "description": "Tableros de contratos de expedición en las ciudades principales: acepta una caza, abate la marca y vuelve a entregar.",
+  "requires": {
+    "app": ">=1.4.0",
+    "era": "any"
+  }
+}

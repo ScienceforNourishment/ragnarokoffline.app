@@ -142,6 +142,12 @@ las ideas para futuras iteraciones:
 - **`survival`** añade barras de hambre y sed a la interfaz, además de alimentos
   y bebidas que las restauran. Ambos valores disminuyen con el tiempo, y los
   eventos de `clima` pueden acelerar esa reducción.
+- **`expedition-board`** coloca un tablero de contratos en cada ciudad
+  principal. Cada contrato hace aparecer una marca en un mapa cercano; al
+  abatirla hay que volver al tablero de esa ciudad para cobrar. Es independiente
+  de los demás mods de esta carpeta y de `bounty-hunt`. Las recompensas actuales
+  son zeny y pociones de prueba; no asumas botín de `dungeon-chest` ni de
+  `clima`.
 
 Una relación funcional no significa necesariamente que exista una dependencia
 de carga entre mods. Antes de añadir o cambiar `requires.mods` o `after`, revisa

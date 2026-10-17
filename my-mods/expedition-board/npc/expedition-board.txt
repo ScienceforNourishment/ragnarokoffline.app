@@ -1,0 +1,338 @@
+// expedition-board -- Contratos de expediciones.
+//
+// Las lineas de cabecera usan TAB entre campos, no espacios.
+//
+// Estado por personaje (sin prefijo de ambito = permanente en char_reg_num):
+//   eb_qid    contrato activo (1..N), 0 si no hay
+//   eb_state  0 libre, 1 cazando, 2 marca abatida, listo para entregar
+//   eb_gid    GID de la marca invocada; invalido tras reiniciar el map-server
+//
+// La marca usa el evento ExpeditionCtrl::OnHuntDead, de modo que solo MUERE
+// ESE spawn completa el contrato, no cualquier monstruo de la misma especie.
+
+function	script	F_Expedition_Place	{
+	.@map$ = getarg(0);
+	.@x = getarg(1);
+	.@y = getarg(2);
+	if (checkcell(.@map$, .@x, .@y, cell_chkpass)) {
+		set getvariableofnpc(.place_x, "ExpeditionCtrl"), .@x;
+		set getvariableofnpc(.place_y, "ExpeditionCtrl"), .@y;
+		return 1;
+	}
+	for (.@r = 1; .@r <= 24; .@r++) {
+		for (.@dx = -.@r; .@dx <= .@r; .@dx++) {
+			for (.@dy = -.@r; .@dy <= .@r; .@dy++) {
+				if (abs(.@dx) != .@r && abs(.@dy) != .@r)
+					continue;
+				.@nx = .@x + .@dx;
+				.@ny = .@y + .@dy;
+				if (!checkcell(.@map$, .@nx, .@ny, cell_chkpass))
+					continue;
+				set getvariableofnpc(.place_x, "ExpeditionCtrl"), .@nx;
+				set getvariableofnpc(.place_y, "ExpeditionCtrl"), .@ny;
+				return 1;
+			}
+		}
+	}
+	debugmes "expedition-board: no walkable cell near " + .@map$ + " " + .@x + "," + .@y;
+	return 0;
+}
+
+function	script	F_Expedition_ClearMark	{
+	if (eb_gid > 0 && unitexists(eb_gid))
+		unitkill eb_gid;
+	eb_gid = 0;
+	return;
+}
+
+function	script	F_Expedition_Spawn	{
+	.@qid = getarg(0);
+	if (.@qid < 1 || .@qid > getvariableofnpc(.count, "ExpeditionCtrl"))
+		return 0;
+
+	callfunc "F_Expedition_ClearMark";
+
+	.@map$ = getvariableofnpc(.map$[.@qid], "ExpeditionCtrl");
+	.@x = getvariableofnpc(.x[.@qid], "ExpeditionCtrl");
+	.@y = getvariableofnpc(.y[.@qid], "ExpeditionCtrl");
+	.@mob = getvariableofnpc(.mob[.@qid], "ExpeditionCtrl");
+	if (!callfunc("F_Expedition_Place", .@map$, .@x, .@y))
+		return 0;
+
+	.@sx = getvariableofnpc(.place_x, "ExpeditionCtrl");
+	.@sy = getvariableofnpc(.place_y, "ExpeditionCtrl");
+	eb_gid = monster(.@map$, .@sx, .@sy, "Marca de expedicion", .@mob, 1, "ExpeditionCtrl::OnHuntDead");
+	if (eb_gid < 1) {
+		debugmes "expedition-board: monster() failed for qid " + .@qid + " on " + .@map$;
+		return 0;
+	}
+	return 1;
+}
+
+-	script	ExpeditionCtrl	-1,{
+	end;
+
+OnInit:
+	.count = 7;
+
+	.name$[1] = "Rastro en el campo sur";
+	.city$[1] = "prontera";
+	.cityname$[1] = "Prontera";
+	.map$[1] = "prt_fild08";
+	.x[1] = 180;
+	.y[1] = 240;
+	.mob[1] = 1013;
+	.zeny[1] = 2000;
+	.item[1] = 501;
+	.amt[1] = 10;
+	.blurb$[1] = "Han senalado un lobo entre los Porings al sur de la ciudad.";
+
+	.name$[2] = "Amenaza en Byalan";
+	.city$[2] = "izlude";
+	.cityname$[2] = "Izlude";
+	.map$[2] = "iz_dun00";
+	.x[2] = 120;
+	.y[2] = 90;
+	.mob[2] = 1068;
+	.zeny[2] = 3000;
+	.item[2] = 502;
+	.amt[2] = 10;
+	.blurb$[2] = "Una hidra marcada se oculta en la primera cueva de Byalan.";
+
+	.name$[3] = "Goblin marcado";
+	.city$[3] = "geffen";
+	.cityname$[3] = "Geffen";
+	.map$[3] = "gef_fild07";
+	.x[3] = 180;
+	.y[3] = 150;
+	.mob[3] = 1122;
+	.zeny[3] = 4000;
+	.item[3] = 503;
+	.amt[3] = 10;
+	.blurb$[3] = "Un goblin senalado recorre el campo al oeste de Geffen.";
+
+	.name$[4] = "Sauce inquieto";
+	.city$[4] = "payon";
+	.cityname$[4] = "Payon";
+	.map$[4] = "pay_fild08";
+	.x[4] = 80;
+	.y[4] = 100;
+	.mob[4] = 1010;
+	.zeny[4] = 2500;
+	.item[4] = 501;
+	.amt[4] = 10;
+	.blurb$[4] = "Un sauce marcado se mueve al sur de Payon, fuera de su sitio.";
+
+	.name$[5] = "Lobo del desierto";
+	.city$[5] = "morocc";
+	.cityname$[5] = "Morocc";
+	.map$[5] = "moc_fild11";
+	.x[5] = 180;
+	.y[5] = 200;
+	.mob[5] = 1106;
+	.zeny[5] = 5000;
+	.item[5] = 504;
+	.amt[5] = 5;
+	.blurb$[5] = "Un lobo del desierto marcado espera en Sograt.";
+
+	.name$[6] = "Cangrejo del camino";
+	.city$[6] = "alberta";
+	.cityname$[6] = "Alberta";
+	.map$[6] = "pay_fild03";
+	.x[6] = 140;
+	.y[6] = 160;
+	.mob[6] = 1109;
+	.zeny[6] = 3500;
+	.item[6] = 502;
+	.amt[6] = 10;
+	.blurb$[6] = "Un Vadon marcado corto el camino entre Payon y Alberta.";
+
+	.name$[7] = "Arana del paso";
+	.city$[7] = "aldebaran";
+	.cityname$[7] = "Aldebaran";
+	.map$[7] = "mjolnir_12";
+	.x[7] = 170;
+	.y[7] = 170;
+	.mob[7] = 1100;
+	.zeny[7] = 4500;
+	.item[7] = 504;
+	.amt[7] = 5;
+	.blurb$[7] = "Un Argos marcado guarda el paso hacia Aldebaran.";
+	end;
+
+OnPCLoginEvent:
+	if (eb_state != 1 || eb_qid < 1)
+		end;
+	if (eb_gid > 0 && unitexists(eb_gid))
+		end;
+	if (callfunc("F_Expedition_Spawn", eb_qid))
+		dispbottom "Expedicion: la marca volvio a aparecer. El contrato sigue activo.";
+	else
+		dispbottom "Expedicion: no se pudo recolocar la marca. Habla con el tablero.";
+	end;
+
+OnHuntDead:
+	if (eb_state != 1 || eb_qid < 1)
+		end;
+	.@mob = getvariableofnpc(.mob[eb_qid], "ExpeditionCtrl");
+	.@map$ = getvariableofnpc(.map$[eb_qid], "ExpeditionCtrl");
+	if (killedrid != .@mob)
+		end;
+	if (strcharinfo(3) != .@map$)
+		end;
+	eb_state = 2;
+	eb_gid = 0;
+	dispbottom "Expedicion: objetivo abatido. Vuelve al tablero de " + getvariableofnpc(.cityname$[eb_qid], "ExpeditionCtrl") + " a entregar.";
+	end;
+}
+
+prontera,79,194,4	script	Expedicion#eb_prt	4_BOARD3,{
+	.@city$ = strnpcinfo(4);
+	.@count = getvariableofnpc(.count, "ExpeditionCtrl");
+
+	mes "[Tablero de Expediciones]";
+	mes "Avisos de caza para quien pueda salir de la ciudad y volver.";
+
+	if (eb_state == 1 && eb_qid >= 1 && eb_qid <= .@count) {
+		mes " ";
+		mes "Contrato activo: ^0000FF" + getvariableofnpc(.name$[eb_qid], "ExpeditionCtrl") + "^000000.";
+		mes "Marca en ^0000FF" + getvariableofnpc(.map$[eb_qid], "ExpeditionCtrl") + " (" + getvariableofnpc(.x[eb_qid], "ExpeditionCtrl") + ", " + getvariableofnpc(.y[eb_qid], "ExpeditionCtrl") + ")^000000.";
+		mes "Entrega en el tablero de ^0000FF" + getvariableofnpc(.cityname$[eb_qid], "ExpeditionCtrl") + "^000000.";
+	} else if (eb_state == 2 && eb_qid >= 1 && eb_qid <= .@count) {
+		mes " ";
+		mes "La marca de ^0000FF" + getvariableofnpc(.name$[eb_qid], "ExpeditionCtrl") + "^000000 ya cayo.";
+		if (getvariableofnpc(.city$[eb_qid], "ExpeditionCtrl") == .@city$)
+			mes "Puedes entregar el contrato aqui.";
+		else
+			mes "Vuelve al tablero de ^0000FF" + getvariableofnpc(.cityname$[eb_qid], "ExpeditionCtrl") + "^000000.";
+	}
+	next;
+
+	.@n = 0;
+	.@menu$ = "";
+	if (eb_state == 2 && eb_qid >= 1 && eb_qid <= .@count && getvariableofnpc(.city$[eb_qid], "ExpeditionCtrl") == .@city$) {
+		.@n++;
+		.@act[.@n] = 1;
+		.@menu$ = "Entregar el contrato";
+	}
+	if ((eb_state == 1 || eb_state == 2) && eb_qid >= 1 && eb_qid <= .@count) {
+		.@n++;
+		.@act[.@n] = 2;
+		if (.@menu$ != "") .@menu$ = .@menu$ + ":";
+		.@menu$ = .@menu$ + "Recordar el contrato";
+		.@n++;
+		.@act[.@n] = 3;
+		.@menu$ = .@menu$ + ":Abandonar el contrato";
+	}
+	if (eb_state == 0) {
+		for (.@i = 1; .@i <= .@count; .@i++) {
+			if (getvariableofnpc(.city$[.@i], "ExpeditionCtrl") != .@city$)
+				continue;
+			.@n++;
+			.@act[.@n] = 10 + .@i;
+			if (.@menu$ != "") .@menu$ = .@menu$ + ":";
+			.@menu$ = .@menu$ + getvariableofnpc(.name$[.@i], "ExpeditionCtrl");
+		}
+		if (.@n == 0) {
+			mes "[Tablero de Expediciones]";
+			mes "Hoy no hay contratos clavados en esta ciudad.";
+			close;
+		}
+	}
+	.@n++;
+	.@act[.@n] = 0;
+	if (.@menu$ != "") .@menu$ = .@menu$ + ":";
+	.@menu$ = .@menu$ + "Dejar el tablero";
+
+	.@choice = select(.@menu$);
+	if (.@choice < 1 || .@choice > .@n)
+		close;
+	.@do = .@act[.@choice];
+
+	if (.@do == 0) {
+		mes "[Tablero de Expediciones]";
+		mes "El papel seguira aqui.";
+		close;
+	}
+
+	if (.@do == 1) {
+		.@qid = eb_qid;
+		.@item = getvariableofnpc(.item[.@qid], "ExpeditionCtrl");
+		.@amt = getvariableofnpc(.amt[.@qid], "ExpeditionCtrl");
+		.@zeny = getvariableofnpc(.zeny[.@qid], "ExpeditionCtrl");
+		if (!checkweight(.@item, .@amt)) {
+			mes "[Tablero de Expediciones]";
+			mes "No puedes cargar la recompensa. Libera peso y vuelve.";
+			close;
+		}
+		set Zeny, Zeny + .@zeny;
+		getitem .@item, .@amt;
+		eb_qid = 0;
+		eb_state = 0;
+		eb_gid = 0;
+		mes "[Tablero de Expediciones]";
+		mes "Contrato cerrado. " + .@zeny + " zeny y " + .@amt + " " + getitemname(.@item) + ".";
+		close;
+	}
+
+	if (.@do == 2) {
+		mes "[Tablero de Expediciones]";
+		mes getvariableofnpc(.blurb$[eb_qid], "ExpeditionCtrl");
+		mes "Mapa: " + getvariableofnpc(.map$[eb_qid], "ExpeditionCtrl") + " (" + getvariableofnpc(.x[eb_qid], "ExpeditionCtrl") + ", " + getvariableofnpc(.y[eb_qid], "ExpeditionCtrl") + ").";
+		mes "La marca se llama ^0000FFMarca de expedicion^000000.";
+		close;
+	}
+
+	if (.@do == 3) {
+		mes "[Tablero de Expediciones]";
+		mes "Si abandonas, la marca se retira y el contrato queda libre.";
+		next;
+		if (select("Abandonarlo:Seguir con el") == 2) {
+			mes "[Tablero de Expediciones]";
+			mes "Sigue en pie.";
+			close;
+		}
+		callfunc "F_Expedition_ClearMark";
+		eb_qid = 0;
+		eb_state = 0;
+		mes "[Tablero de Expediciones]";
+		mes "Contrato anulado.";
+		close;
+	}
+
+	if (.@do >= 11) {
+		.@qid = .@do - 10;
+		mes "[Tablero de Expediciones]";
+		mes "^0000FF" + getvariableofnpc(.name$[.@qid], "ExpeditionCtrl") + "^000000";
+		mes getvariableofnpc(.blurb$[.@qid], "ExpeditionCtrl");
+		next;
+		mes "[Tablero de Expediciones]";
+		mes "La marca aparecera en ^0000FF" + getvariableofnpc(.map$[.@qid], "ExpeditionCtrl") + " (" + getvariableofnpc(.x[.@qid], "ExpeditionCtrl") + ", " + getvariableofnpc(.y[.@qid], "ExpeditionCtrl") + ")^000000.";
+		mes "Acabala y vuelve a ESTE tablero.";
+		mes "Recompensa: " + getvariableofnpc(.zeny[.@qid], "ExpeditionCtrl") + " zeny y " + getvariableofnpc(.amt[.@qid], "ExpeditionCtrl") + " " + getitemname(getvariableofnpc(.item[.@qid], "ExpeditionCtrl")) + ".";
+		next;
+		if (select("Aceptar el contrato:No por ahora") == 2) {
+			mes "[Tablero de Expediciones]";
+			mes "El aviso sigue clavado.";
+			close;
+		}
+		if (!callfunc("F_Expedition_Spawn", .@qid)) {
+			mes "[Tablero de Expediciones]";
+			mes "No se pudo colocar la marca. Prueba de nuevo o revisa el mapa.";
+			close;
+		}
+		eb_qid = .@qid;
+		eb_state = 1;
+		mes "[Tablero de Expediciones]";
+		mes "Contrato aceptado. Busca a ^0000FFMarca de expedicion^000000.";
+		close;
+	}
+	close;
+}
+
+izlude,128,121,4	duplicate(Expedicion#eb_prt)	Expedicion#eb_izl	4_BOARD3
+geffen,119,37,4	duplicate(Expedicion#eb_prt)	Expedicion#eb_gef	4_BOARD3
+payon,188,110,4	duplicate(Expedicion#eb_prt)	Expedicion#eb_pay	4_BOARD3
+morocc,160,85,4	duplicate(Expedicion#eb_prt)	Expedicion#eb_moc	4_BOARD3
+alberta,190,144,4	duplicate(Expedicion#eb_prt)	Expedicion#eb_alb	4_BOARD3
+aldebaran,139,125,4	duplicate(Expedicion#eb_prt)	Expedicion#eb_alde	4_BOARD3
