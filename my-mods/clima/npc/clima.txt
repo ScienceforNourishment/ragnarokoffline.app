@@ -9,15 +9,21 @@ prt_fild08	mapflag	loadevent
 prt_fild09	mapflag	loadevent
 prt_fild10	mapflag	loadevent
 prt_fild11	mapflag	loadevent
-prontera	mapflag	loadevent
-izlude	mapflag	loadevent
-geffen	mapflag	loadevent
+gef_fild07	mapflag	loadevent
+pay_fild08	mapflag	loadevent
+pay_fild03	mapflag	loadevent
+moc_fild11	mapflag	loadevent
+mjolnir_12	mapflag	loadevent
+xmas_fild01	mapflag	loadevent
+cmd_fild01	mapflag	loadevent
+um_fild01	mapflag	loadevent
+mosk_fild02	mapflag	loadevent
 
 prontera,0,0,0	script	Clima#clima	-1,{
 	end;
 
 OnInit:
-	.map_count = 14;
+	.map_count = 20;
 	.check_interval = 60;
 	.first_check_delay = 30;
 	.effect_refresh_interval = 10;
@@ -129,56 +135,84 @@ OnInit:
 	.combo_start_message$[10] = "Un frío intenso cala hasta los huesos; tu cuerpo consume sus reservas para mantenerse caliente.";
 	.combo_end_message$[10] = "El frío extremo se retira y tu cuerpo deja de gastar sus reservas tan deprisa.";
 
+	// The combinations a map can roll come from its biome in the world-atlas mod.
+	// Each biome lists only combinations that share the weather visual mod.json
+	// gives its maps, because that visual is fixed per map (see the README).
+	// Comma-separated combination ids; one is drawn each time an event starts.
+	// Cities get no events at all, so "ciudad" is deliberately not listed.
+	.biome_count = 11;
+	.biome$[0] = "pradera";
+	.biome_combos$[0] = "1,5";
+	.biome$[1] = "bosque";
+	.biome_combos$[1] = "8";
+	.biome$[2] = "selva";
+	.biome_combos$[2] = "4";
+	.biome$[3] = "desierto";
+	.biome_combos$[3] = "9";
+	.biome$[4] = "nieve";
+	.biome_combos$[4] = "2";
+	.biome$[5] = "pantano";
+	.biome_combos$[5] = "6";
+	.biome$[6] = "costa";
+	.biome_combos$[6] = "3";
+	.biome$[7] = "montana";
+	.biome_combos$[7] = "10";
+	.biome$[8] = "volcan";
+	.biome_combos$[8] = "4";
+	.biome$[9] = "cueva";
+	.biome_combos$[9] = "4";
+	.biome$[10] = "ruinas";
+	.biome_combos$[10] = "6";
+
 	.map$[0] = "prt_fild01";
 	.map_name$[0] = "Prontera Field 01";
-	.combination[0] = 1;
 	.map$[1] = "prt_fild02";
 	.map_name$[1] = "Prontera Field 02";
-	.combination[1] = 1;
 	.map$[2] = "prt_fild03";
 	.map_name$[2] = "Prontera Field 03";
-	.combination[2] = 2;
 	.map$[3] = "prt_fild04";
 	.map_name$[3] = "Prontera Field 04";
-	.combination[3] = 2;
 	.map$[4] = "prt_fild05";
 	.map_name$[4] = "Prontera Field 05";
-	.combination[4] = 3;
 	.map$[5] = "prt_fild06";
 	.map_name$[5] = "Prontera Field 06";
-	.combination[5] = 3;
 	.map$[6] = "prt_fild07";
 	.map_name$[6] = "Prontera Field 07";
-	.combination[6] = 4;
 	.map$[7] = "prt_fild08";
 	.map_name$[7] = "Prontera Field 08";
-	.combination[7] = 4;
 	.map$[8] = "prt_fild09";
 	.map_name$[8] = "Prontera Field 09";
-	.combination[8] = 9;
 	.map$[9] = "prt_fild10";
 	.map_name$[9] = "Prontera Field 10";
-	.combination[9] = 10;
 	.map$[10] = "prt_fild11";
 	.map_name$[10] = "Prontera Field 11";
-	.combination[10] = 6;
-	.map$[11] = "prontera";
-	.map_name$[11] = "Prontera";
-	.combination[11] = 6;
-	.map$[12] = "izlude";
-	.map_name$[12] = "Izlude";
-	.combination[12] = 7;
-	.map$[13] = "geffen";
-	.map_name$[13] = "Geffen";
-	.combination[13] = 7;
+	.map$[11] = "gef_fild07";
+	.map_name$[11] = "Geffen Field 07";
+	.map$[12] = "pay_fild08";
+	.map_name$[12] = "Payon Field 08";
+	.map$[13] = "pay_fild03";
+	.map_name$[13] = "Payon Field 03";
+	.map$[14] = "moc_fild11";
+	.map_name$[14] = "Morocc Field 11";
+	.map$[15] = "mjolnir_12";
+	.map_name$[15] = "Mjolnir Field 12";
+	.map$[16] = "xmas_fild01";
+	.map_name$[16] = "Lutie Field 01";
+	.map$[17] = "cmd_fild01";
+	.map_name$[17] = "Comodo Field 01";
+	.map$[18] = "um_fild01";
+	.map_name$[18] = "Umbala Field 01";
+	.map$[19] = "mosk_fild02";
+	.map_name$[19] = "Mosk Field 02";
 
 	for (.@i = 0; .@i < .map_count; .@i++) {
 		.event_active[.@i] = 0;
 		.event_end[.@i] = 0;
+		.combination[.@i] = 0;
 		.next_check[.@i] = gettimetick(2) + .first_check_delay;
 		.chance[.@i] = 100;
 		.duration[.@i] = 300;
-		debugmes "[clima] " + .map$[.@i] + " asignado a " + .combo_name$[.combination[.@i]] + " (visual " + .combo_weather$[.combination[.@i]] + "); primer chequeo en " + .first_check_delay + " segundos.";
+		debugmes "[clima] " + .map$[.@i] + " registrado; el evento se sortea por su bioma al empezar; primer chequeo en " + .first_check_delay + " segundos.";
 	}
 
 	initnpctimer;
@@ -216,25 +250,52 @@ OnTimer1000:
 		if (!.event_active[.@i] && .@now >= .next_check[.@i]) {
 			.next_check[.@i] = .@now + .check_interval;
 			if (.chance[.@i] >= 100 || rand(100) < .chance[.@i]) {
-				.event_active[.@i] = 1;
-				.event_end[.@i] = .@now + .duration[.@i];
-				.next_effect_refresh[.@i] = .@now + .effect_refresh_interval;
-				.@player_count = getmapunits(BL_PC, .map$[.@i], .@player_ids[0]);
-				freeloop(1);
-				for (.@j = 0; .@j < .@player_count; .@j++) {
-					callsub S_ApplyWeatherStatus, .@i, .@player_ids[.@j];
+				.@combo = callsub(S_RollCombination, .@i);
+				if (!.@combo) {
+					debugmes "[clima] Sin evento en " + .map$[.@i] + ": el atlas no da un bioma con combinaciones para ese mapa.";
+				} else {
+					.combination[.@i] = .@combo;
+					.event_active[.@i] = 1;
+					.event_end[.@i] = .@now + .duration[.@i];
+					.next_effect_refresh[.@i] = .@now + .effect_refresh_interval;
+					.@player_count = getmapunits(BL_PC, .map$[.@i], .@player_ids[0]);
+					freeloop(1);
+					for (.@j = 0; .@j < .@player_count; .@j++) {
+						callsub S_ApplyWeatherStatus, .@i, .@player_ids[.@j];
+					}
+					freeloop(0);
+					debugmes "[clima] Evento " + .combo_name$[.combination[.@i]] + " iniciado en " + .map$[.@i] + "; visual " + .combo_weather$[.combination[.@i]] + "; estado " + .combo_status_name$[.combination[.@i]] + "; personajes afectados: " + .@player_count + ".";
+					mapannounce .map$[.@i], .combo_start_message$[.combination[.@i]], bc_map;
 				}
-				freeloop(0);
-				debugmes "[clima] Evento " + .combo_name$[.combination[.@i]] + " iniciado en " + .map$[.@i] + "; visual " + .combo_weather$[.combination[.@i]] + "; estado " + .combo_status_name$[.combination[.@i]] + "; personajes afectados: " + .@player_count + ".";
-				mapannounce .map$[.@i], .combo_start_message$[.combination[.@i]], bc_map;
 			} else {
-				debugmes "[clima] Revisión de " + .map$[.@i] + ": no comenzó " + .combo_name$[.combination[.@i]] + " (probabilidad " + .chance[.@i] + "%).";
+				debugmes "[clima] Revisión de " + .map$[.@i] + ": no comenzó ningún evento (probabilidad " + .chance[.@i] + "%).";
 			}
 		}
 	}
 
 	initnpctimer;
 	end;
+
+S_RollCombination:
+	// Draws one combination for the map from its atlas biome; 0 when there is none.
+	.@map_index = getarg(0);
+	if (!$@wa_ready)
+		return 0;
+	.@biome$ = callfunc("F_Atlas_Biome", .map$[.@map_index]);
+	for (.@b = 0; .@b < .biome_count; .@b++) {
+		if (.biome$[.@b] == .@biome$) {
+			explode(.@ids$, .biome_combos$[.@b], ",");
+			// A biome with a single combination has nothing to draw; rand() with a
+			// range under 2 logs an error and fails the script command.
+			.@n = getarraysize(.@ids$);
+			if (.@n < 1 || .@ids$[0] == "")
+				return 0;
+			if (.@n == 1)
+				return atoi(.@ids$[0]);
+			return atoi(.@ids$[rand(.@n)]);
+		}
+	}
+	return 0;
 
 S_IsWeatherProtected:
 	.@map_index = getarg(0);

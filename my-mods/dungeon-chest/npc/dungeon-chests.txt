@@ -17,10 +17,37 @@ function	script	F_DungeonChest_Move	{
 	return .@placed;
 }
 
+// F_DungeonChest_Item(tier) -> the test reward for a Tier, 0 for a Tier without one.
+function	script	F_DungeonChest_Item	{
+	.@tier = getarg(0);
+	if (.@tier == 1) return 12041;
+	if (.@tier == 2) return 12042;
+	if (.@tier == 3) return 12043;
+	if (.@tier == 4) return 12044;
+	if (.@tier == 5) return 12045;
+	if (.@tier == 6) return 12071;
+	return 0;
+}
+
 function	script	F_DungeonChest_Open	{
 	.@npc$ = getarg(0);
 	.@tier = getarg(1);
 	.@item = getarg(2);
+
+	// The world-atlas mod, when loaded and aware of this map, owns the Tier. The
+	// Tier and reward in the chest definition are the fallback, so the mod
+	// behaves the same without the atlas. The NPC's own name keeps its literal Tier.
+	if ($@wa_ready) {
+		.@map$ = strnpcinfo(4);
+		if (callfunc("F_Atlas_Has", .@map$)) {
+			.@atlas_tier = callfunc("F_Atlas_Tier", .@map$);
+			.@atlas_item = callfunc("F_DungeonChest_Item", .@atlas_tier);
+			if (.@atlas_item) {
+				.@tier = .@atlas_tier;
+				.@item = .@atlas_item;
+			}
+		}
+	}
 
 	mes "[Cofre de Tier " + .@tier + "]";
 	if (getvariableofnpc(.opened, .@npc$)) {

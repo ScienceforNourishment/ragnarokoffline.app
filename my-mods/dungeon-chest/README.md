@@ -20,6 +20,15 @@ distinta para facilitar las pruebas.
 
 ## Tiers y recompensas de prueba
 
+**El Tier lo decide `world-atlas` cuando está cargado.** Al abrir un cofre,
+`F_DungeonChest_Open` pregunta por el mapa del cofre a `F_Atlas_Tier` y toma
+la comida de ese Tier (`F_DungeonChest_Item`). Si el atlas no está cargado, no
+conoce el mapa o devuelve un Tier sin recompensa, se usan el Tier y el item
+escritos en la definición del cofre. Hoy los 179 coinciden con el atlas, así
+que el comportamiento es idéntico. Un Tier distinto en el atlas cambia la
+recompensa y el Tier mostrado en el diálogo, pero **no el nombre del NPC**
+(`Cofre T4`), que se fija al cargar el script.
+
 La dificultad se calcula como promedio ponderado por cantidad de spawn de los
 monstruos normales en cada mapa. Se excluyen los MVP y estos spawns estacionales:
 Golden Poring, Delightful Lude, Sock/Gift Stealing Raccoon y Organic/Inorganic
@@ -66,7 +75,9 @@ agregar una:
    del mod, confirma también que sea un mapa de dungeon y que tenga spawns
    normales en el índice de monstruos; no lo agregues solo porque su nombre
    parezca un dungeon.
-2. **Asigna el Tier según el criterio documentado.** La tabla anterior usa el
+2. **Asigna el Tier según el criterio documentado.** Añade primero el mapa a
+   `world-atlas` (ver su README; `tier_of.cjs` sugiere el Tier) y usa ese
+   mismo valor en la definición, que es la reserva sin el atlas. La tabla anterior usa el
    nivel promedio ponderado por cantidad de spawn, no un nivel oficial del
    mapa. Si el mapa no aparece en el índice o requiere otro criterio, deja la
    estimación clara y actualiza la tabla de Tier y su cantidad de mapas.

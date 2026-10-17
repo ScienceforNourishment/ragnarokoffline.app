@@ -10,6 +10,12 @@ solo se activa cuando ambos mods están habilitados.
 - Cada necesidad baja **1 punto cada 15 segundos mientras el personaje está
   conectado**. Este intervalo rápido es de prueba y no es una opción de
   Settings.
+- **En las ciudades principales no baja ninguna necesidad**: Prontera, Izlude,
+  Geffen, Payon, Morocc, Alberta y Aldebaran (mapas exteriores). Los
+  temporizadores siguen corriendo; solo se omite el descuento. Si una
+  necesidad ya está en 0, la penalización sigue activa en la ciudad hasta que
+  el personaje coma o beba. Para añadir un interior u otro asentamiento, agrega
+  su nombre de mapa a `.safe_maps$` en `OnInit` de `npc/survival.txt`.
 - Si el mod `clima` también está activo, Calor intenso puede añadir 1 punto
   extra de pérdida de sed por tick y Frío extremo 1 punto extra de pérdida de
   hambre. En esas exposiciones se pierden 2 puntos cada 15 segundos; al terminar
@@ -95,6 +101,69 @@ En `npc/survival.txt`, ajusta las llamadas a `addtimer` de
 están en milisegundos; por ejemplo, `60000` equivale a un punto por minuto.
 El temporizador `OnPenaltyTick` es independiente y no debe cambiarse para
 ajustar el ritmo de descenso.
+
+## Zonas seguras: dónde no bajan hambre y sed
+
+Dentro de una zona segura, `OnHungerTick` y `OnThirstTick` no descuentan
+puntos. Los temporizadores se reprograman igual, por lo que al salir del mapa
+el ritmo normal se reanuda de inmediato, sin reiniciar nada. El medidor sigue
+recibiendo su actualización en cada tick.
+
+Qué no cambia dentro de una zona segura:
+
+- `OnPenaltyTick` sigue corriendo. Si una necesidad ya está en 0, la
+  penalización continúa hasta que el personaje coma o beba.
+- Los objetos siguen restaurando hambre y sed.
+- La pérdida extra por exposición de `clima` no aplica allí, porque sus
+  eventos ocurren en mapas de campo.
+
+Un mapa es seguro si se cumple **cualquiera** de estas dos cosas:
+
+1. El mod `world-atlas`, si está cargado, lo marca como `city`
+   (`F_Atlas_IsSafe`). Hoy son los mapas exteriores de las siete ciudades
+   principales: `prontera`, `izlude`, `geffen`, `payon`, `morocc`,
+   `alberta` y `aldebaran`.
+2. Está en la lista `.safe_maps$` de `npc/survival.txt`, con los mismos siete
+   mapas. Es la lista de reserva: sin el atlas, o con el atlas pero para un
+   interior que no es `city`, solo manda esta lista.
+
+El atlas es una dependencia suave: `survival` no lo exige (no hay
+`requires.mods`) y se comporta igual con o sin él. La decisión vive en
+`F_Survival_IsSafe(map$)`, al inicio de `npc/survival.txt`. Los interiores
+(posadas, tiendas, iglesias) no están incluidos en ninguna de las dos.
+
+Si añades una ciudad nueva al atlas con `kind` `city`, `survival` la trata
+como segura sin tocar su lista. Para un interior u otro mapa suelto, sigue
+valiendo la guía siguiente.
+
+### Añadir un mapa a las zonas seguras
+
+1. Averigua el nombre exacto del mapa en el juego, por ejemplo con `@mapinfo`
+   o mirando el nombre en el minimapa, o en la ruta de los scripts de
+   `vendor/rathena/npc/`. Es el nombre interno (`prt_in`, `payon_in01`), no el
+   que muestra el juego.
+2. Abre `npc/survival.txt` y busca la línea de `OnInit`:
+
+   ```c
+   .safe_maps$ = "|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|";
+   ```
+
+3. Agrega el nombre del mapa **entre barras**, sin espacios, y deja la barra
+   final. Para añadir `prt_in` y `payon_in01`:
+
+   ```c
+   .safe_maps$ = "|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|prt_in|payon_in01|";
+   ```
+
+4. Los nombres van en minúsculas y completos. La comprobación busca
+   `|nombre|` dentro de la lista, así que `prt` no coincide con `prontera` ni
+   con `prt_in`. Una barra olvidada hace que el mapa no se reconozca.
+5. Reemplaza la carpeta del mod, recarga los mods del servidor y comprueba en
+   el log del map-server que `survival.txt` cargó sin errores.
+6. Prueba: entra al mapa con un personaje y comprueba que los medidores no
+   bajan en 15 segundos; sal a un campo y comprueba que sí.
+
+Con el mod `world-atlas` cargado, los mapas `city` del atlas ya cuentan como seguros sin estar aquí (ver arriba); esta lista sigue siendo el sitio para interiores y mapas sueltos.
 
 ## Mantenimiento: alimentos, bebidas y pociones
 

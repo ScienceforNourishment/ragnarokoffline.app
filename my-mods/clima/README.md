@@ -1,11 +1,11 @@
 # Clima
 
-Prototipo de combinaciones climáticas reutilizables en 14 mapas. Cada mapa usa
-un ID que determina su efecto de servidor y, cuando corresponde, su efecto
-visual y protección compatible. Las combinaciones con estados alterados se
-repiten en dos mapas para probar que la protección dependa de la combinación,
-no del mapa; Calor intenso y Frío extremo se asignan a un mapa cada una para
-probar su integración opcional con Survival.
+Prototipo de combinaciones climáticas reutilizables en 20 mapas. **El bioma del
+mapa, tomado del mod `world-atlas`, decide qué combinaciones pueden ocurrir
+allí**; cada vez que empieza un evento se sortea una de las de ese bioma. Cada
+combinación tiene un ID que determina su efecto de servidor y, cuando
+corresponde, su efecto visual y protección compatible. Requiere `world-atlas`
+(`requires.mods`): sin él no se sortea ningún evento.
 
 ## Equipo de protección por combinación
 
@@ -146,10 +146,10 @@ una combinación tiene efecto visual, este también se asigna al mapa en
 | `ventisca` | Ventisca | Nieve (`snow`) + Freeze | Armadura Horno; bloquea Freeze climático, que dura 4 segundos por aplicación. |
 | `neblina_densa` | Neblina densa | Nubes (`cloud`) + Blind | Gafas de Claridad; bloquean Blind climático. |
 | `vapores_asfixiantes` | Vapores asfixiantes | Nubes (`cloud6`) + Stun | Máscara de Gas Etéreo; bloquea Stun climático, que dura 4 segundos por aplicación. |
-| `terreno_fangoso` | Terreno fangoso | Lluvia (`rain`) + Decrease Agi | Botas de Estabilidad; duración efectiva de 12 segundos para jugadores. Aún sin mapa asignado. |
+| `terreno_fangoso` | Terreno fangoso | Lluvia (`rain`) + Decrease Agi | Botas de Estabilidad; duración efectiva de 12 segundos para jugadores. |
 | `tierra_maldita` | Tierra maldita | Nubes (`cloud8`) + Curse | Manto Bendecido; bloquea Curse climático. |
 | `polen_somnifero` | Polen somnífero | Sakura (`sakura`) + Sleep | Máscara de Hierba Neutralizante; bloquea Sleep climático. |
-| `hojas_petrificantes` | Hojas Petrificantes | Hojas (`leaves`) + Stone Curse | Scriptum Petreum; bloquea Stone Curse (4 segundos por aplicación). Aún sin mapa asignado. |
+| `hojas_petrificantes` | Hojas Petrificantes | Hojas (`leaves`) + Stone Curse | Scriptum Petreum; bloquea Stone Curse (4 segundos por aplicación). |
 | `calor_intenso` | Calor intenso | Sin efecto visual + aumento del consumo de sed | Sombrero del Desierto bloquea la pérdida extra. Sin protección, `survival` consume 2 puntos de sed por tick de 15 segundos durante el evento. |
 | `frio_extremo` | Frío extremo | Sin efecto visual + aumento del consumo de hambre | Abrigo Polar bloquea la pérdida extra. Sin protección, `survival` consume 2 puntos de hambre por tick de 15 segundos durante el evento. |
 
@@ -160,33 +160,73 @@ lluvia visual. Freeze y Stun son efectos cortos de prueba, de 4 segundos por
 aplicación. Calor intenso y Frío extremo no tienen estado alterado ni efecto
 visual propio; aumentan el consumo de una necesidad si ambos mods están activos.
 
-`hojas_petrificantes` ya está definida en el NPC y tiene objeto de protección,
-pero no se activa hasta asignarla a uno o más mapas; su visual tampoco se
-declara en `mod.json` por ahora.
+`hojas_petrificantes` y `terreno_fangoso` ya se activan: la primera en los
+mapas de bioma `bosque`, la segunda como una de las dos combinaciones de
+`pradera`.
 
-## Asignación de prueba por mapa
+## Combinaciones por bioma
 
-Las seis combinaciones con estados alterados actualmente asignadas se usan en
-dos mapas cada una. Calor intenso y Frío extremo se asignan a un mapa cada una
-para probar su integración opcional con `survival`. `terreno_fangoso` y
-`hojas_petrificantes` están definidas, pero todavía no se asignan a mapas.
+El bioma de cada mapa sale de `F_Atlas_Biome` (ver
+[`world-atlas`](../world-atlas/README.md)). La tabla vive en `OnInit` de
+`npc/clima.txt` (`.biome$[]` y `.biome_combos$[]`). **Regla:** todas las
+combinaciones de un bioma comparten el efecto visual que `mod.json` fija a sus
+mapas, porque ese visual es estático (ver «Limitación conocida»). Por eso el
+sorteo solo existe donde dos combinaciones comparten visual.
 
-| # | Mapa | ID de combinación | Efecto visual | Estado |
-|---:|---|---|---|---|
-| 1 | `prt_fild01` | `lluvia_toxica` | Lluvia (`rain`) | Poison |
-| 2 | `prt_fild02` | `lluvia_toxica` | Lluvia (`rain`) | Poison |
-| 3 | `prt_fild03` | `ventisca` | Nieve (`snow`) | Freeze (4 s) |
-| 4 | `prt_fild04` | `ventisca` | Nieve (`snow`) | Freeze (4 s) |
-| 5 | `prt_fild05` | `neblina_densa` | Nubes (`cloud`) | Blind |
-| 6 | `prt_fild06` | `neblina_densa` | Nubes (`cloud`) | Blind |
-| 7 | `prt_fild07` | `vapores_asfixiantes` | Nubes (`cloud6`) | Stun (4 s) |
-| 8 | `prt_fild08` | `vapores_asfixiantes` | Nubes (`cloud6`) | Stun (4 s) |
-| 9 | `prt_fild09` | `calor_intenso` | Sin efecto visual | Sed: 2 puntos por tick (requiere `survival`) |
-| 10 | `prt_fild10` | `frio_extremo` | Sin efecto visual | Hambre: 2 puntos por tick (requiere `survival`) |
-| 11 | `prt_fild11` | `tierra_maldita` | Nubes (`cloud8`) | Curse |
-| 12 | `prontera` | `tierra_maldita` | Nubes (`cloud8`) | Curse |
-| 13 | `izlude` | `polen_somnifero` | Sakura (`sakura`) | Sleep |
-| 14 | `geffen` | `polen_somnifero` | Sakura (`sakura`) | Sleep |
+| Bioma | Visual del mapa | Combinaciones posibles |
+|---|---|---|
+| `ciudad` | — | ninguna: las ciudades no tienen eventos y no están en la lista de mapas |
+| `pradera` | Lluvia (`rain`) | `lluvia_toxica` o `terreno_fangoso` (al azar) |
+| `bosque` | Hojas (`leaves`) | `hojas_petrificantes` |
+| `selva` | Nubes (`cloud6`) | `vapores_asfixiantes` |
+| `desierto` | ninguno | `calor_intenso` |
+| `nieve` | Nieve (`snow`) | `ventisca` |
+| `pantano` | Nubes (`cloud8`) | `tierra_maldita` |
+| `costa` | Nubes (`cloud`) | `neblina_densa` |
+| `montana` | ninguno | `frio_extremo` |
+| `volcan` | Nubes (`cloud6`) | `vapores_asfixiantes` |
+| `cueva` | Nubes (`cloud6`) | `vapores_asfixiantes` |
+| `ruinas` | Nubes (`cloud8`) | `tierra_maldita` |
+
+Es una primera asignación de diseño, no un balance: cámbiala en el NPC y en
+`mod.json` a la vez. `volcan`, `cueva` y `ruinas` no tienen mapas de clima
+todavía (el atlas no tiene campos de esos biomas).
+
+## Mapas de prueba
+
+Son 20 campos. Los 11 campos de Prontera son `pradera`, así que todos usan lluvia
+y sortean `lluvia_toxica` o `terreno_fangoso`. Las ciudades (`prontera`,
+`izlude`, `geffen`) se quitaron: no tienen eventos ni efecto visual de clima.
+
+| Mapa | Bioma | Visual |
+|---|---|---|
+| `prt_fild01`–`prt_fild11` (11 mapas) | `pradera` | `rain` |
+| `gef_fild07`, `pay_fild08`, `pay_fild03` | `bosque` | `leaves` |
+| `moc_fild11` | `desierto` | ninguno |
+| `mjolnir_12` | `montana` | ninguno |
+| `xmas_fild01` | `nieve` | `snow` |
+| `cmd_fild01` | `costa` | `cloud` |
+| `um_fild01` | `selva` | `cloud6` |
+| `mosk_fild02` | `pantano` | `cloud8` |
+
+Con esto cada combinación, salvo `polen_somnifero` (que solo tenían las
+ciudades), tiene al menos un mapa de prueba.
+Para probar Calor intenso con `survival` ve a `moc_fild11`; Frío extremo, a
+`mjolnir_12`. (Antes eran `prt_fild09` y `prt_fild10`.)
+
+## Limitación conocida: el visual no sigue al evento
+
+El efecto visual de cada mapa (lluvia, nieve, nubes…) lo fija `mod.json` y el
+cliente lo mantiene siempre que se esté en el mapa; el servidor no puede
+cambiarlo por evento ni apagarlo al terminar. Por eso hoy un bioma solo sortea
+combinaciones con **su mismo visual**: así lo que se ve coincide con lo que
+ocurre. La consecuencia es poca variedad por bioma.
+
+**Por investigar:** cómo superar esa limitación para que un bioma pueda sortear
+combinaciones con visuales distintos. Las vías posibles son un plugin de cliente
+que reciba el visual por `server:event` (ver «Efecto visual durante el evento»)
+o ver si rAthena puede activar efectos de clima por mapa con mapflags (no
+verificado). No hay decisión ni código al respecto.
 
 ## Guía: añadir una combinación climática
 
@@ -230,13 +270,17 @@ la combinación una vez y haz que los mapas apunten a su índice.
    `SC_DECREASEAGI` en jugadores; para obtener 12 segundos, el script solicita
    24. Comprueba la semántica del estado en la versión fijada de rAthena y
    evita duraciones que bloqueen el control del personaje durante mucho tiempo.
-4. **Asigna la combinación a mapas** en la sección de arreglos de `OnInit`.
-   Añade cada mapa nuevo (si aún no figura allí) a la lista de
-   `mapflag loadevent` al inicio del archivo, incrementa `.map_count` y
-   agrega, usando índices de mapa nuevos y
-   consecutivos, `.map$[i]`, `.map_name$[i]` y `.combination[i] = N`. El
-   índice del mapa no es el ID de combinación. Mantén exactamente la misma
-   asociación en la tabla «Asignación de prueba por mapa» de este README.
+4. **Asigna la combinación a un bioma**, no a un mapa: añade su índice a la
+   lista `.biome_combos$[i]` de los biomas donde pueda ocurrir (separados por
+   comas). Debe compartir el visual de ese bioma (ver «Limitación conocida»).
+   Si el bioma es nuevo, añade `.biome$[i]`, `.biome_combos$[i]` e incrementa
+   `.biome_count`. Actualiza la tabla «Combinaciones por bioma».
+   Para ofrecer la combinación en un mapa nuevo, añádelo al atlas, a la lista de
+   `mapflag loadevent` al inicio del archivo, incrementa `.map_count` y agrega
+   `.map$[i]` y `.map_name$[i]` con índices de mapa nuevos y consecutivos
+   (`.combination[i]` ya no se asigna a mano: se sortea al empezar el evento).
+   El índice del mapa no es el ID de combinación. Añade también el mapa a
+   `mod.json` con el visual de su bioma, y a la tabla «Mapas de prueba».
 5. **Configura la visual de cliente, si aplica.** Para las combinaciones con
    un efecto visual soportado, asigna ese nombre a `.combo_weather$[N]` y
    agrega `"<mapa>": { "weather": "<visual>" }` por cada mapa asignado en
@@ -295,7 +339,7 @@ y se reservarían para contenido de nivel alto.
 
 - El primer chequeo de cada mapa ocurre 30 segundos después de iniciar el
   servidor. La probabilidad está al 100% para esta prueba.
-- Cada evento dura 5 minutos para dar tiempo de visitar los 14 mapas en una
+- Cada evento dura 5 minutos para dar tiempo de visitar los 20 mapas en una
   sesión. Los eventos de todos los mapas empiezan en el mismo primer chequeo;
   al terminar, esperan un minuto antes del siguiente chequeo.
 - Durante un evento, el NPC revisa cada 10 segundos a los personajes del mapa y
@@ -319,8 +363,7 @@ y se reservarían para contenido de nivel alto.
   moverse. Usa una cuenta de prueba y el warp de GM para continuar el recorrido.
 - Al iniciar o terminar cada evento, el mapa recibe un mensaje narrativo
   dirigido al jugador y adecuado al clima y su efecto. Terreno fangoso y Hojas
-  Petrificantes tienen textos definidos, pero no se mostrarán hasta asignar
-  esas combinaciones a un mapa.
+  Petrificantes se muestran en los mapas de bioma `pradera` y `bosque`.
 - El modificador de hambre o sed se activa al iniciar el evento, se limpia al
   terminarlo o al cambiar de mapa, y no queda guardado entre sesiones.
 
@@ -352,33 +395,32 @@ los cambios de `db/` o `npc/` requieren reiniciar el servidor, y los de
 Después de iniciar el servidor, espera los anuncios y visita los mapas en el
 orden de la tabla. En cada clima asignado prueba primero sin protección y luego
 con el objeto indicado en la tabla de equipo: debe bloquear solo la aplicación
-del controlador para esa combinación. `terreno_fangoso` y
-`hojas_petrificantes` todavía no tienen mapas asignados. Activa también
-`survival` para probar Calor intenso y Frío
-extremo. Sin protección, en `prt_fild09` la sed baja 2 puntos cada 15 segundos
-y en `prt_fild10` ocurre lo mismo con el hambre; con el sombrero o el abrigo,
+del controlador para esa combinación. En `pradera` el evento puede ser
+`lluvia_toxica` o `terreno_fangoso`; el anuncio dice cuál salió. Activa
+también `survival` para probar Calor intenso y Frío
+extremo. Sin protección, en `moc_fild11` la sed baja 2 puntos cada 15 segundos
+y en `mjolnir_12` ocurre lo mismo con el hambre; con el sombrero o el abrigo,
 respectivamente, ambos medidores deben bajar a su ritmo normal de 1 punto cada
 15 segundos. Al acabar el evento o salir del mapa, el consumo también vuelve
 al ritmo normal.
 El efecto visual se configura estáticamente por mapa en `mod.json` y
 permanece visible mientras estés allí; no comienza ni termina junto con el
 evento climático. Por eso puede seguir viéndose después de que termina dicho
-evento. `prt_fild09` y `prt_fild10` no tienen un efecto visual de clima asignado
-por este mod. Esa limitación del cliente sigue pendiente de una mejora futura.
+evento. `moc_fild11` y `mjolnir_12` (desierto y montaña) no tienen un efecto
+visual de clima asignado por este mod. Esa limitación del cliente sigue pendiente de una mejora futura.
 
 ## Observaciones visuales
 
 En las pruebas anteriores, `cloud` se percibió como niebla y `cloud6` como
 vapor. `cloud8` se observó como un gas naranja, visible solo sobre el agua,
 durante una prueba anterior en Izlude. Esa ya no es su asignación actual:
-Izlude usa `sakura`, mientras `cloud8` está asignado a `prt_fild11` y
-`prontera`. La apariencia puede variar según el mapa y la superficie. Las
-combinaciones de calor y frío no tienen efecto visual asignado;
-`terreno_fangoso` y `hojas_petrificantes` tampoco se asignan actualmente a
-mapas.
+Izlude usa `sakura` y `cloud8` está asignado a `mosk_fild02` (pantano). La
+apariencia puede variar según el mapa y la superficie. Las combinaciones de
+calor y frío no tienen efecto visual asignado. Estas observaciones son de
+pruebas anteriores a la asignación por bioma.
 
 Para confirmar la carga del NPC, revisa el log del map-server: debe mostrar
-`[clima] <mapa> asignado a <combinación>...` y luego
+`[clima] <mapa> registrado; el evento se sortea por su bioma...` y luego
 `[clima] Evento <combinación> iniciado en <mapa>`. Al entrar a un mapa durante
 el evento, el log registra el estado (si esa combinación aplica uno) y si el
 equipo protege al personaje.
@@ -388,8 +430,8 @@ Los efectos visuales admitidos se documentan en
 
 ## Integración con Survival
 
-Con ambos mods activos, el evento de **Calor intenso** en `prt_fild09` añade
-una pérdida de sed por tick de Survival; **Frío extremo** en `prt_fild10` hace
+Con ambos mods activos, el evento de **Calor intenso** en `moc_fild11` añade
+una pérdida de sed por tick de Survival; **Frío extremo** en `mjolnir_12` hace
 lo mismo con el hambre. El resultado de prueba es 2 puntos cada 15 segundos
 (el punto normal más uno adicional). Survival conserva el control de sus
 medidores y temporizadores; clima solo comunica la exposición mediante las
@@ -418,6 +460,10 @@ distribución definitiva y cómo acumular varias fuentes simultáneas de
 modificadores.
 
 ## Efecto visual durante el evento: posible trabajo futuro
+
+Es también la vía para superar la limitación de biomas descrita arriba («Limitación
+conocida»): con un visual dinámico, un bioma podría sortear combinaciones de
+visuales distintos.
 
 Hoy los efectos visuales asignados están declarados por mapa en `mod.json`. El
 cliente los activa al cargar el mapa y los mantiene mientras el personaje

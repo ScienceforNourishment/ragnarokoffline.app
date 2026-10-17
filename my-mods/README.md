@@ -21,6 +21,15 @@ comportamiento de los mods es [`docs/MODDING.md`](../docs/MODDING.md); hay que
 consultarla cuando la implementación dependa de detalles del cargador o de las
 API.
 
+## Plan de trabajo
+
+La hoja de ruta de estos mods está en [`PLAN.md`](./PLAN.md): decisiones
+tomadas, el hilo de la partida, las fases, el orden de arranque y los puntos
+por verificar. Las ideas originales siguen en
+[`conceptsForMods.md`](./conceptsForMods.md). Al empezar un mod nuevo del
+plan, como `world-atlas`, lee primero su sección en `PLAN.md`; lo que dice
+allí es una propuesta hasta que el mod exista.
+
 ## Dirección de diseño
 
 Las ideas para estos mods buscan que el mundo se sienta más activo, aventurero
@@ -141,13 +150,29 @@ las ideas para futuras iteraciones:
   distintas por Tier son recompensas temporales de prueba.
 - **`survival`** añade barras de hambre y sed a la interfaz, además de alimentos
   y bebidas que las restauran. Ambos valores disminuyen con el tiempo, y los
-  eventos de `clima` pueden acelerar esa reducción.
+  eventos de `clima` pueden acelerar esa reducción. En los mapas exteriores
+  de las siete ciudades principales no bajan; la lista se edita según la guía
+  "Zonas seguras" de [`survival/README.md`](./survival/README.md).
+- **`travel-journal`** es el diario del viajero: registra por personaje la
+  primera visita a cada mapa y las muertes, y los muestra en una ventana
+  (Alt+J o `@diario`). Otros mods añaden entradas con `doevent
+  "TravelJournal::OnLog"`; no hay dependencia de carga. Su script de servidor
+  no se ha probado en el juego. Ver [`travel-journal/README.md`](./travel-journal/README.md).
 - **`expedition-board`** coloca un tablero de contratos en cada ciudad
   principal. Cada contrato hace aparecer una marca en un mapa cercano; al
   abatirla hay que volver al tablero de esa ciudad para cobrar. Es independiente
   de los demás mods de esta carpeta y de `bounty-hunt`. Las recompensas actuales
   son zeny y pociones de prueba; no asumas botín de `dungeon-chest` ni de
   `clima`.
+
+- **`world-atlas`** es una tabla de datos por mapa (tipo, bioma, Tier,
+  temperatura, ciudad ancla) con funciones `F_Atlas_*` que otros mods pueden
+  consultar con `callfunc`. No hace nada por sí solo y **lo usan `survival` (qué
+  mapas son ciudad, con su lista propia como reserva) y `dungeon-chest` (el Tier
+  de cada cofre, con el escrito en el cofre como reserva) y `clima` (el bioma
+  decide qué eventos ocurren; sin el atlas no hay eventos) y `travel-journal`
+  (el nombre legible del mapa, con el código como reserva)**. Se genera desde un CSV; ver
+  [`world-atlas/README.md`](./world-atlas/README.md).
 
 Una relación funcional no significa necesariamente que exista una dependencia
 de carga entre mods. Antes de añadir o cambiar `requires.mods` o `after`, revisa

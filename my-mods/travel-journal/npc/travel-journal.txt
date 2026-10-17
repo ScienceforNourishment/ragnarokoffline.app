@@ -1,0 +1,88 @@
+//===== Ragnarok Offline: travel-journal ==================================
+//= Records what happens to a character in the mod store (scope "char"):
+//=   client.n         how many entries were ever written
+//=   client.e.<n>     "<unix time>|<type>|<text>", the last 300 are kept
+//=   visited.<map>    1 once the character has been on that map
+//= Entries under "client" are what the window (client/index.js) reads.
+//=
+//= Other mods add an entry with the player attached:
+//=   @tj_type$ = "note"; @tj_text$ = "Texto sin barras verticales";
+//=   doevent "TravelJournal::OnLog";
+//= Types the window knows: map, death, note. Any other type is shown as a note.
+//= If this mod is off, doevent only logs that the event does not exist.
+//===========================================================================
+-	script	TravelJournal	-1,{
+	end;
+
+OnInit:
+	bindatcmd "diario", strnpcinfo(3) + "::OnCommand", 0, 99;
+	end;
+
+OnCommand:
+	dispbottom "@@event journal open";
+	end;
+
+OnPCLoginEvent:
+	@tj_map$ = "";
+	deltimer strnpcinfo(3) + "::OnMapTick";
+	addtimer 5000, strnpcinfo(3) + "::OnMapTick";
+	end;
+
+OnPCLogoutEvent:
+	deltimer strnpcinfo(3) + "::OnMapTick";
+	@tj_map$ = "";
+	@tj_type$ = "";
+	@tj_text$ = "";
+	end;
+
+// Maps are checked on a timer so the mod needs no per-map flag. The first
+// tick after login also records the town the character starts in.
+OnMapTick:
+	.@map$ = strcharinfo(3);
+	if (.@map$ != @tj_map$) {
+		@tj_map$ = .@map$;
+		if (modstore_get("char", "visited." + .@map$, 0) == 0) {
+			modstore_set "char", "visited." + .@map$, 1;
+			// A map name the store refuses as a key is not written, and so not logged.
+			if (modstore_get("char", "visited." + .@map$, 0) == 1) {
+				@tj_type$ = "map";
+				@tj_text$ = callsub(S_Place, .@map$);
+				doevent strnpcinfo(3) + "::OnLog";
+			}
+		}
+	}
+	addtimer 5000, strnpcinfo(3) + "::OnMapTick";
+	end;
+
+OnPCDieEvent:
+	@tj_type$ = "death";
+	@tj_text$ = callsub(S_Place, strcharinfo(3));
+	doevent strnpcinfo(3) + "::OnLog";
+	end;
+
+// The readable name of a map from the world-atlas mod; the map code when that
+// mod is off or does not know the map. The atlas is a soft dependency: it sets
+// $@wa_ready once its table is filled.
+S_Place:
+	.@code$ = getarg(0);
+	if ($@wa_ready) {
+		.@name$ = callfunc("F_Atlas_Name", .@code$);
+		if (.@name$ != "")
+			return .@name$;
+	}
+	return .@code$;
+
+OnLog:
+	if (@tj_type$ == "" || @tj_text$ == "")
+		end;
+	.@type$ = replacestr(@tj_type$, "|", "/");
+	.@text$ = replacestr(@tj_text$, "|", "/");
+	.@n = modstore_inc("char", "client.n", 1);
+	modstore_set "char", "client.e." + .@n, gettimetick(2) + "|" + .@type$ + "|" + .@text$;
+	if (.@n > 300)
+		modstore_delete "char", "client.e." + (.@n - 300);
+	@tj_type$ = "";
+	@tj_text$ = "";
+	dispbottom "@@event journal new";
+	end;
+}

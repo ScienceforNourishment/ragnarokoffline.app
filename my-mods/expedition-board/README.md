@@ -91,3 +91,20 @@ expedition-board/
 └── npc/
     └── expedition-board.txt
 ```
+
+## Problema conocido: error de sintaxis en el log
+
+Observado el 2026-10-17 al leer `ragnarok-stack logs map`, **sin investigar
+todavía**:
+
+```text
+script error on npc/mods/expedition-board/expedition-board.txt line 25
+    parse_simpleexpr: unmatched ')'
+```
+
+La línea 25 es `if (abs(.@dx) != .@r && abs(.@dy) != .@r)`, en la función que
+busca una celda libre cerca del punto de la marca. La copia instalada es
+idéntica a la del repo. Un error de sintaxis puede detener la carga del archivo
+entero, así que el tablero podría no estar funcionando aunque el mod aparezca
+activo. La causa no está confirmada; `abs(...)` es solo una sospecha.
+Antes de confiar en el mod, hay que revisar esa línea y volver a leer el log.

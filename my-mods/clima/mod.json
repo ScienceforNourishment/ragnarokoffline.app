@@ -1,22 +1,71 @@
 {
   "name": "clima",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Ragnarok Offline",
-  "description": "Prueba de combinaciones climáticas reutilizables y equipo de protección.",
+  "description": "Eventos climáticos por bioma (según world-atlas) con efecto de estado y equipo de protección.",
   "renewalFolder": "renewal",
   "prerenewalFolder": "pre-renewal",
+  "requires": {
+    "app": ">=1.4.0",
+    "era": "any",
+    "mods": [
+      "world-atlas"
+    ]
+  },
   "maps": {
-    "prt_fild01": { "weather": "rain" },
-    "prt_fild02": { "weather": "rain" },
-    "prt_fild03": { "weather": "snow" },
-    "prt_fild04": { "weather": "snow" },
-    "prt_fild05": { "weather": "cloud" },
-    "prt_fild06": { "weather": "cloud" },
-    "prt_fild07": { "weather": "cloud6" },
-    "prt_fild08": { "weather": "cloud6" },
-    "prt_fild11": { "weather": "cloud8" },
-    "prontera": { "weather": "cloud8" },
-    "izlude": { "weather": "sakura" },
-    "geffen": { "weather": "sakura" }
+    "prt_fild01": {
+      "weather": "rain"
+    },
+    "prt_fild02": {
+      "weather": "rain"
+    },
+    "prt_fild03": {
+      "weather": "rain"
+    },
+    "prt_fild04": {
+      "weather": "rain"
+    },
+    "prt_fild05": {
+      "weather": "rain"
+    },
+    "prt_fild06": {
+      "weather": "rain"
+    },
+    "prt_fild07": {
+      "weather": "rain"
+    },
+    "prt_fild08": {
+      "weather": "rain"
+    },
+    "prt_fild09": {
+      "weather": "rain"
+    },
+    "prt_fild10": {
+      "weather": "rain"
+    },
+    "prt_fild11": {
+      "weather": "rain"
+    },
+    "gef_fild07": {
+      "weather": "leaves"
+    },
+    "pay_fild08": {
+      "weather": "leaves"
+    },
+    "pay_fild03": {
+      "weather": "leaves"
+    },
+    "xmas_fild01": {
+      "weather": "snow"
+    },
+    "cmd_fild01": {
+      "weather": "cloud"
+    },
+    "um_fild01": {
+      "weather": "cloud6"
+    },
+    "mosk_fild02": {
+      "weather": "cloud8"
+    }
   }
 }

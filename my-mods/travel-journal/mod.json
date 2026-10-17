@@ -1,0 +1,13 @@
+{
+  "name": "travel-journal",
+  "version": "0.1.0",
+  "author": "Ragnarok Offline",
+  "description": "Diario del viajero: registra automáticamente lo que le pasa al personaje (mapas nuevos, muertes) y lo muestra en una ventana.",
+  "requires": {
+    "app": ">=1.5.2",
+    "era": "any"
+  },
+  "settings": [
+    { "key": "show_button", "type": "boolean", "default": true, "label": "Mostrar el botón Diario en el juego", "description": "La ventana también se abre con Alt+J y con el comando @diario." }
+  ]
+}

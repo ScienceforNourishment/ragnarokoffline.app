@@ -1,4 +1,23 @@
+// F_Survival_IsSafe(map$) -> 1 when hunger and thirst do not drop on that map.
+// Safe when the world-atlas mod, if loaded, says so, or when the map is in
+// survival_mgr's own .safe_maps$ list. The atlas is a soft dependency: it sets
+// $@wa_ready when its table is filled, and without it only the list applies.
+function	script	F_Survival_IsSafe	{
+	.@m$ = getarg(0);
+	if ($@wa_ready) {
+		if (callfunc("F_Atlas_IsSafe", .@m$))
+			return 1;
+	}
+	return compare(getvariableofnpc(.safe_maps$, "survival_mgr"), "|" + .@m$ + "|");
+}
+
 -	script	survival_mgr	-1,{
+OnInit:
+    // Maps where hunger and thirst do not drop. Main cities only; add an
+    // interior or another settlement by appending its map name between bars.
+    .safe_maps$ = "|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|";
+    end;
+
 OnPCLoginEvent:
     set @clima_hunger_extra_loss, 0;
     set @clima_thirst_extra_loss, 0;
@@ -49,7 +68,7 @@ OnHungerTick:
         set @clima_thirst_extra_loss, 0;
         set @clima_exposure_map$, "";
     }
-    if (hm_hunger > 0) {
+    if (hm_hunger > 0 && !callfunc("F_Survival_IsSafe", strcharinfo(3))) {
     	set hm_hunger, hm_hunger - 1;
         if (hm_hunger > 0 && @clima_hunger_extra_loss > 0 && @clima_exposure_map$ == strcharinfo(3))
             set hm_hunger, hm_hunger - 1;
@@ -64,7 +83,7 @@ OnThirstTick:
         set @clima_thirst_extra_loss, 0;
         set @clima_exposure_map$, "";
     }
-    if (thirst_value > 0) {
+    if (thirst_value > 0 && !callfunc("F_Survival_IsSafe", strcharinfo(3))) {
     	set thirst_value, thirst_value - 1;
         if (thirst_value > 0 && @clima_thirst_extra_loss > 0 && @clima_exposure_map$ == strcharinfo(3))
             set thirst_value, thirst_value - 1;

@@ -1,0 +1,10 @@
+{
+  "name": "world-atlas-test",
+  "version": "0.0.1",
+  "author": "Ragnarok Offline",
+  "description": "Solo para probar world-atlas: un NPC en Prontera que muestra lo que devuelve el atlas. Borrar después.",
+  "requires": {
+    "app": ">=1.4.0",
+    "era": "any"
+  }
+}
