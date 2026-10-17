@@ -1,0 +1,22 @@
+id,city,type,name,mob,map,x,y,count,zeny,item,amt,place,blurb
+1,prontera,expedition,Rastro en el campo sur,1520,prt_fild08,180,240,1,2000,501,10,Campo de Prontera 08,Un Boiled Rice marcado se pasea entre los Porings al sur de la ciudad.
+2,izlude,expedition,Amenaza en Byalan,1066,iz_dun00,120,90,1,3000,502,10,Cueva de Byalan 1,Un Vadon marcado se oculta en la primera cueva de Byalan.
+3,geffen,expedition,Mandragora marcada,1020,gef_fild07,180,150,1,4000,503,10,Campo de Geffen 07,Una mandragora senalada ronda el campo al oeste de Geffen.
+4,payon,expedition,Sauce inquieto,1033,pay_fild08,80,100,1,2500,501,10,Campo de Payon 08,Un sauce anciano marcado se mueve al sur de Payon fuera de su sitio.
+5,morocc,expedition,Muka del desierto,1055,moc_fild11,180,200,1,5000,504,5,Desierto de Morocc 11,Un Muka marcado espera entre las dunas de Sograt.
+6,alberta,expedition,Gusano del camino,1024,pay_fild03,140,160,1,3500,502,10,Campo de Payon 03,Un Wormtail marcado corta el camino entre Payon y Alberta.
+7,aldebaran,expedition,Mantis del paso,1139,mjolnir_12,170,170,1,4500,504,5,Montanas Mjolnir 12,Una mantis marcada guarda el paso hacia Aldebaran.
+8,prontera,hunt,Fabres del camino sur,1007,prt_fild08,0,0,15,600,501,5,Campo de Prontera 08,Los Fabres se estan comiendo las cosechas al sur de la ciudad.
+9,izlude,hunt,Kukres de Byalan,1070,iz_dun00,0,0,12,1500,502,5,Cueva de Byalan 1,Los Kukres bloquean la primera cueva de Byalan.
+10,geffen,hunt,Chonchones del oeste,1011,gef_fild07,0,0,15,900,503,3,Campo de Geffen 07,Los Chonchones no dejan pasar a los viajeros al oeste de Geffen.
+11,payon,hunt,Esporas del sur,1014,pay_fild08,0,0,15,1200,501,5,Campo de Payon 08,Las esporas han tomado el bosque al sur de Payon.
+12,morocc,hunt,Crias de lobo,1107,moc_fild11,0,0,15,1500,504,3,Desierto de Morocc 11,Las crias de lobo rondan las caravanas de Sograt.
+13,alberta,hunt,Sauces del camino,1010,pay_fild03,0,0,15,1000,502,5,Campo de Payon 03,Los sauces cierran el camino hacia Payon.
+14,aldebaran,hunt,Polvorientos del paso,1114,mjolnir_12,0,0,12,2200,504,3,Montanas Mjolnir 12,Hay que despejar el paso hacia Aldebaran.
+15,prontera,hunt,Goblins del camino este,1126,prt_fild11,0,0,12,2500,501,10,Campo de Prontera 11,Una banda de goblins asalta a los viajeros al este de Prontera.
+16,izlude,hunt,Cornutus de la cueva marina,1067,iz_dun02,0,0,12,3000,502,10,Cueva Marina de Izlude 2,Los Cornutus dominan la segunda planta de la cueva marina.
+17,geffen,hunt,Espectros de la mazmorra,1036,gef_dun01,0,0,10,3500,503,5,Mazmorra de Geffen 1,Los Ghoul vagan por la primera planta de la mazmorra de Geffen.
+18,payon,hunt,Orcos que no descansan,1153,orcsdun01,0,0,12,3000,502,10,Cueva de los Orcos 1,Los orcos zombi han salido de sus tumbas en la cueva al norte de Payon.
+19,morocc,hunt,Momias de la piramide,1041,moc_pryd03,0,0,10,3500,504,3,Piramide de Morocc 3,Las momias se agitan en las profundidades de la piramide.
+20,alberta,hunt,Ranas de la cueva,1034,beach_dun3,0,0,12,3000,502,10,Cueva de la Playa 3,Las ranas gigantes bloquean la cueva junto a la playa.
+21,aldebaran,hunt,Martins de la mina,1145,mjo_dun02,0,0,12,3200,504,3,Cueva Mjolnir 2,Los Martin han invadido la segunda planta de la cueva de Mjolnir.

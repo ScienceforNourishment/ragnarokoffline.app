@@ -158,12 +158,7 @@ las ideas para futuras iteraciones:
   (Alt+J o `@diario`). Otros mods añaden entradas con `doevent
   "TravelJournal::OnLog"`; no hay dependencia de carga. Su script de servidor
   no se ha probado en el juego. Ver [`travel-journal/README.md`](./travel-journal/README.md).
-- **`expedition-board`** coloca un tablero de contratos en cada ciudad
-  principal. Cada contrato hace aparecer una marca en un mapa cercano; al
-  abatirla hay que volver al tablero de esa ciudad para cobrar. Es independiente
-  de los demás mods de esta carpeta y de `bounty-hunt`. Las recompensas actuales
-  son zeny y pociones de prueba; no asumas botín de `dungeon-chest` ni de
-  `clima`.
+- **`expedition-board`** coloca un tablero de contratos en cada ciudad principal, con dos tipos: *marca* (aparece un monstruo con nombre en un mapa cercano) y *caza* (abatir N monstruos de una especie dentro de un mapa; el progreso lo cuenta el mod). En ambos hay que volver a la ciudad que lo publicó: las cacerías se cobran en el tablero y las marcas con el Intendente, un NPC junto al tablero. Escribe notas en `travel-journal` (dependencia suave, sin `requires.mods`) y toma el Tier del mapa de `world-atlas` (también suave) para escalar la recompensa y reforzar las marcas; por lo demás es independiente de los demás mods de esta carpeta y de `bounty-hunt`. Las recompensas actuales son zeny y pociones de prueba; no asumas botín de `dungeon-chest` ni de `clima`.
 
 - **`world-atlas`** es una tabla de datos por mapa (tipo, bioma, Tier,
   temperatura, ciudad ancla) con funciones `F_Atlas_*` que otros mods pueden

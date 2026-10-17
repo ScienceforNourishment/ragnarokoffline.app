@@ -350,11 +350,52 @@ la ciudad por una razón y salir con algo mejor.
   mapflags de rAthena, ninguno verificado). Ver «Limitación conocida» en el
   README de `clima`.
 - **`clima` sin probar en el juego** tras pasar a asignación por bioma.
-- **`expedition-board` con error de sintaxis en el log** (línea 25,
-  `unmatched ')'`); sin investigar. Ver el README del mod.
-- **`survival`: `player's event queue is full`** al registrar
-  `OnHungerTick` y `OnThirstTick` para algún personaje (log del map-server,
-  2026-10-17); sin investigar.
+- **`expedition-board` 0.6.0 (marcas, cacerías, Intendente, crédito en grupo y cacerías de Tier 2), probado a medias.** Funciona en Prontera con la
+  marca (aceptar, abatir, cobrar en el tablero) y el refuerzo por Tier se nota. Sin probar: las cacerías, el crédito compartido en grupo (necesita dos personajes), las cacerías de Tier 2 (ids 15 a 21), el
+  Intendente (las marcas ahora se entregan con él, no en el tablero), las marcas nuevas (nivel acorde al mapa
+  desde la 0.5.0) y la nota de «contrato aceptado» del diario. Falta probar las otras seis
+  ciudades (posiciones de tableros y marcas), los casos límite del README y
+  el escalado de zeny en Tier 2 o más. El error de carga original (`abs()`) quedó
+  resuelto: el log ya no lo muestra.
+- **`player's event queue is full`** (afecta a `survival` y a `travel-journal`;
+  sin resolver, investigar en otra sesión). Log del map-server, 2026-10-17:
+  `npc_event: player's event queue is full, can't add event
+  'TravelJournal::OnMapTick'` y lo mismo para `survival_mgr::OnPenaltyTick`
+  (antes, en otra sesión, para `OnHungerTick` y `OnThirstTick`).
+  - **Cuándo:** justo después de `'Karsa' logged in`, al entrar al mapa
+    `mjolnir_12` (un campo, no una ciudad), antes de cualquier otro evento.
+    El personaje ya traía la cola llena al iniciar sesión.
+  - **Descartado:** que sea por las zonas seguras. `OnHungerTick` y
+    `OnThirstTick` vuelven a llamar a `addtimer` siempre; `F_Survival_IsSafe`
+    solo decide si baja el valor. Tampoco los demás mods activos de `my-mods/`
+    (`clima`, `dungeon-chest`, `expedition-board`, `world-atlas`) usan `addtimer`.
+  - **Contexto:** `survival` pone 3 temporizadores por jugador (hambre, sed,
+    penalización) y `travel-journal` 1; la cola de rAthena guarda unos 32
+    (`MAX_EVENTTIMER`, sin verificar contra el fork). Cuatro no llenan 32, así
+    que algo los está acumulando.
+  - **Hipótesis sin comprobar:** `OnPCLoginEvent` corre varias veces por
+    sesión, o `deltimer` no borra el temporizador anterior, o hay otro mod
+    (`common-npcs`, `mobile-ui`, `wasd-movement`, del registro) que programe
+    eventos al entrar.
+  - **Diagnóstico temporal ya puesto** (2026-10-17), todo marcado `[qdebug]` y
+    con un comentario «TEMPORAL … Quitar» en `survival/npc/survival.txt` y
+    `travel-journal/npc/travel-journal.txt`: cada login y logout deja una línea
+    con el número de veces que corrió y el personaje, y cada tick avisa
+    `… tick DUPLICATE` si el mismo tick llega antes de lo debido (señal de
+    temporizadores duplicados; máximo 20 avisos por personaje y sesión). Tras la
+    sesión de pruebas: `ragnarok-stack logs map 20000 | grep qdebug`.
+    - Si `login #` sube de 1 en una misma sesión: `OnPCLoginEvent` corre más de
+      una vez.
+    - Si hay `DUPLICATE`: `deltimer` no borra el temporizador previo (o se
+      programa de más).
+    - Si no sale ni lo uno ni lo otro, la cola se llena por otra causa (otro mod
+      del registro, que habrá que buscar).
+    - Al terminar, **borrar** las líneas `[qdebug]` (buscar `qdebug` en ambos
+      archivos). Si `deltimer` falla, cambiar a un solo temporizador que
+      reprograme el resto.
+  - **Efecto:** a ese personaje le dejan de llegar entradas del diario y los
+    ticks de hambre, sed y penalización. Las notas de `expedition-board`
+    (`doevent`) no pasan por esa cola.
 - Mínimo permitido de rates en Settings y preset recomendado.
 - Verificar los puntos marcados *(verificar)* contra el rAthena fijado.
 - Verificar si el evento de muerte de rAthena identifica al asesino (némesis).

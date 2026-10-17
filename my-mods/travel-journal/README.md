@@ -63,6 +63,80 @@ doevent "TravelJournal::OnLog";
   nombre legible (`callfunc("F_Atlas_Name", mapa$)`, con el código como reserva)
   o el código de mapa con tipo `map`, que el cliente traduce si puede.
 
+## Guía: registrar un evento nuevo desde tu mod
+
+Para que un mod deje constancia de algo ("Acepté en Prontera un contrato:
+acabar con un Wolf") no hay que tocar `travel-journal`.
+
+1. **Elige el momento.** Debe ser código que corre con el personaje adjunto:
+   un diálogo de NPC, un evento de muerte de monstruo (`OnMarkDead` en
+   `expedition-board`), `OnPCLoginEvent`, un temporizador de `addtimer`. Desde
+   un `OnInit` o un temporizador de NPC (`OnTimerN`) no hay personaje: el
+   evento no sabría de quién es la entrada.
+2. **Escribe el texto en el momento en que ocurre**, con los datos que ya
+   tienes a mano. Sí vale la pena incluir nombres (de monstruo con
+   `getmonsterinfo(id, MOB_NAME)`, de lugar con `F_Atlas_Name` o el código de
+   mapa, de objeto con `getitemname`). Una frase corta, en pasado y en primera
+   persona o neutra, como el resto del diario.
+3. **Asigna las dos variables y lanza el evento**, siempre juntas:
+
+   ```c
+   @tj_type$ = "note";
+   @tj_text$ = "Acepte en Prontera un contrato: acabar con " + getmonsterinfo(.@mob, MOB_NAME) + ".";
+   doevent "TravelJournal::OnLog";
+   ```
+
+   `doevent` corre `OnLog` de inmediato y con el mismo personaje; al terminar
+   las variables quedan vacías. Si `travel-journal` está apagado, solo deja una
+   advertencia en el log del servidor y tu script sigue.
+4. **Una entrada por acontecimiento.** Registra el hito (aceptar, abatir), no
+   cada paso; el diario guarda 300 y las nuevas empujan a las viejas. Evita
+   escribir desde sitios que puedan repetirse sin el jugador haciendo nada
+   (cada login, cada tick).
+
+Reglas del texto:
+
+- Sin `|` (se cambia por `/`); sin saltos de línea.
+- Cabe de sobra una frase de 100 a 150 caracteres. El almacén del personaje
+  tiene 64 KiB para todo el mod.
+- Con tildes y eñes: la ventana es HTML y las muestra (el atlas las usa), pero
+  lo que escribe el script del servidor con ellas **no se ha comprobado**. Los
+  mods que pasan por el diálogo del juego usan texto sin tildes; haz igual si
+  dudas.
+
+**Tipos.** El tipo decide el icono y cómo se muestra el texto:
+
+| Tipo | Icono | El texto es |
+|---|---|---|
+| `map` | 🧭 | un código de mapa; el cliente escribe "Primera vez en …" |
+| `death` | 💀 | un código de mapa; el cliente escribe "Caíste en …" |
+| `note` o cualquier otro | 📝 | una frase, mostrada tal cual |
+
+No uses `map` ni `death` para otra cosa: el cliente reescribe su texto. Para
+una entrada normal basta `note`; es lo que usa `expedition-board`. Para dar un
+**icono propio** a un tipo nuevo (por ejemplo `contract`), edita `describe` en
+`client/index.js` y añade una línea, p. ej.
+`if (entry.type === 'contract') return { glyph: '📜', text: entry.text };`;
+para un fondo distinto, una regla CSS `.entry.contract { … }` en `STYLE`.
+Un cambio en `client/` pide reiniciar la aplicación. Una entrada con un tipo
+que el cliente aún no conoce se ve como nota, así que el script del servidor
+puede adelantarse al cliente sin romper nada. El tipo son letras minúsculas y
+`_`, hasta 24.
+
+**Ejemplo: aceptar un contrato** (en `expedition-board`, al aceptar):
+
+```c
+@tj_type$ = "note";
+@tj_text$ = "Acepte en " + .@city$ + " el contrato: " + getvariableofnpc(.name$[.@id], "ExpeditionData") + ".";
+doevent "TravelJournal::OnLog";
+```
+
+Cómo comprobarlo: con el personaje de prueba, provoca el evento y abre el
+diario (Alt+J, o espera: la ventana abierta se actualiza sola). Si no aparece,
+mira `ragnarok-stack logs map 100`: el aviso `event does not exist` indica que
+`travel-journal` no está cargado, y un error de sintaxis en tu archivo impide
+que cargue todo.
+
 ## Datos que guarda
 
 | Clave (alcance `char`) | Contenido |
@@ -103,7 +177,7 @@ travel-journal/
 
 ## Ideas siguientes
 
-- Que `expedition-board` publique "Contrato aceptado / cobrado".
+- Que `expedition-board` publique también "Contrato cobrado" (hoy escribe "Acepté" y "Marca abatida").
 - Que las heridas con nombre se registren al recibirse.
 - Entrada del némesis cuando un monstruo mata al jugador.
 - Filtros por tipo y notas escritas por el jugador.

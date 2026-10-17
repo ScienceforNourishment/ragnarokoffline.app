@@ -1,0 +1,41 @@
+// expedition-board -- Marca mas fuerte segun el Tier del mapa.
+//
+// Las lineas de cabecera usan TAB entre campos, no espacios.
+//
+// Va en su propio archivo porque usa setunitdata con UMOB_MAXHP, UMOB_HP,
+// UMOB_ATKMIN y UMOB_ATKMAX. Probado en el juego: la marca con refuerzo aguanta
+// claramente mas que sin el. Si algun dia fallara, el error sale en el log del
+// map-server al aceptar un contrato y la marca queda como un monstruo normal.
+// Para apagarlo sin tocar mas, pon .@enabled a 0.
+//
+// Se llama DESPUES de guardar el estado del contrato, nunca antes.
+
+// F_Expedition_Strengthen(id) -> 1 si la marca del personaje se reforzo.
+// Con el Tier del atlas T (1-6):
+//   HP    = 150% + 50% por cada Tier por encima del 1   (T1 x1.5 ... T6 x4)
+//   ATK   = 100% + 15% por cada Tier por encima del 1   (T1 x1.0 ... T6 x1.75)
+// Sin atlas (Tier 0) la marca no cambia.
+function	script	F_Expedition_Strengthen	{
+	.@enabled = 1;
+	if (!.@enabled)
+		return 0;
+
+	.@tier = callfunc("F_Expedition_Tier", getarg(0));
+	if (.@tier < 1)
+		return 0;
+
+	.@gid = $@eb_mark[getcharid(0)];
+	if (.@gid < 1 || !unitexists(.@gid))
+		return 0;
+
+	getunitdata .@gid, .@u;
+	.@hp_pct = 150 + 50 * (.@tier - 1);
+	.@atk_pct = 100 + 15 * (.@tier - 1);
+
+	.@maxhp = .@u[UMOB_MAXHP] * .@hp_pct / 100;
+	setunitdata .@gid, UMOB_MAXHP, .@maxhp;
+	setunitdata .@gid, UMOB_HP, .@maxhp;
+	setunitdata .@gid, UMOB_ATKMIN, .@u[UMOB_ATKMIN] * .@atk_pct / 100;
+	setunitdata .@gid, UMOB_ATKMAX, .@u[UMOB_ATKMAX] * .@atk_pct / 100;
+	return 1;
+}

@@ -23,12 +23,16 @@ OnCommand:
 	end;
 
 OnPCLoginEvent:
+	// [qdebug] TEMPORAL (diagnostico de "player's event queue is full"). Quitar.
+	$@qd_login_tj[getcharid(0)]++;
+	debugmes "[qdebug] journal login #" + $@qd_login_tj[getcharid(0)] + " char " + getcharid(0) + " map " + strcharinfo(3);
 	@tj_map$ = "";
 	deltimer strnpcinfo(3) + "::OnMapTick";
 	addtimer 5000, strnpcinfo(3) + "::OnMapTick";
 	end;
 
 OnPCLogoutEvent:
+	debugmes "[qdebug] journal logout char " + getcharid(0);
 	deltimer strnpcinfo(3) + "::OnMapTick";
 	@tj_map$ = "";
 	@tj_type$ = "";
@@ -38,6 +42,13 @@ OnPCLogoutEvent:
 // Maps are checked on a timer so the mod needs no per-map flag. The first
 // tick after login also records the town the character starts in.
 OnMapTick:
+	// [qdebug] TEMPORAL (diagnostico de "player's event queue is full"). Quitar.
+	.@qd_now = gettimetick(2);
+	if (@qd_j > 0 && .@qd_now - @qd_j < 4 && .@qd_now >= @qd_j && @qd_dup < 20) {
+		@qd_dup++;
+		debugmes "[qdebug] journal MAP tick DUPLICATE: " + (.@qd_now - @qd_j) + "s since the previous one, char " + getcharid(0);
+	}
+	@qd_j = .@qd_now;
 	.@map$ = strcharinfo(3);
 	if (.@map$ != @tj_map$) {
 		@tj_map$ = .@map$;

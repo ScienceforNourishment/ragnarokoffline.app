@@ -19,6 +19,9 @@ OnInit:
     end;
 
 OnPCLoginEvent:
+    // [qdebug] TEMPORAL (diagnostico de "player's event queue is full"). Quitar.
+    $@qd_login[getcharid(0)]++;
+    debugmes "[qdebug] survival login #" + $@qd_login[getcharid(0)] + " char " + getcharid(0) + " map " + strcharinfo(3);
     set @clima_hunger_extra_loss, 0;
     set @clima_thirst_extra_loss, 0;
     set @clima_exposure_map$, "";
@@ -42,6 +45,7 @@ OnPCLoginEvent:
     end;
 
 OnPCLogoutEvent:
+    debugmes "[qdebug] survival logout char " + getcharid(0);
     deltimer "survival_mgr::OnHungerTick";
     deltimer "survival_mgr::OnThirstTick";
     deltimer "survival_mgr::OnPenaltyTick";
@@ -63,6 +67,13 @@ OnPCLogoutEvent:
     end;
 
 OnHungerTick:
+    // [qdebug] TEMPORAL (diagnostico de "player's event queue is full"). Quitar.
+    .@qd_now = gettimetick(2);
+    if (@qd_h > 0 && .@qd_now - @qd_h < 12 && .@qd_now >= @qd_h && @qd_dup < 20) {
+        @qd_dup++;
+        debugmes "[qdebug] survival HUNGER tick DUPLICATE: " + (.@qd_now - @qd_h) + "s since the previous one, char " + getcharid(0);
+    }
+    @qd_h = .@qd_now;
     if (@clima_exposure_map$ != "" && @clima_exposure_map$ != strcharinfo(3)) {
         set @clima_hunger_extra_loss, 0;
         set @clima_thirst_extra_loss, 0;
@@ -78,6 +89,13 @@ OnHungerTick:
     end;
 
 OnThirstTick:
+    // [qdebug] TEMPORAL (diagnostico de "player's event queue is full"). Quitar.
+    .@qd_now = gettimetick(2);
+    if (@qd_t > 0 && .@qd_now - @qd_t < 12 && .@qd_now >= @qd_t && @qd_dup < 20) {
+        @qd_dup++;
+        debugmes "[qdebug] survival THIRST tick DUPLICATE: " + (.@qd_now - @qd_t) + "s since the previous one, char " + getcharid(0);
+    }
+    @qd_t = .@qd_now;
     if (@clima_exposure_map$ != "" && @clima_exposure_map$ != strcharinfo(3)) {
         set @clima_hunger_extra_loss, 0;
         set @clima_thirst_extra_loss, 0;
@@ -93,6 +111,13 @@ OnThirstTick:
     end;
 
 OnPenaltyTick:
+    // [qdebug] TEMPORAL (diagnostico de "player's event queue is full"). Quitar.
+    .@qd_now = gettimetick(2);
+    if (@qd_p > 0 && .@qd_now - @qd_p < 3 && .@qd_now >= @qd_p && @qd_dup < 20) {
+        @qd_dup++;
+        debugmes "[qdebug] survival PENALTY tick DUPLICATE: " + (.@qd_now - @qd_p) + "s since the previous one, char " + getcharid(0);
+    }
+    @qd_p = .@qd_now;
     if (hm_hunger == 0 || thirst_value == 0) {
     	// Restore this system's previous debuffs before recalculating both.
     	.@str = readparam(bStr) + @hm_penalty_str + @thirst_penalty_str;
