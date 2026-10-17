@@ -96,6 +96,36 @@ its Population Engine profile, or `None` when no profile role exists.
 Combat modes and roles are independent: the mode decides *when* the group
 engages, while each role decides *how* that companion behaves once involved.
 
+## Roaming
+
+By default a companion follows you. Set it to **Roam** and it walks the map on
+its own instead, the way the AI players in the fields do: it picks a direction,
+walks on, and covers the whole map. It stays in your party, its kills share
+EXP with you as usual, and its drops go to you, so `@autoloot` picks them up
+wherever it is. When you change maps it comes along, and goes on roaming there.
+
+Roaming is off until **Settings → Population → Companion roaming** is ticked in
+the app; it needs no mod. Off, every companion follows and nothing in game
+mentions roaming. On, each companion is switched in the Companions window:
+**Roaming** / **Following** on its row of the Party tab, or **Follow** / **Roam**
+under *Movement* on the Battle tab for all of them. The choice is saved with
+each companion, and a companion saved as roaming follows while the setting is
+off. **Recall** on the Battle tab brings every companion back to you and has the
+roaming ones follow again.
+
+The stance still decides what a roaming companion fights, but around itself
+rather than around you:
+
+| Stance | A roaming companion |
+|---|---|
+| Free (`attack`) | Hunts any monster near itself. |
+| Standard (`defensive`) | Fights what attacks it or a party member near it, and your target when it is close by. |
+| Hold (`passive`) | Only walks. |
+
+It rests between fights as a following companion does, and a monster that
+merely walks past does not get it up; only one that attacks it or a party
+member near it does.
+
 ## SP and resting
 
 Companions pay the SP their skills cost, as players do, and regenerate it the
@@ -172,6 +202,11 @@ Level 3 Resurrection restores 50% HP. Resurrection remains available in every
 combat mode and role because recovery is treated as a class capability rather
 than an offensive action.
 
+When a companion dies its row in the Companions window is marked ✝ until it
+is revived. A roaming companion also says so in party chat, with where it fell,
+for example `Rover : I'm down! (prt_fild08 240, 362)`: it often falls out of
+your sight, so the coordinates are how you find the corpse.
+
 If the companion's owner leaves the map while the companion is dead, the corpse
 is released and removed from the party. It cannot be recovered afterwards.
 
@@ -183,9 +218,9 @@ window with four tabs.
 
 | Tab | What it does |
 | --- | --- |
-| Party | The saved companion list, with each one's job, level and state. Set duty, summon, bench, favorite, or refresh. |
+| Party | The saved companion list, with each one's job, level and state (✝ when it is down). Set duty, roaming (with Companion roaming on), summon, bench, favorite, or refresh. |
 | Summon | Draft a brand-new companion of any job, grouped 1st / 2nd / Trans / 3rd / 4th, as Male, Female or Random. When companions are hired (below), only your own tier's jobs, with the fee. |
-| Battle | Stance (Free / Standard / Hold), Taunt and Recall, the healer thresholds, and when companions rest. |
+| Battle | Stance (Free / Standard / Hold), Movement (Follow / Roam, with Companion roaming on), Taunt and Recall, the healer thresholds, and when companions rest. |
 | Gear | Take back equipment you gave the companion, per slot (`weapon`, `shield`, `armor`, …) or all of it. What it was generated or drafted with is its own and stays on it; when you take a piece back, it puts its own gear back on in that slot. Gear you gave that a new job cannot wear is handed back when it advances. |
 
 Each companion on the Party tab has a **Skills** button, which lists the skills
@@ -217,14 +252,46 @@ instrument to sing, and Gypsies, Wanderers and Trouveres need a whip to dance.
 Item costs are a separate setting, **Companion inventory**: off, arrows and
 gemstones are never needed; on, they come from its bag (see [Its bag](#its-bag)).
 
+### Starting unequipped
+
+A new companion normally comes dressed for its class, and the engine gives it
+new gear when it changes class. With **Settings → Population → Companions start
+unequipped** on, a companion you draft or hire starts with no weapon, armour or
+headgear, and is never given any: trade it what it should wear and it puts it on.
+Until then it fights bare-handed, and with Weapon rules on its weapon skills wait
+for a weapon. Arrows and potions are not gear; they follow Companion inventory.
+
+A companion keeps the way it started. Turning the setting on changes none you
+already have, and one drafted while it was on stays the way it is when you turn
+it off again.
+
+### Spare gear
+
+A companion that started unequipped can carry pieces beside the ones it wears,
+with **Companion inventory** on (that is what saves its bag). Trading works as
+ever: a traded piece is put on. In the Companions window's **Gear** tab:
+
+- **Carry as spare** on a worn slot moves that piece into its bag;
+- the **Carried** list shows what it holds, with **Wear** (the piece it replaces
+  goes into the bag, not back to you) and **Take back**;
+- **All** takes back everything, worn and carried.
+
+A carried piece your bag has no room for (or that is too heavy) stays with the
+companion: it is never dropped on the ground. A companion that still carries one
+is not removed either; make room and remove it again.
+
+A companion that still wears or carries anything of yours is not removed while it
+is not summoned: summon it and take the gear back first. The same as commands:
+`@companion spare <name> list`, `stow <slot>`, `wear <#>`, `take <#>`.
+
 ## Free or hired
 
 **Settings → Population → Companions** decides what a new companion costs:
 
 | Setting | What it means |
 | --- | --- |
-| Free choice (the default) | The Summon tab drafts any job, at any time, as before. |
-| Hired from the Companions panel | The Summon tab offers only jobs of your own class tier (1st, 2nd including transcendent, 3rd or 4th), and the companion comes at your base level, within the range its job's profile allows. Each hire costs the fee below. |
+| Free choice (the default) | The Summon tab drafts any job, at any time. The companion comes at your base level: never below the lowest level its job's profile allows, and up to the class's own level cap. |
+| Hired from the Companions panel | The Summon tab offers only jobs of your own class tier (1st, 2nd including transcendent, 3rd or 4th), and the companion comes at your base level, as a free one does. Each hire costs the fee below. |
 | Hired from a Companion Recruiter | The same rules, from a Companion Recruiter who stands two cells east of the healer in each main town. The Summon tab points you there. |
 
 The fee is **Fee per level** zeny times the companion's level, and/or the
@@ -239,7 +306,7 @@ Companions window reads.
 `@companion list raw` prints your saved companions the same way, one line each
 and then `@CPEND|count`, which is how the Companions window draws its rows:
 
-`@CP|name|job|base_level|active|favorite|live_level|live_job|pet|duty`
+`@CP|name|job|base_level|active|favorite|live_level|live_job|pet|duty|rebirth|heal_at|emergency_at|rest_below|rest_until|roam|dead`
 
 - `active` and `favorite` are 0 or 1. `live_level` and `live_job` are the
   summoned companion's current values, which differ from the saved ones once it
@@ -249,6 +316,13 @@ and then `@CPEND|count`, which is how the Companions window draws its rows:
   3 attacker. The window shows this one, not the last button pressed: the server
   changes the duty of a summoned companion only, so pressing Duty on one that is
   not out goes back to what the server holds.
+- `rebirth`: -1 when the class cannot be reborn, 0 not yet, 1 ready.
+- `heal_at` … `rest_until`: the Battle tab's thresholds, as saved.
+- `roam`: 1 when it roams the map instead of following (`@companion roam
+  [<name>] on|off`; no name sets all of them), -1 while Companion roaming is
+  off, when the window draws no Roam control and the command does not exist.
+- `dead`: 1 while the summoned companion is down. The server sends the list
+  again when one dies and when it is revived, so an open window shows it at once.
 
 ## Current scope
 

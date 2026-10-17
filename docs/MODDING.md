@@ -233,8 +233,8 @@ richer is the mod's own UI problem. A number takes optional `min` and `max`, a
 string an optional `max_length` (200 at most); `key` is up to 40 letters,
 digits or underscores.
 
-**A mod may declare at most 20 settings.** The app refuses a `mod.json` with
-more ("a mod may declare at most 20 settings"), and a
+**A mod may declare at most 40 settings.** The app refuses a `mod.json` with
+more ("a mod may declare at most 40 settings"), and a
 [settings page](#settingspage--a-settings-window-of-your-own) does not lift
 the limit: it shows the same declared settings. If you need more, in order of
 preference:
@@ -364,7 +364,7 @@ await window.modSettings.apply();                        // restart the server, 
 you did not declare, or a value of the wrong type, is refused with the reason.
 
 So a settings page can't hold more options than `settings` declares, and the
-[20-setting limit](#settings--options-the-app-renders-for-you) applies to it as
+[40-setting limit](#settings--options-the-app-renders-for-you) applies to it as
 well. A page changes how the options look, not how many there are.
 `apply` resolves once the server is back up.
 
@@ -1178,9 +1178,9 @@ mods' copies are combined. That makes it the place for a server extension the
 player should be able to turn on: ship `db/when/<key>/extension_db.yml` with
 just that extension's `Id` and `Enabled: true`.
 
-### `skill("<AegisName>", { ... })` — the four skill hooks
+### `skill("<AegisName>", { ... })` — the skill hooks
 
-Takes any of four functions, keyed by the name in `skill_db.yml` —
+Takes any of these functions, keyed by the name in `skill_db.yml` —
 `MG_FIREBOLT`, not "Fire Bolt".
 
 | Hook | Called | Return |
@@ -1189,12 +1189,29 @@ Takes any of four functions, keyed by the name in `skill_db.yml` —
 | `hit(c, stock)` | when a weapon skill's accuracy is calculated | the hit rate bonus |
 | `element(c, stock)` | when the attack's element is decided | an element, e.g. `const("ELE_FIRE")` |
 | `on_hit(c)` | on every hit, once its damage is known | nothing; call the actions below |
+| `level(c, stock)` | when the skill's formula reads a player's base level | the level to use; `stock` is the real one |
+| `job_level(c, stock)` | when the skill's formula reads a player's job level | the job level to use |
+| `heal(c, stock)` | when Heal, Highness Heal or Coluceo Heal restores HP | the amount; `c.base` is it before the skill's own bonus |
 
 `ratio`, `hit` and `element` receive the stock result and return a new one;
 returning `nil` keeps it. They work for the roughly 1,060 skills rAthena has
 given their own C++ class, which includes every damaging player skill. For
 the rest, the server says so in the log when it starts, and `on_hit` still
 works.
+
+`level` and `job_level` are asked only by the skills whose formulas read the
+level outside the damage percentage, and only for players: `level` by
+`RK_DRAGONBREATH`, `RK_DRAGONBREATH_WATER`, `RK_ENCHANTBLADE`,
+`NC_SELFDESTRUCTION`, `SR_GATEOFHELL`, `SR_CRESCENTELBOW`, `AB_RENOVATIO`,
+`LG_EXEEDBREAK`, `OB_ZANGETSU`, `KO_JYUMONJIKIRI`, `SJ_GRAVITYCONTROL`, the
+`EM_EL_` skills (the Elemental Master's level), `AL_DEMONBANE`, `SL_SMA`,
+`TK_JUMPKICK`, `SG_SUN_ANGER`, `SG_MOON_ANGER`, `SG_STAR_ANGER`, and in
+pre-renewal only `AL_HEAL`, `AB_HIGHNESSHEAL` and `PR_TURNUNDEAD`; `job_level`
+by `RL_QD_SHOT`, `LG_EXEEDBREAK`, `MI_RUSH_WINDMILL` and
+`WA_MOONLIT_SERENADE`. They see `c.caster` only: there is no `c.target`, and
+`c.skill_lv` is 0. In renewal, change what a heal restores with `heal`, not
+`level`. `heal` is not asked when Heal damages an Undead. Results are kept
+between 0 and the level limit (or 0 and up for `heal`).
 
 ### `item("<AegisName>", { ... })` — the two equipment hooks
 
@@ -1345,6 +1362,9 @@ stack traceback:
 
 [`examples/mods/blaze-shield-lua`](../examples/mods/blaze-shield-lua) is a
 complete one: Blaze Shield honouring drain cards and Hylozoist Card.
+[`examples/mods/skill-tuning`](../examples/mods/skill-tuning) changes stock
+skills from both sides, `db/` and `lua/`. Its README lists what is easy to get
+wrong and what a mod cannot change yet.
 
 ### A mod, or a change to the server?
 
@@ -2177,6 +2197,81 @@ api.on('server:event', ({ command, text }) => {
 plugin hears every event.
 [`mods/ingame-database`](../mods/ingame-database) is a complete one: an item
 and monster lookup window.
+
+#### The stylist window's prices and payment
+
+The stylist window (`openstylist`) is the app's own, and its packets carry
+neither prices nor how the player pays. An NPC that knows both says so with
+one `@@event stylist` line just before it opens the window:
+
+```
+@@event stylist pay=<command> head=<zeny>:<item> headpalette=<zeny>:<item> bodypalette=<zeny>:<item> bodystyle=<zeny>:<item>
+```
+
+Every part is optional, and the window ignores any key it does not know, so
+a line written for a later version still opens the window.
+
+- `head`, `headpalette`, `bodypalette` and `bodystyle` are hair style, hair
+  colour, clothes colour and outfit. Each is `<zeny>:<item>`: the Zeny, and
+  the item (a coupon) that pays instead, 0 for none. The window only shows
+  them; what the server charges is set separately (below).
+- The Outfit tab (standard or alternative outfit) appears only with
+  `bodystyle`. Send it only to a class that has an alternative outfit, since
+  the server refuses the rest.
+- With `pay=<command>` the window also offers "Pay with Zeny" or "Pay with
+  coupons". On Buy it first sends a
+  [server request](#windows-and-server-requests) `pay 0` or `pay 1` to that
+  command. The script records the choice and answers `ok`; only then is the
+  purchase sent. On any other answer, or none within five seconds, nothing is
+  bought.
+
+The line counts for the next window that opens within five seconds. Without
+it the window shows no prices and sells at `stylist.yml`'s.
+
+**Charging is the server's part**, through the fork's `stylist_script_costs`
+extension: switch it on in the mod's `db/extension_db.yml`, set each look's
+cost with `setstylistcost <look>,<zeny>{,<coupon>{,<coupon box>}}` in
+`OnInit`, and record the player's choice with `setstylistpayment <0|1>`. While
+it is on, an order with several changes is bought whole or not at all.
+`vendor/rathena/doc/script_commands.txt` has the details. Build the event line
+from `getstylistcost`, so the prices shown are always the ones charged:
+
+```yaml
+# db/extension_db.yml
+Header:
+  Type: EXTENSION_DB
+  Version: 1
+Body:
+  - Id: stylist_script_costs
+    Enabled: true
+```
+
+```c
+-	script	mymod_stylist	-1,{
+OnInit:
+	setstylistcost LOOK_HAIR, 100000, 7622;	// 100,000 Zeny or a Hairstyle Coupon
+	setstylistcost LOOK_HAIR_COLOR, 50000;	// Zeny only
+	bindatcmd "mymod_style", strnpcinfo(3) + "::OnPay", 0, 99;
+	end;
+OnPay:	// @mymod_style <id> pay <0|1>
+	if (.@atcmd_parameters$[1] == "pay" && setstylistpayment(atoi(.@atcmd_parameters$[2])))
+		dispbottom "@@reply " + .@atcmd_parameters$[0] + " 1/1 ok";
+	else
+		dispbottom "@@reply " + .@atcmd_parameters$[0] + " 1/1 refused";
+	end;
+}
+
+prontera,150,150,4	script	Stylist#mymod	4_F_KAFRA1,{
+	mes "[Stylist]";
+	mes "Shall we try a new look?";
+	close2;
+	dispbottom "@@event stylist pay=mymod_style"
+		+ " head=" + getstylistcost(LOOK_HAIR) + ":" + getstylistcost(LOOK_HAIR, 1)
+		+ " headpalette=" + getstylistcost(LOOK_HAIR_COLOR) + ":" + getstylistcost(LOOK_HAIR_COLOR, 1);
+	openstylist;
+	end;
+}
+```
 
 Allowed window actions currently cover Inventory, Equipment, SkillList, Quest,
 WorldMap, PartyFriends, WinStats and already-open Storage. Set `{ name, open: true }`

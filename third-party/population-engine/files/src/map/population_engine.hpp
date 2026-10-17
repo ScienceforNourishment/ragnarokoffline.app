@@ -117,6 +117,8 @@ void population_engine_companion_trade_snapshot(map_session_data *shell);
 int population_engine_companion_return_gear(map_session_data *owner, map_session_data *shell, uint32_t slot_mask = 0);
 int population_engine_companion_set_rest_thresholds(uint32_t owner_account, int16_t below, int16_t until);
 int population_engine_companion_set_heal_thresholds(uint32_t owner_account, int16_t heal_at, int16_t emergency_at);
+/// RAGNAROKMAC (roam): one companion (`name`) or all of them (empty) roam or follow; runtime/population_companion_roam.cpp.
+int population_engine_companion_set_roam(uint32_t owner_account, const char *name, bool roam, char *out_msg, size_t out_msg_len);
 /// Skill selector: replace one saved companion's skill choice.
 ///
 /// @param owner_account  owner whose saved list to search
@@ -223,6 +225,10 @@ void population_engine_set_mod_vendor_limit(const char* prefix, int respect);
 /// RAGNAROKMAC: those vendors' price level in percent (100 = as listed);
 /// script: population_vendor_price.
 void population_engine_set_mod_vendor_price(const char* prefix, int pct);
+/// RAGNAROKMAC: the share of a lane's usable cells those vendors take before
+/// the next lane opens (Fill: Lanes), in percent, over the YAML's LaneFillPct;
+/// 0 or less goes back to the YAML. Script: population_vendor_lanefill.
+void population_engine_set_mod_vendor_lane_fill(const char* prefix, int pct);
 /// RAGNAROKMAC: @vendorinfo [theme|market] -- inspect mod vendor stalls in game.
 void population_engine_vendorinfo(map_session_data* sd, const char* arg);
 

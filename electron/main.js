@@ -696,7 +696,7 @@ async function assetsStart() {
 	const server = findTool('robrowser-remoteclient');
 	if (!server) throw new Error('the asset server binary is missing from this build');
 	const client = getClientPaths();
-	const sources = ['data_grf', 'rdata_grf', 'official_grf', 'bgm_dir'].map(key => {
+	const sources = ['data_grf', 'rdata_grf', 'official_grf', 'bgm_dir', 'fallback_grf'].map(key => {
 		const filename = client[key] || '';
 		try {
 			const stat = fs.statSync(filename);
@@ -784,6 +784,8 @@ async function assetsStop() { if (sharing) await sharing.stop(); return assetSer
 const DEFAULT_CLIENT = {
 	mode: 'host', join_host: '', lan: false,
 	data_grf: '', rdata_grf: '', official_grf: '', bgm_dir: '',
+	// Another client's GRF, read last: it only fills in what these lack.
+	fallback_grf: '',
 	// vm_ram_mib is deliberately absent: its default depends on the machine,
 	// so it is computed in getClientPaths() when the file does not name one.
 	// Anything written there -- by the slider in Settings -- wins permanently.
@@ -940,6 +942,7 @@ async function linkClientOwned(paths) {
 		['rdata_grf', paths.rdata_grf, 'rdata.grf', true],
 		['official_grf', paths.official_grf, 'official_data.grf', true],
 		['bgm_dir', paths.bgm_dir, 'the BGM folder', true],
+		['fallback_grf', paths.fallback_grf, 'the fallback GRF', true],
 	];
 	for (const [, p, label, optional] of ASSETS) {
 		if (!p) continue;
@@ -970,11 +973,11 @@ async function linkClientOwned(paths) {
 			throw new Error(`cannot read ${p}: ${e.message}\n\n${hint}`);
 		}
 	}
-	// Positional: an empty string keeps rdata's slot so official and bgm still
-	// land in theirs.
-	const args = ['link-assets', paths.data_grf, paths.rdata_grf || ''];
-	if (paths.official_grf || paths.bgm_dir) args.push(paths.official_grf || '');
-	if (paths.bgm_dir) args.push(paths.bgm_dir);
+	// Positional: an empty string keeps a slot so the ones after it still land
+	// in theirs. Trailing empty slots are dropped.
+	const args = ['link-assets', paths.data_grf, paths.rdata_grf || '',
+		paths.official_grf || '', paths.bgm_dir || '', paths.fallback_grf || ''];
+	while (args.length > 3 && !args[args.length - 1]) args.pop();
 	// Which client these GRFs are (kRO, iRO...), before link-assets: mods can
 	// be for one client, and their per-client folders are part of the overlay.
 	try { require('./client-detect').detectAndSave(stateDir(), paths, appLog); } catch (e) { appLog(`client: detection failed: ${e.message}`); }
@@ -1021,6 +1024,9 @@ const SETTINGS_DEFAULTS = {
 	// every start after, once it has been); off closes them and keeps them
 	// closed, editor or not.
 	map_editor_agent: true,
+	// Mods the player starred in Settings -> Mods, by folder name: the Favorites
+	// tab lists them. Installed or not; nothing about the server reads it.
+	mod_favorites: [],
 	// How long a friends invitation stays valid, in days. Nothing to do with
 	// Cloudflare -- the tunnel runs as long as the app shares; this is only how
 	// long the invite token is accepted. A link posted in Discord should still
@@ -1057,6 +1063,10 @@ const SETTINGS_DEFAULTS = {
 	// consumed. Off leaves stock behavior; on writes `arrow_decrement: no`.
 	// Read at map-server boot, so Apply restarts the map server for it.
 	unlimited_arrows: false,
+	// Issue #533: Teleport Lv 1 learned or granted by a card (Creamy) asks
+	// Random / Cancel; on, it warps at once, as a Fly Wing does. Maps to
+	// rAthena's skip_teleport_lv1_menu (conf/battle/skill.conf), stock `no`.
+	skip_teleport_lv1_menu: false,
 	population_enable: false,
 	// A ceiling, not a target. Demand-driven spawning builds only the maps
 	// somebody is on, and a map holds 20-40 by the spawn tables, so this binds
@@ -1090,6 +1100,15 @@ const SETTINGS_DEFAULTS = {
 	// is saved with it. Off keeps the historic free supply of potions, arrows
 	// and gemstones.
 	population_companion_inventory: false,
+	// Whether a player may set a companion to roam the map on its own, from the
+	// Companions window, instead of following. Off: every companion follows, and
+	// the window offers no Roam control.
+	population_companion_roam: false,
+	// Whether a drafted companion starts with nothing on, and is given no gear by
+	// the engine afterwards: it wears what its owner gives it. Off keeps the
+	// engine dressing it from its job's gear set. Kept per companion from its
+	// draft on, so this changes none that already exists.
+	population_companion_start_unequipped: false,
 	// Whether ambient shells pick up the drops of their own kills, the way a
 	// player would, and how (see population-conf.js shellLoot). Off keeps the
 	// historic behaviour: every drop stays on the ground until it expires.
@@ -1117,6 +1136,12 @@ const SETTINGS_DEFAULTS = {
 	// window already reads it, and it is deliberately ignored by
 	// writeSettingsFiles: the server knows nothing about it.
 	open_settings_first: false,
+	// Settings -> General -> Updates (app-update.js), also app preferences.
+	// auto_update: look for a new release every few hours and download it.
+	// install_update_on_quit: install a downloaded one on an ordinary quit;
+	// off, only "Restart to install" does.
+	auto_update: true,
+	install_update_on_quit: false,
 	// Pre-renewal is a different rAthena build, not a runtime option, so this
 	// selects which of the two the supervisor starts. Each mode keeps its own
 	// characters -- see db_volume() in stack/src/cmds.rs for why sharing them
@@ -1146,7 +1171,9 @@ function getSettings() {
 // Keys in settings.json that the app acts on rather than the server, and the
 // only names set_app_preference will write. Everything else in that file
 // changes how the server runs and has to go through Apply.
-const APP_PREFERENCES = new Set(['open_settings_first']);
+const APP_PREFERENCES = new Set(['open_settings_first', 'auto_update', 'install_update_on_quit']);
+// Settings -> Mods -> Favorites: how many mods can be starred (settings-store checks the same).
+const MOD_FAVORITES_MAX = 500;
 
 // The AI agent's bearer token, for redaction. Read from its connection file
 // rather than from the agent: it outlives the session that made it, and it is
@@ -1348,6 +1375,7 @@ function toBattleConf(s) {
 		// battle_config.arrow_decrement). Default 'yes' == the shipped
 		// battle.conf, so an untouched install writes nothing surprising.
 		`arrow_decrement: ${s.unlimited_arrows ? 'no' : 'yes'}\n` +
+		`skip_teleport_lv1_menu: ${s.skip_teleport_lv1_menu ? 'yes' : 'no'}\n` +
 		// One cap in the UI, several keys here, because rAthena caps third,
 		// baby, extended and summoner classes separately and a player who
 		// raises "the" limit means all of them -- setting only max_parameter
@@ -2576,10 +2604,16 @@ const handlers = {
 		// Paths only: a client folder name is not a secret, and knowing whether
 		// the GRFs were found is most of triage.
 		const c = getClientPaths();
+		const detected = require('./client-detect').describe(stateDir());
 		add('client', Object.entries(c)
 			.map(([k, v]) => `${k.padEnd(14)}${v === '' ? '(unset)' : v}`)
 			// Which client the GRFs are: a mod written for kRO's data breaks iRO.
-			.concat(`${'detected'.padEnd(14)}${require('./client-detect').describe(stateDir()).text}`).join('\n'));
+			.concat(`${'detected'.padEnd(14)}${detected.text}`)
+			// A second client's files mixed in explain a lot of odd reports.
+			.concat(c.fallback_grf ? [`${'fallback is'.padEnd(14)}${detected.fallback || 'not detected yet'}`] : []).join('\n'));
+		// The archives in the order the asset server reads them: the first that
+		// has a file wins.
+		add('asset archives (DATA.INI)', readIfExists(path.join(stateDir(), 'asset-config/DATA.INI')).trim() || '(none yet)');
 		add('settings', JSON.stringify(getSettings(), null, 2));
 		add('Cloudflare sharing', JSON.stringify({
 			state: sharing?.state || 'stopped',
@@ -2709,8 +2743,13 @@ const handlers = {
 		// partition that could not be created, a hypervisor that is not
 		// available) sits in that file. A report arrived with an empty console
 		// log, a generic timeout, and this never collected.
+		// The .prev pair is the run before this one (nebula 0.2.7 and later):
+		// when the VM died on its own, the player has usually started it again
+		// before reporting, and that start replaced the logs that say why.
 		for (const [file, want] of [['nebulad.log', 200], ['vessel-console.log', 100],
 		                            ['vessel-console.worker-stderr.log', 100],
+		                            ['vessel-console.prev.log', 100],
+		                            ['vessel-console.worker-stderr.prev.log', 100],
 		                            ['launchd.err.log', 60]]) {
 			const p2 = path.join(nebulaLogs, file);
 			if (fs.existsSync(p2)) {
@@ -3053,6 +3092,9 @@ const handlers = {
 		if (next.rdata_grf && !fs.existsSync(next.rdata_grf)) {
 			throw new Error('rdata.grf is not a file');
 		}
+		if (next.fallback_grf && !fs.existsSync(next.fallback_grf)) {
+			throw new Error('the fallback GRF is not a file');
+		}
 		if (Object.hasOwn(paths, 'lan')) {
 			next.hosting_scope = paths.lan ? 'lan' : 'local';
 			require('./settings-store').write(path.join(stateDir(), 'settings.json'),
@@ -3060,6 +3102,34 @@ const handlers = {
 		}
 		fs.writeFileSync(clientConfigPath(), JSON.stringify(next, null, 2));
 		return linkClient(next);
+	},
+	// Settings' advanced Fallback GRF: another client's archive, read after the
+	// player's own. Off unless chosen there; '' clears it. The asset server is
+	// brought back on the new list when it was running.
+	set_fallback_grf: async ({ path: file }) => {
+		const prev = getClientPaths();
+		if (prev.mode === 'join') throw new Error('a joining player plays with the host’s files');
+		if (!clientComplete(prev)) throw new Error('choose your client first');
+		const chosen = typeof file === 'string' ? file.trim() : '';
+		if (chosen && !fs.statSync(chosen, { throwIfNoEntry: false })?.isFile()) throw new Error('the fallback GRF is not a file');
+		if (chosen && path.resolve(chosen) === path.resolve(prev.data_grf)) throw new Error('that is your own data.grf');
+		// The asset server refuses to start on an archive it cannot open, so a
+		// file it would refuse is turned away here, not on the next launch.
+		if (chosen) require('./ui-skin').grfNames(chosen);
+		const next = { ...prev, fallback_grf: chosen };
+		const hadAssets = assetServer.running;
+		fs.writeFileSync(clientConfigPath(), JSON.stringify(next, null, 2));
+		try {
+			await linkClient(next);
+			if (hadAssets) await assetsStart();
+		} catch (error) {
+			// Put the previous list back, so a bad pick never leaves the game
+			// without its asset server.
+			fs.writeFileSync(clientConfigPath(), JSON.stringify(prev, null, 2));
+			try { await linkClient(prev); if (hadAssets) await assetsStart(); } catch (e) { appLog(`fallback GRF: restoring the previous assets failed: ${e.message}`); }
+			throw error;
+		}
+		return require('./client-detect').describe(stateDir());
 	},
 
 	// Host mode, LAN toggle, and the string a host gives out. Kept separate
@@ -3136,6 +3206,21 @@ const handlers = {
 		return next.vm_ram_mib;
 	},
 	save_settings: ({ settings }) => saveSettings(settings),
+	// Star or unstar a mod for Settings -> Mods -> Favorites. One name at a
+	// time, so two windows starring different mods don't overwrite each other.
+	mod_favorites_set: ({ name, favorite }) => {
+		name = String(name || '');
+		if (!/^[A-Za-z0-9_-]{1,64}$/.test(name)) throw new Error(`${name} is not a mod name`);
+		const list = (getSettings().mod_favorites || []).filter(n => n !== name);
+		if (favorite) {
+			// settings-store holds the list to the same 500, but its message is for a damaged file.
+			if (list.length >= MOD_FAVORITES_MAX) throw new Error(`You can star at most ${MOD_FAVORITES_MAX} mods. Unstar one first.`);
+			list.push(name);
+		}
+		const settings = require('./settings-store').write(path.join(stateDir(), 'settings.json'),
+			{ mod_favorites: list.sort() }, SETTINGS_DEFAULTS);
+		return settings.mod_favorites;
+	},
 	// The preferences the app acts on itself. Written straight to
 	// settings.json, and deliberately not server operations: nothing the
 	// supervisor reads is involved, and going the usual way would restart the
@@ -3149,7 +3234,22 @@ const handlers = {
 		const on = !!value;
 		require('./settings-store').write(path.join(stateDir(), 'settings.json'),
 			{ [key]: on }, SETTINGS_DEFAULTS);
+		if (key === 'install_update_on_quit') appUpdater().preferencesChanged();
+		// Turned back on: look now rather than in up to four hours.
+		if (key === 'auto_update' && on) appUpdater().check();
 		return on;
+	},
+
+	// Settings -> General -> Updates.
+	app_update_status: () => appUpdater().status(),
+	app_update_check: () => appUpdater().check(),
+	// Quit the normal way -- before-quit stops the server first -- and let
+	// finishQuit hand over to the installer, which starts the new version.
+	app_update_install: () => {
+		if (!appUpdater().status().canInstall) throw new Error('No update is ready to install.');
+		updateRestartRequested = true;
+		app.quit();
+		return true;
 	},
 
 	copy_text: ({ text }) => clipboard.writeText(String(text || '')),
@@ -3281,6 +3381,8 @@ function clientLogStart() {
 		fs.mkdirSync(dir, { recursive: true });
 		fs.writeFileSync(path.join(dir, 'client.log'),
 			`${new Date().toISOString()} client log started\n`);
+		// The overflow of an earlier run (clientLog) is not this run's.
+		fs.rmSync(path.join(dir, 'client.log.1'), { force: true });
 	} catch {
 		/* logging must never be the thing that breaks the app */
 	}
@@ -3294,8 +3396,21 @@ function clientLog(level, text, line, src) {
 	// roBrowser logs a line per file it loads, and the DB alone is hundreds.
 	// That volume is worth keeping -- comparing the loads that started against
 	// the ones that finished is exactly how a stalled database is spotted --
-	// but not without a ceiling.
-	if (clientLogBytes > 4 * 1024 * 1024) return;
+	// but not without a ceiling. It also logs every packet, so a long session
+	// reaches the ceiling within the hour. Stopping there lost the part a
+	// player complains about, the latest; the full file moves to client.log.1
+	// instead, and client.log starts again.
+	if (clientLogBytes > 4 * 1024 * 1024) {
+		clientLogBytes = 0;
+		try {
+			const file = path.join(stateDir(), 'client.log');
+			fs.renameSync(file, `${file}.1`);
+			fs.writeFileSync(file,
+				`${new Date().toISOString()} client log continued; the lines before are in client.log.1\n`);
+		} catch {
+			/* as below */
+		}
+	}
 	try {
 		const name = typeof level === 'number'
 			? (CLIENT_LOG_LEVELS[level] || String(level))
@@ -3585,6 +3700,52 @@ function buildMenu() {
 // ---------------------------------------------------------------------------
 
 let tearingDown = false;
+// Settings -> Updates -> Restart to install, pressed: see before-quit.
+let updateRestartRequested = false;
+
+let appUpdaterInstance = null;
+function appUpdater() {
+	if (appUpdaterInstance) return appUpdaterInstance;
+	const update = require('./app-update');
+	const prefs = () => {
+		try {
+			const s = getSettings();
+			return { auto: s.auto_update !== false, installOnQuit: s.install_update_on_quit === true };
+		} catch {
+			return { auto: true, installOnQuit: false };
+		}
+	};
+	appUpdaterInstance = update.createAppUpdater({
+		app,
+		log: appLog,
+		preferences: prefs,
+		availability: update.availability({
+			packaged: app.isPackaged,
+			headless: HEADLESS,
+			platform: process.platform,
+			appImage: !!process.env.APPIMAGE,
+			adHocSigned: process.platform === 'darwin' && app.isPackaged && macAdHocSigned(),
+			hasUpdateConfig: app.isPackaged && fs.existsSync(path.join(process.resourcesPath, 'app-update.yml')),
+		}),
+		load: () => require('electron-updater').autoUpdater,
+		nativeUpdater: () => require('electron').autoUpdater,
+	});
+	return appUpdaterInstance;
+}
+
+// A fork's build is sealed ad hoc (afterPack.js), and Squirrel.Mac refuses an
+// update whose signature does not match the running app's Developer ID -- so
+// such a copy would download every release and never install one.
+function macAdHocSigned() {
+	try {
+		const bundle = path.resolve(process.execPath, '..', '..', '..');
+		const out = require('child_process').spawnSync('codesign', ['-dv', bundle], { encoding: 'utf8', timeout: 10000 });
+		const text = `${out.stdout || ''}${out.stderr || ''}`;
+		return /Signature=adhoc/.test(text) || /TeamIdentifier=not set/.test(text) || !/TeamIdentifier=/.test(text);
+	} catch {
+		return true;
+	}
+}
 const crashMonitor = new (require('./crash-monitor').CrashMonitor)({
 	active: () => !tearingDown && assetServer.running && assetServer.current?.identity?.launchId,
 	collect: () => queueServerOperation(() => !tearingDown && assetServer.running
@@ -3707,11 +3868,13 @@ if (!app.requestSingleInstanceLock()) {
 		// So take the click as what it plainly means and come back on our own
 		// once the teardown is finished. app.relaunch only queues it; the
 		// exit already scheduled is what carries it out.
+		//
+		// Only noted here; the end of before-quit queues it, unless an update
+		// is being installed, in which case the installer starts the new
+		// version instead -- a relaunch of this one would race the files it is
+		// replacing.
 		if (tearingDown) {
-			if (!relaunchQueued) {
-				relaunchQueued = true;
-				app.relaunch();
-			}
+			relaunchQueued = true;
 			return;
 		}
 		// Headless has no window to bring forward; say where Settings is.
@@ -3737,12 +3900,16 @@ if (!app.requestSingleInstanceLock()) {
 // for an admin page, and anything that opens a window has nowhere to open.
 const HEADLESS_PAGE_HANDLERS = new Set([
 	'agent_replace_token', 'agent_set', 'agent_status', 'map_editor_agent_set', 'assets_ready', 'assets_stop', 'check_mod_updates',
+	// Settings -> Updates: headless reports itself off ("headless") and has
+	// nothing to install, so these only describe that.
+	'app_update_status', 'app_update_check', 'app_update_install',
 	'client_folders', 'copy_diagnostics', 'data_location', 'db_backup', 'db_backup_full', 'db_inspect',
 	'db_inspect_full', 'db_restore', 'db_restore_full', 'game_status', 'get_client_paths', 'client_detected', 'get_mode',
 	'get_settings', 'get_vm_ram_mib', 'host_facts', 'host_ram_mib', 'hosting_check', 'install_mod',
 	'install_registry_mod', 'install_skin', 'list_mods', 'list_registry_mods', 'mod_data_reset', 'mod_host_list', 'mod_host_set',
 	'open_data_folder', 'open_mods_folder', 'packetvers', 'registry_image', 'registry_release', 'remove_mod',
-	'report_issue', 'save_settings', 'secure_services', 'set_app_preference', 'set_client_paths',
+	'report_issue', 'save_settings', 'secure_services', 'set_app_preference', 'mod_favorites_set', 'set_client_paths',
+	'set_fallback_grf',
 	'set_mod_enabled', 'set_mod_settings', 'set_mode', 'set_vm_ram_mib', 'sharing_status', 'sharing_token_help',
 	'sign_in_status', 'stack_down', 'stack_repair', 'stack_status', 'stack_up', 'start_stack', 'tools_list',
 	'accounts', 'save_diagnostics', 'sharing_connect', 'sharing_start', 'sharing_forget', 'sharing_stop',
@@ -3966,6 +4133,10 @@ app.whenReady().then(() => {
 		openGame();
 	}
 
+	// The first look for a new release waits until the window is up; never a
+	// reason for a launch to fail.
+	try { appUpdater().start(); } catch (e) { appLog(`update: ${e.message}`); }
+
 	// Clicking the Dock icon with every window closed is the same question as
 	// launching the app, so it gets the same answer.
 	app.on('activate', () => {
@@ -4030,9 +4201,24 @@ app.on('before-quit', e => {
 	// the layout in it.
 	persistClientUi();
 	saveTrackedWindows();
-	teardownAsync().finally(() => {
+	teardownAsync().finally(async () => {
 		flushClientStorage();
-		app.exit(0);
+		// With the server stopped: install a downloaded update if the player
+		// asked for it (app-update.js decides), or exit as before.
+		const exitNow = () => {
+			if (relaunchQueued) app.relaunch();
+			app.exit(0);
+		};
+		const outcome = await appUpdater().finishQuit({
+			restartRequested: updateRestartRequested,
+			relaunch: relaunchQueued,
+			// The restart was asked for, so come back on this version rather
+			// than not at all.
+			stuck: () => { app.relaunch(); app.exit(0); },
+		}).catch(() => 'none');
+		if (outcome === 'handed-off') return;
+		if (outcome === 'installed') app.exit(0);
+		else exitNow();
 	});
 });
 

@@ -74,6 +74,12 @@ let _skillPending = [];
 let _skills = [];
 let _skillMeta = { job: '', chosen: false, emitted: 0, answered: false };
 
+/// What each summoned companion wears and carries, by name, as the server last said
+/// (`@companion spare <name> raw`). The Gear tab only mirrors it: a button sends a command and
+/// asks again, so the tab never shows a piece somewhere the server did not put it.
+let _gear = new Map();
+let _gearPending = null;
+
 /**
  * Jobs the Summon tab offers: the same names @companion jobs prints and the
  * engine's kJobNameMap resolves. Kept as plain data so the panel needs no
@@ -275,6 +281,52 @@ function parseSkillLine(text) {
  */
 let _terms = null;
 
+/**
+ * Parse the lines of one companion's gear (see population_shell_gear.cpp, list):
+ *   @CPGR|<name>|<can carry 0/1>|<why not>
+ *   @CPGW|<slot>|<item id>|<item name>|<refine>|<cards>            worn
+ *   @CPGS|<bag place>|<slot>|<item id>|<item name>|<refine>|<cards>  carried
+ *   @CPGREND|<worn>|<carried>
+ *
+ * @param {string} text
+ * @return {boolean} true when the line was ours
+ */
+function parseGearLine(text) {
+	const body = rosterBody(text);
+	if (body === null || !body.startsWith('@CPG')) {
+		return false;
+	}
+	const p = body.split('|');
+	if (p[0] === '@CPGRFAIL') {
+		_gearPending = null;
+		return true;
+	}
+	if (p[0] === '@CPGR') {
+		_gearPending = { name: p[1] || '', can: p[2] === '1', why: p[3] || '', worn: [], spares: [] };
+		return true;
+	}
+	if (_gearPending === null) {
+		return true;
+	}
+	if (p[0] === '@CPGW' && p.length >= 5) {
+		_gearPending.worn.push({ slot: p[1], id: parseInt(p[2], 10) || 0, name: p[3], refine: parseInt(p[4], 10) || 0 });
+	} else if (p[0] === '@CPGS' && p.length >= 6) {
+		_gearPending.spares.push({
+			place: parseInt(p[1], 10) || 0, slot: p[2], id: parseInt(p[3], 10) || 0, name: p[4], refine: parseInt(p[5], 10) || 0
+		});
+	} else if (p[0] === '@CPGREND') {
+		_gear.set(_gearPending.name, _gearPending);
+		_gearPending = null;
+		_drawGear();
+	}
+	return true;
+}
+
+/** Ask the server what every summoned companion wears and carries. */
+function requestGear() {
+	_roster.filter(m => m.active).forEach(m => talk(`@companion spare ${m.name} raw`, false));
+}
+
 function parseTermsLine(text) {
 	const body = rosterBody(text);
 	if (body === null || !body.startsWith('@CPTERMS')) {
@@ -351,7 +403,8 @@ function parseRosterLine(text) {
 				m.liveLevel !== _roster[i].liveLevel || m.hom !== _roster[i].hom ||
 				m.duty !== _roster[i].duty ||
 				m.healAt !== _roster[i].healAt || m.emergencyAt !== _roster[i].emergencyAt ||
-				m.restBelow !== _roster[i].restBelow || m.restUntil !== _roster[i].restUntil);
+				m.restBelow !== _roster[i].restBelow || m.restUntil !== _roster[i].restUntil ||
+				m.canRoam !== _roster[i].canRoam || m.roam !== _roster[i].roam || m.dead !== _roster[i].dead);
 		_roster = fresh;
 		_pending = [];
 		const age = _rosterRequestedAt ? Math.round((Date.now() - _rosterRequestedAt) / 1000) : 0;
@@ -409,7 +462,13 @@ function parseRosterLine(text) {
 		healAt: _field(parts, 11),
 		emergencyAt: _field(parts, 12),
 		restBelow: _field(parts, 13),
-		restUntil: _field(parts, 14)
+		restUntil: _field(parts, 14),
+		// Roaming (walks the map on its own) and down (a summoned companion that is dead),
+		// appended after the thresholds. The server sends -1 for roaming while Settings ->
+		// Population -> Companion roaming is off, and an older server nothing: no control then.
+		canRoam: parts[15] === '0' || parts[15] === '1',
+		roam: parts[15] === '1',
+		dead: parts[16] === '1'
 	});
 	// The server has answered for this companion; its duty is the one to show.
 	if (parts.length > 9) {
@@ -498,8 +557,10 @@ function _drawParty() {
 
 		const nm = document.createElement('div');
 		nm.className = 'nm';
-		nm.textContent = (m.favorite ? '★ ' : '') + m.name;
-		nm.title = m.name;
+		nm.textContent = (m.dead ? '✝ ' : '') + (m.favorite ? '★ ' : '') + m.name;
+		nm.title = m.dead
+			? `${m.name} is down. Revive it with Resurrection or a Yggdrasil Leaf.`
+			: m.name;
 
 		const cls = document.createElement('div');
 		cls.className = 'cls';
@@ -581,10 +642,28 @@ function _drawParty() {
 			m.hom ? `Put ${m.name}'s homunculus away` : `Bring ${m.name}'s homunculus back`
 		);
 
+		// Roam: this companion walks the map on its own instead of following. Like the pet
+		// switch, the label is the state the server holds and the click asks for the other.
+		const roam = !m.canRoam ? null : _button(
+			m.roam ? 'Roaming' : 'Following',
+			m.roam ? 'b on' : 'b',
+			() => {
+				talk(`@companion roam ${m.name} ${m.roam ? 'off' : 'on'}`, false);
+			},
+			m.roam ? `${m.name} walks the map on its own. Click to have it follow you`
+				: `${m.name} follows you. Click to let it roam the map on its own`
+		);
+
 		// The row's call shape is pinned by tests/companion-panel-row and -skill-picker, and this
 		// control is conditional, so build the row as usual and slot the button in beside Duty
 		// and Skills rather than rebuilding the child list on every added control.
 		const row = _row(id, lv, badge, duty, skills, summon, fav, trash);
+		if (m.dead) {
+			row.classList.add('dead');
+		}
+		if (roam) {
+			row.insertBefore(roam, summon);
+		}
 		if (pet) {
 			row.insertBefore(pet, summon);
 		}
@@ -694,6 +773,22 @@ function _drawBattle() {
 		grid.append(_button(label, 'b wide', () => talk(cmd, true), tip));
 	});
 	page.append(grid);
+
+	// Movement: follow you, or walk the map on their own as field players do. Per companion
+	// on the Party tab; these set every one of them. Only while the server allows roaming
+	// (Settings -> Population -> Companion roaming), which the roster says.
+	if (_roster.some(m => m.canRoam)) {
+		const hm = document.createElement('h4');
+		hm.textContent = 'Movement (whole party)';
+		page.append(hm);
+		const moves = document.createElement('div');
+		moves.className = 'grid';
+		moves.append(
+			_button('Follow', 'b wide', () => talk('@companion roam off', false), 'Stay with you'),
+			_button('Roam', 'b wide', () => talk('@companion roam on', false), 'Walk the map on their own')
+		);
+		page.append(moves);
+	}
 
 	const h2 = document.createElement('h4');
 	h2.textContent = 'Orders';
@@ -1175,13 +1270,72 @@ function _drawGear() {
 		grid.className = 'grid';
 		grid.append(_button('All', 'b', () => {
 			talk(`@companion gear ${m.name}`, false);
-		}, 'Take everything'));
+			talk(`@companion spare ${m.name} raw`, false);
+		}, 'Take everything, worn and carried'));
 		slots.forEach(slot => {
 			grid.append(_button(slot, 'b', () => {
 				talk(`@companion gear ${m.name} ${slot}`, false);
+				talk(`@companion spare ${m.name} raw`, false);
 			}, `Take back: ${slot}`));
 		});
 		page.append(grid);
+
+		// Spare gear: only a companion that started unequipped carries any (the server says).
+		const g = _gear.get(m.name);
+		if (!g) {
+			return;
+		}
+		if (!g.can) {
+			if (g.spares.length === 0) {
+				return;
+			}
+		} else {
+			const carry = document.createElement('div');
+			carry.className = 'hint';
+			carry.textContent = 'Carry as spare, to wear again later:';
+			page.append(carry);
+			const stow = document.createElement('div');
+			stow.className = 'grid';
+			['weapon', 'shield', 'armor', 'shoes', 'garment', 'acc', 'head'].forEach(slot => {
+				if (!g.worn.some(w => w.slot === slot)) {
+					return;
+				}
+				stow.append(_button(slot, 'b', () => {
+					talk(`@companion spare ${m.name} stow ${slot}`, false);
+					talk(`@companion spare ${m.name} raw`, false);
+				}, `Carry as spare: ${slot}`));
+			});
+			if (stow.children.length) {
+				page.append(stow);
+			} else {
+				carry.textContent = 'It wears nothing it could carry as a spare.';
+			}
+		}
+		if (!g.spares.length) {
+			return;
+		}
+		const carried = document.createElement('div');
+		carried.className = 'hint';
+		carried.textContent = 'Carried:';
+		page.append(carried);
+		g.spares.forEach(sp => {
+			const label = document.createElement('span');
+			label.textContent = `${sp.refine > 0 ? '+' + sp.refine + ' ' : ''}${sp.name} (${sp.slot}) `;
+			const line = document.createElement('div');
+			line.className = 'grid';
+			line.append(label);
+			if (g.can) {
+				line.append(_button('Wear', 'b', () => {
+					talk(`@companion spare ${m.name} wear ${sp.place}`, false);
+					talk(`@companion spare ${m.name} raw`, false);
+				}, `Put on: ${sp.name}`));
+			}
+			line.append(_button('Take back', 'b', () => {
+				talk(`@companion spare ${m.name} take ${sp.place}`, false);
+				talk(`@companion spare ${m.name} raw`, false);
+			}, `Take back: ${sp.name}`));
+			page.append(line);
+		});
 	});
 }
 
@@ -1205,7 +1359,7 @@ function installChatHook() {
 	}
 	const original = ChatBox.addText;
 	ChatBox.addText = function addText(text, ...rest) {
-		if (parseSkillLine(text) || parseTermsLine(text) || parseRosterLine(text)) {
+		if (parseGearLine(text) || parseSkillLine(text) || parseTermsLine(text) || parseRosterLine(text)) {
 			return;
 		}
 		return original.call(this, text, ...rest);
@@ -1344,6 +1498,10 @@ CompanionPanel.init = function init() {
 			if (btn.dataset.tab === 'party' || btn.dataset.tab === 'gear' ||
 				btn.dataset.tab === 'rebirth') {
 				refreshRoster();
+			}
+			// What each companion wears and carries is asked for with the tab, not kept current.
+			if (btn.dataset.tab === 'gear') {
+				requestGear();
 			}
 			// The Skills tab shows a chooser, so it opens with the list already fresh.
 			if (btn.dataset.tab === 'skills') {

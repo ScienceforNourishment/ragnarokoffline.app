@@ -163,6 +163,15 @@ Hair and clothes now use rAthena's client-supported palette constants instead
 of hard-coded ranges that selected invalid values and collapsed most shells to
 the same red-haired fallback. Profile ranges remain able to narrow the choice.
 
+Those constants stop at `max_cloth_color` (7), which only 3rd and 4th classes
+have palettes for. 1st and 2nd classes ship 0-4, and transcendent 2nd classes,
+Assassin, Crusader, Monk, Rogue, Sage and Dancer ship 0-3. A colour past that
+asks the client for a `.pal` that does not exist, and the shell is drawn in the
+default colours. `get_job_max_cloth_color` lists each class's last palette,
+counted from kRO's and iRO's `data.grf`. A shell given a colour its class lacks
+is re-rolled within the class's range: at spawn, on return, and when a
+companion changes job.
+
 The generated-name tables use a root, consonant bridge, and ending structure,
 providing 16,896 pronounceable combinations before repetition. The same shape
 is used by the compiled fallback when no YAML-generated name is available.
@@ -394,7 +403,8 @@ engine's vendors spawn exactly as upstream's do.
   players open shops next to a busy street; the next area gets shells once
   the earlier ones have their share. `LaneFillPct: [70, 80]` sets that share
   of a lane's usable cells, rolled per lane (default 100: full), which leaves
-  natural gaps; once every lane has its share the rest fill in order.
+  natural gaps; once every lane has its share the rest go to the least full
+  lane.
   `Fill: Random` (the default) spreads them over all areas.
   A shell in `Areas` keeps `min_npc_vendchat_distance` (3 cells) from any
   NPC, as a player's own shop must, so an NPC another mod puts there is not
@@ -450,6 +460,8 @@ engine's vendors spawn exactly as upstream's do.
   (minutes), `population_vendor_callouts` (on/off and pace),
   `population_vendor_limit` (whether they wait for room under the population
   limit) and `population_vendor_price` (price level in percent).
+  `population_vendor_lanefill` (patch 0034) sets a `Fill: Lanes` block's
+  lane share in percent, over its `LaneFillPct`.
 - `{item}` and `{price}` in a chat line name a real item from the speaking
   shell's own stall. The shipped `vendor_call` lines use them.
 - Both vendor databases import `db/import/`, with empty stubs in
@@ -564,6 +576,32 @@ spawned anew, so it has a fresh stock too.
 
 ### A companion lives on its bag
 
+**Companions start unequipped.** The engine dresses a drafted companion from its
+job's gear set, and again at a job change and wherever it finds a slot empty.
+With `population_engine_companion_start_unequipped` on (Settings → Population →
+Companions start unequipped, off by default, registered by patch 0036), a
+drafted companion loses what the spawn put on it and is marked, in memory and in
+`cp_companion_persistence.start_unequipped`; `runtime/population_shell_gear.cpp`
+holds this. From then on `population_engine_shell_equip_item` (the one function
+every gear-set piece goes through) and `pop_companion_reequip_own` return early
+for it, so a job change and a recall give it nothing: it wears what its owner
+gave it. The mark is the companion's, not the setting's: a recall reads it from
+the row, and the setting acts at the draft only.
+
+**Spare gear.** Such a companion can carry equipment it does not wear, with
+Companion inventory on. `@companion spare <name> list | stow <slot> | wear <#> |
+take <#>` (patch 0037, one line in the command; the rest is in
+`population_shell_gear.cpp`) moves pieces between body and bag and back to the
+owner; `raw` is the listing the Companions window reads (`@CPGR`, `@CPGW`,
+`@CPGS`, `@CPGREND`). Everything it wears counts as the owner's: after each change
+`companion_given_mask` is set to every worn position, which is what the engine's
+own hand-back, job change and removal check read. Two lines in
+`population_engine.cpp` cover the bag: `population_engine_companion_return_gear`
+with no slots also returns carried pieces, and
+`population_engine_companion_holds_given_gear` also answers for a row whose bag
+holds equipment, so a companion that is not summoned is not removed with gear
+in it.
+
 Every shell has rAthena's inventory, and the engine used it as a free supply:
 the potions above, ammunition topped up before each attack
 (`population_shell_ammo.cpp`), and every item cost waived by the early return
@@ -592,6 +630,19 @@ patch 0033), a recruited companion is taken off all three, in
 
 Ambient shells keep the free supply, and so do companions while the setting is
 off. A bag saved while it was on stays in the row, untouched, until it is on again.
+
+### Companions can roam
+
+With `population_engine_companion_roam` on (Settings → Population → Companion
+roaming, off by default, registered by patch 0034), an owner can set a companion
+to roam in the Companions window (`@companion roam [<name>] on|off`, unknown while
+the setting is off). A roaming
+companion walks its owner's map as a field shell does and fights near itself,
+by its stance; it still changes maps with its owner and stays in the party. When
+a roaming companion dies it says "I'm down!" in party chat with its position;
+the window marks any companion that dies. The code is `runtime/population_companion_roam.cpp`, reached
+from lines marked `RAGNAROKMAC (roam)`; [COMPANION_DEVELOPMENT.md](../../docs/COMPANION_DEVELOPMENT.md)
+lists them. Nothing changes for a companion that follows.
 
 ## Measured cost
 
