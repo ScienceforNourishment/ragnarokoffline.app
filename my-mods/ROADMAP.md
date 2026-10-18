@@ -37,17 +37,24 @@ Que lo que ya existe funcione y no se rompa.
 
 - [x] Confirmado en el juego (2026-10-17) el arreglo de `player's event queue is full`
       (D22, detalle abajo). Diagnóstico `[qdebug]` quitado.
-- [ ] Probar en el juego, con `scripts/rotest`, en este orden: `world-atlas`
-      → `survival` → `clima` → `temperature` → `wounds` → `travel-journal` →
-      `expedition-board`. Anotar el resultado en el README de cada uno.
-- [ ] Aplicar [`CONVENTIONS.md`](./CONVENTIONS.md): rangos de IDs,
-      prefijos y eventos públicos registrados.
-- [ ] Definir el modpack de pruebas y sus Settings ([`MODPACK.md`](./MODPACK.md)).
-- [ ] Aplicar las reglas de rendimiento de [`CONVENTIONS.md`](./CONVENTIONS.md)
+- [ ] Probar en el juego, en este orden: `world-atlas` → `survival` → `clima`
+      → `temperature` → `wounds` → `travel-journal` → `expedition-board`.
+      Anotar el resultado en el README de cada uno. **Hecho el 2026-10-17**
+      en una sesión larga, salvo lo que cada README marca «Sin probar». Lo
+      más importante pendiente: los **iconos de `temperature` 0.2.1**
+      (frío en `xmas_fild01` sin ropa, que siga al pasar a Congelado y se
+      apague al volver a la ciudad).
+- [x] Aplicar [`CONVENTIONS.md`](./CONVENTIONS.md): rangos de IDs,
+      prefijos y eventos públicos registrados (revisado el 2026-10-17: se cumplen; completadas las tablas).
+- [x] Definir el modpack de pruebas y sus Settings ([`MODPACK.md`](./MODPACK.md)):
+      el de hoy, a propósito (D23). La partida final se decide al cerrar H1.
+- [x] Aplicar las reglas de rendimiento de [`CONVENTIONS.md`](./CONVENTIONS.md)
       a los mods existentes: los relojes ya cumplen D22 (`survival`,
-      `temperature`, `wounds`, `travel-journal`); falta `OnNPCKillEvent` con salida temprana.
-- [ ] Revisar las piezas con carpeta `pre-renewal/` o datos de una sola era a
-      la luz de D1: el balance se hace solo para Renewal.
+      `temperature`, `wounds`, `travel-journal`) y `OnNPCKillEvent` de
+      `expedition-board` sale en su primera línea (0.6.1).
+- [x] Revisar las piezas con carpeta `pre-renewal/` o datos de una sola era a
+      la luz de D1: el balance se hace solo para Renewal. Hecho el 2026-10-17: la única
+      carpeta de una sola era, `clima/pre-renewal/`, ya borrada; `clima` declara `"era": "renewal"`.
 
 **Terminado cuando:** el log del map-server sale limpio tras una sesión de una
 hora con todos los mods del modpack, y cada README dice qué se probó.
@@ -59,17 +66,19 @@ cantimploras y los campos con clima. Es la región más avanzada.
 
 Contenido:
 
-- [ ] Atlas completo de la región. Ya están `prt_fild01`–`11` (Tier 1, el 11
-      Tier 2), las Alcantarillas (Tier 1), el Laberinto (1–2) y la Cueva Marina
-      de Izlude (1–2; el piso 5 es Tier 4 y queda como reto). Faltan los
-      campos que no están (`prt_fild00` y los que haya) y los interiores
-      (posada, iglesia) como `interior`.
+- [x] Atlas completo de la región (`world-atlas` 0.2.0, 2026-10-17): 14
+      campos, 12 mazmorras de Tier 1–2, 6 retos de Tier 4–6 y 15 interiores
+      seguros. Lista y exclusiones en
+      [su README](./world-atlas/README.md#región-de-prontera-e-izlude). Falta
+      probarlo en el juego.
 - [ ] Rebalanceo de presión ([`BALANCE.md`](./BALANCE.md)): tope `@pr_*`,
       escalones por eje en `survival`, Bien alimentado e Hidratado.
 - [ ] Pronóstico del clima, aunque sea un NPC simple en Prontera.
 - [ ] `adventure` 0.1, con el diario integrado y su NPC de descanso en la
       posada.
 - [ ] Servicios en interiores reales: Posadero y Sacerdote de `wounds`.
+      **Se quedan junto al tablero mientras duren las pruebas** (D23): así
+      se llega a ellos rápido. Se mueven al cerrar la porción vertical.
 - [ ] `dungeon-chest` generado desde el atlas.
 
 **Terminado cuando:** un personaje nuevo juega unas 3 horas en la región, hace
@@ -218,6 +227,14 @@ aquí solo lo que cruza varios mods o no es de ninguno.
 
 - **`clima`: visual fijo por mapa.** Vías para superarlo en
   [`ARCHITECTURE.md`](./ARCHITECTURE.md#clima-eventual).
+- **`clima`: los estados tienen huecos** (visto el 2026-10-17 con el veneno).
+  Duran 12 s, se revisan cada 10 s y solo se reponen al acabarse: activos unos
+  12 s de cada 20. Decidirlo con el balance ([`BALANCE.md`](./BALANCE.md));
+  detalle en la sección «Estado» de [`clima/README.md`](./clima/README.md).
+- **Iconos prestados.** `temperature` usa `EFST_COLD` (el cliente lo llama
+  «Crystallization») y `EFST_OVERHEAT` (el sobrecalentamiento del Mado Gear del
+  Mechanic): el nombre y la descripción que enseña el cliente no son los
+  nuestros. Elegir otros iconos o textos propios.
 - Pasar los valores de prueba de cada mod a `settings` en `mod.json`.
 - Verificar los puntos marcados *(verificar)* en `PLAN.md` contra el rAthena
   fijado.

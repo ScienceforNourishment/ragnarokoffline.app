@@ -8,9 +8,11 @@ nuevo, regístralo aquí antes de escribir código.
 ## Era
 
 La partida es **Renewal** ([`DECISIONS.md`](./DECISIONS.md), D1). Todo se
-diseña, se balancea y se prueba en Renewal. Una carpeta `pre-renewal/` se
-añade solo si sale barata, y no se balancea. `"era": "any"` en `mod.json` sigue
-siendo correcto mientras el mod cargue en ambas.
+diseña, se balancea y se prueba en Renewal. Ningún mod de `my-mods/` tiene ya
+carpeta `pre-renewal/` (la de `clima` se quitó el 2026-10-17). `"era": "any"`
+en `mod.json` es correcto mientras el mod funcione igual en las dos; un mod con
+datos que solo valen en Renewal (objetos, monstruos) declara
+`"era": "renewal"`, como `clima`.
 
 ## Rangos de IDs de objetos
 
@@ -47,8 +49,8 @@ Cada mod tiene un **prefijo** corto para todo lo que otros podrían ver:
 | Mod | Variables de personaje | Temporales y globales | Funciones | NPC |
 |---|---|---|---|---|
 | `world-atlas` | — | `$@wa_ready` | `F_Atlas_*` | `WorldAtlas` |
-| `survival` | `hm_*`, `thirst_*` (nombres heredados, no cambiar) | `@hm_penalty_*`, `@thirst_penalty_*` | `F_Survival_*` | `survival_mgr` |
-| `clima` | — | publica `@clima_*` | — | — |
+| `survival` | `hm_*`, `thirst_*` (nombres heredados, no cambiar) | `@hm_penalty_*`, `@thirst_penalty_*`, `@sv_*` | `F_Survival_*` | `survival_mgr` |
+| `clima` | — | publica `@clima_*` | — | `Clima#clima` |
 | `temperature` | — | `@tp_*` | `F_Temperature_*` | `temp_mgr` |
 | `wounds` | `wd_*` | — | `F_Wounds_*` | `wounds_mgr` |
 | `expedition-board` | `eb_*` | `$@eb_*` | `F_Expedition_*` | `ExpeditionCtrl`, `ExpeditionData` |
@@ -69,6 +71,8 @@ El mod store está aislado por mod. Lo que otro mod deba leer va en
 | `@clima_exposure_map$`, `@clima_thirst_extra_loss`, `@clima_hunger_extra_loss` | `clima` | `survival`, `temperature` | exposición a un clima sin protección |
 | `@pr_survival`, `@pr_temp`, `@pr_wounds`, `@pr_clima` | cada mod (planeado) | todos | presión, para el tope común ([`BALANCE.md`](./BALANCE.md#tope-de-presión)) |
 | `adv_trait_*` | `adventure` (planeado) | `temperature`, `wounds`, `survival` | rasgos permanentes |
+| `$@eb_mark[char_id]` | `expedition-board` | `wounds` | GID de la marca viva de ese personaje |
+| `.map$[]`, `.event_active[]`, `.combination[]` de `Clima#clima` | `clima` | `wounds` (con `getvariableofnpc`) | qué evento hay en cada mapa. **No son públicas**: si `clima` cambia su orden o sus nombres, hay que tocar `wounds`. Candidatas a pasar a una función `F_Clima_*` |
 
 `@pr_*` es la excepción al prefijo por mod: es un espacio común y cada mod
 escribe solo su propia clave.

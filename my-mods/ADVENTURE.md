@@ -343,7 +343,7 @@ porcentajes; si pesan poco frente al grindeo, se bajan los rates de monstruos.
 
 **Presupuesto de contenido.** Para que esto funcione, cada banda de nivel
 necesita bastantes experiencias. Meta inicial: **30 o más por banda**. Hoy el
-atlas tiene 20 campos (casi todos T1) y 179 mazmorras; los Tier 1 y 2 se quedan
+atlas tiene 25 campos (casi todos T1) y 183 mazmorras; los Tier 1 y 2 se quedan
 cortos sin añadir campos y ciudades menores al atlas
 (`tier_of.cjs --unlisted` lista unos 274 candidatos).
 

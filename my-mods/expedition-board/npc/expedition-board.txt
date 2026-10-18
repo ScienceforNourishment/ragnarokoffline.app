@@ -287,20 +287,22 @@ OnMarkDead:
 	doevent "TravelJournal::OnLog";
 	end;
 
-// Corre con CADA monstruo que mata un jugador, en todo el servidor. Por eso lo
-// primero son comparaciones baratas: sin caceria propia eb_hunt_mob es 0, que
-// nunca coincide con un monstruo, y sin cazadores en el servidor ($@eb_hunters)
-// no se mira el grupo. Solo si alguien caza y el que mata tiene grupo se repasa
-// a sus companeros (conectados), y cada uno cuenta si tiene esa misma caceria y
-// esta en el mismo mapa. Las lecturas de la tabla de contratos solo ocurren
-// cuando una muerte cuenta.
+// Corre con CADA monstruo que mata un jugador, en todo el servidor, bots del
+// Population Engine incluidos. Por eso la primera linea es una sola
+// comparacion: sin nadie cazando en el servidor ($@eb_hunters 0) termina sin
+// mirar nada mas. Quien tiene caceria propia ya cuenta en $@eb_hunters, asi que
+// esa salida no le quita ninguna muerte. Si alguien caza, cuenta la del que
+// mata (eb_hunt_mob es 0 sin caceria, y nunca coincide) y, si tiene grupo, se
+// repasa a sus companeros conectados: cada uno cuenta si tiene esa misma
+// caceria y esta en el mismo mapa. Las lecturas de la tabla de contratos solo
+// ocurren cuando una muerte cuenta.
 OnNPCKillEvent:
+	if ($@eb_hunters < 1)
+		end;
 	.@mob = killedrid;
 	.@map$ = strcharinfo(3);
 	if (.@mob == eb_hunt_mob)
 		callsub S_Hunt, .@mob, .@map$;
-	if ($@eb_hunters < 1)
-		end;
 	.@pid = getcharid(1);
 	if (!.@pid)
 		end;

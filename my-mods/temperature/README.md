@@ -7,8 +7,10 @@ Requiere `world-atlas`. Prototipo en `my-mods/`.
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.2.0 (la de `mod.json`): el `addtimer` por personaje (`OnTick`) pasa a un solo reloj del NPC con `attachrid`, para que un diálogo no lo mate (error `event queue is full`, que en el log de la 0.1.0 cortó `temp_mgr::OnTick`)
-- **Probado en el juego (2026-10-17):** el Sastre del Viajero aparece en Prontera y vende las cuatro prendas (capa de piel, chaleco de lana, manto de lino, túnica fresca). Lo demás sin probar; ver «Qué probar en el juego»
+- **Versión:** 0.2.1 (la de `mod.json`): el icono va en su propio `bonus_script`, de texto fijo por icono, separado de la penalización. Antes iba dentro de la penalización, y cada `bonus_script` con icono lo apaga al vencer aunque otro con el mismo icono siga activo. Al pasar de Helado a Congelado, o al subir de nivel, el texto cambiaba, el viejo vencía y apagaba el icono del nuevo: la penalización seguía, pero sin icono. La 0.2.0 pasó el `addtimer` por personaje a un solo reloj del NPC (error `event queue is full`)
+- **Probado en el juego (0.2.0, 2026-10-17):** el Sastre aparece y vende las cuatro prendas; `@temperatura` da lugar, clima y ropa acordes al mapa y al equipo; los avisos de cambio de estado salen bien; en Prontera dice «a gusto» con o sin ropa. El icono de calor (Overheat) salió con ropa de abrigo en `moc_fild11`, que es lo esperado. El icono de frío falló: una vez se quedó puesto y otra no apareció (arreglado en 0.2.1)
+- **Sin probar:** los iconos con la 0.2.1: que el de frío salga en `xmas_fild01` sin ropa, siga al pasar de Helado a Congelado y se apague unos 5 s después de volver a la ciudad
+- **Ojo, iconos prestados:** el de frío es `EFST_COLD`, el mismo de Cristalización (`SC_CRYSTALIZE`), y el cliente lo nombra «Crystallization»; el de calor es `EFST_OVERHEAT`, el sobrecalentamiento del Mado Gear del Mechanic, y el cliente enseña esa descripción. Si el estado real llega a la vez (un monstruo que cristaliza, un Mechanic con Mado Gear), los dos comparten icono y el primero que termine lo apaga. Pendiente en [`ROADMAP.md`](../ROADMAP.md#otros-pendientes-de-los-mods-existentes)
 - **Actualizado:** 2026-10-17
 
 No es una barra que baje: cada 4 segundos se calcula una **sensación** y se

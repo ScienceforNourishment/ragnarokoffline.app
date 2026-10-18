@@ -13,7 +13,8 @@ Actualízala al cambiar el mod o al probarlo.
 - **Probado en el juego (0.2.2, 2026-10-17):** morir en `ice_dun02` ya no tumba el servidor; `killerrid` funciona (log: `killerrid 110028467 clase 1775 raza 0 nombre Snowier`, candidatas `5|2` de la raza informe). No dio herida por los dos fallos arreglados en 0.3.0
 - **Probado en el juego (0.3.0, 2026-10-17):** la penalización sigue tras un diálogo largo (el reloj nuevo funciona); morir **no** quita una herida que ya tienes. Morir en `ice_dun02` (Snowier y Solid Snowier, raza informe) seguía sin dar herida por el `rand(1)` (arreglado en 0.3.1)
 - **Probado en el juego (0.3.1, 2026-10-17):** morir en `ice_dun02` a manos de un monstruo da una de las heridas de su raza
-- **Sin probar:** la herida por bioma (muerte sin asesino), por clima y por marca de `expedition-board`, el máximo de 3, la nota del diario; ver «Cómo probarlo» y «Suposiciones que hay que comprobar en el juego»
+- **Probado en el juego (0.3.1, 2026-10-17):** con 3 heridas, morir no da una cuarta; las notas del diario salen al recibir una herida y al curarla (posada y templo); morir en `prt_fild11` con un evento de clima activo, a manos de un Elusive Goblin, dio herida; el log muestra `candidatas 8|4|2 clima 2`: la herida del clima (Veneno latente, por Lluvia tóxica) entra en el sorteo
+- **Sin probar:** la herida por bioma (muerte sin asesino) y la de la marca de `expedition-board`; ver «Cómo probarlo» y «Suposiciones que hay que comprobar en el juego»
 - **Actualizado:** 2026-10-17
 
 Morir fuera de una ciudad puede dejar una secuela con nombre ("Cicatriz del

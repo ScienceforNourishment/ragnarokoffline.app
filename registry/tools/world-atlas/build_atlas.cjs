@@ -43,8 +43,10 @@ function validate(rows) {
     if (!KINDS.includes(r.kind)) errors.push(`${at}: kind '${r.kind}' not in ${KINDS.join('|')}`);
     if (!BIOMES.includes(r.biome)) errors.push(`${at}: biome '${r.biome}' not in the list`);
     if (!/^\d+$/.test(r.tier) || +r.tier > 6) errors.push(`${at}: tier must be 0-6`);
-    if (r.kind === 'city' && r.tier !== '0') errors.push(`${at}: a city has tier 0`);
-    if (r.kind !== 'city' && r.tier === '0') errors.push(`${at}: only a city has tier 0`);
+    // Cities and interiors are the safe kinds: tier 0, and only they.
+    const safe = r.kind === 'city' || r.kind === 'interior';
+    if (safe && r.tier !== '0') errors.push(`${at}: a ${r.kind} has tier 0`);
+    if (!safe && r.tier === '0') errors.push(`${at}: only a city or an interior has tier 0`);
     if (!/^-?\d+$/.test(r.temp) || Math.abs(+r.temp) > 2) errors.push(`${at}: temp must be -2..2`);
     if (!cities.has(r.anchor)) errors.push(`${at}: anchor '${r.anchor}' is not a city row`);
     for (const c of ['water', 'rest']) if (!/^[01]$/.test(r[c])) errors.push(`${at}: ${c} must be 0 or 1`);
@@ -136,7 +138,7 @@ function${T}script${T}F_Atlas_Biome${T}{
 	return callfunc("F_Atlas_Field", .@m$, 1);
 }
 
-// Danger tier: 0 for a city, 1-6 elsewhere; 0 when unknown.
+// Danger tier: 0 for a city or an interior, 1-6 elsewhere; 0 when unknown.
 function${T}script${T}F_Atlas_Tier${T}{
 	if (getargcount() > 0)
 		.@m$ = getarg(0);
@@ -191,13 +193,14 @@ function${T}script${T}F_Atlas_Name${T}{
 	return callfunc("F_Atlas_Field", .@m$, 7);
 }
 
-// 1 on a city map. Unknown maps are not safe.
+// 1 on a city or interior map. Unknown maps are not safe.
 function${T}script${T}F_Atlas_IsSafe${T}{
 	if (getargcount() > 0)
 		.@m$ = getarg(0);
 	else
 		.@m$ = strcharinfo(3);
-	return (callfunc("F_Atlas_Kind", .@m$) == "city");
+	.@k$ = callfunc("F_Atlas_Kind", .@m$);
+	return (.@k$ == "city" || .@k$ == "interior");
 }
 `;
 }

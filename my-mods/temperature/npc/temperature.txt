@@ -166,26 +166,36 @@ S_Apply:
 	}
 	if (.@feel == 1 || .@feel == -1)
 		return;
+	// El icono va en su propio bonus_script, de texto fijo por icono. Cada
+	// bonus_script con icono lo enciende al crearse y lo APAGA al vencer, aunque
+	// otro con el mismo icono siga activo; con el icono dentro de la penalizacion,
+	// pasar de Helado a Congelado (o subir de nivel) cambiaba el texto, el viejo
+	// vencia y apagaba el icono del nuevo. Ojo: EFST_COLD es tambien el icono de
+	// Cristalizacion (SC_CRYSTALIZE) y el cliente lo nombra asi.
+	if (.@feel < 0)
+		bonus_script "{ /* temperature: frio */ bonus bMaxHP,0; }", 5, 1032, 0, EFST_COLD;
+	else
+		bonus_script "{ /* temperature: calor */ bonus bMaxHP,0; }", 5, 1032, 0, EFST_OVERHEAT;
 	if (.@feel == -2) {
 		.@pts = 1 + BaseLevel / 20;
 		if (.@pts > 6)
 			.@pts = 6;
-		bonus_script "{ bonus bAgi,-" + .@pts + "; }", 5, 1032, 0, EFST_COLD;
+		bonus_script "{ bonus bAgi,-" + .@pts + "; }", 5, 1032;
 	} else if (.@feel == 2) {
 		.@pts = 1 + BaseLevel / 20;
 		if (.@pts > 6)
 			.@pts = 6;
-		bonus_script "{ bonus bInt,-" + .@pts + "; }", 5, 1032, 0, EFST_OVERHEAT;
+		bonus_script "{ bonus bInt,-" + .@pts + "; }", 5, 1032;
 	} else if (.@feel == -3) {
 		.@pts = 2 + BaseLevel / 12;
 		if (.@pts > 10)
 			.@pts = 10;
-		bonus_script "{ bonus bAgi,-" + .@pts + "; bonus bDex,-" + .@pts + "; bonus bMaxHPrate,-5; }", 5, 1032, 0, EFST_COLD;
+		bonus_script "{ bonus bAgi,-" + .@pts + "; bonus bDex,-" + .@pts + "; bonus bMaxHPrate,-5; }", 5, 1032;
 	} else {
 		.@pts = 2 + BaseLevel / 12;
 		if (.@pts > 10)
 			.@pts = 10;
-		bonus_script "{ bonus bInt,-" + .@pts + "; bonus bVit,-" + .@pts + "; bonus bMaxSPrate,-5; }", 5, 1032, 0, EFST_OVERHEAT;
+		bonus_script "{ bonus bInt,-" + .@pts + "; bonus bVit,-" + .@pts + "; bonus bMaxSPrate,-5; }", 5, 1032;
 	}
 	return;
 

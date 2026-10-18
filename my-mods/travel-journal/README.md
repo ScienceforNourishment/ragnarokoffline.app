@@ -17,7 +17,8 @@ Actualízala al cambiar el mod o al probarlo.
 
 - **Versión:** 0.2.0 (la de `mod.json`): el `addtimer` de 5 s por personaje (`OnMapTick`) pasa a un solo reloj del NPC (`OnTimer5000`) que entra en cada jugador con `attachrid`. Las entradas propias (mapa nuevo, muerte) se escriben con `callsub`, sin `doevent`, porque `doevent` también pasa por la cola de 2 huecos del personaje. Arregla el error `event queue is full`, que cortaba `OnMapTick` y descartaba `OnLog`. `OnLog` sigue igual para los demás mods. Quitado el diagnóstico `[qdebug]`
 - **Probado:** el cliente con `node --check` y sus funciones de lectura con Node
-- **Sin probar en el juego:** el script del servidor con la 0.2.0 (ver «Instalar y probar»)
+- **Probado en el juego (0.2.0, 2026-10-17):** la primera visita a un mapa (Geffen) se anota; las muertes se anotan; las notas de `wounds` y `expedition-board` llegan
+- **Sin probar en el juego:** el resto de «Instalar y probar» (por ejemplo, que un mapa repetido no se anote dos veces)
 - **Problemas abiertos:** las notas de otros mods siguen llegando por `doevent "TravelJournal::OnLog"`, que usa la cola del personaje; si se lanza durante un diálogo largo junto con otros eventos, puede perderse
 - **Futuro:** se integrará en `adventure` (D12)
 - **Actualizado:** 2026-10-17

@@ -12,9 +12,11 @@ corresponde, su efecto visual y protección compatible. Requiere `world-atlas`
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.2.0 (la de `mod.json`)
+- **Versión:** 0.2.1 (la de `mod.json`): solo Renewal (`"era": "renewal"`, D1). Quitada la carpeta `pre-renewal/` y `prerenewalFolder`; en un mundo Pre-Renewal la app rechaza el mod en vez de cargarlo sin sus objetos de protección. La 0.2.0 pasó los eventos de por mapa a por bioma
 - **Probado en el juego:** la versión anterior, con eventos por mapa
-- **Sin probar:** todo desde el paso a eventos por bioma (0.2.0)
+- **Probado en el juego (0.2.0, 2026-10-17):** los eventos por bioma arrancan (log `[clima] Evento … iniciado`); el Poison de Lluvia tóxica afecta en los campos de Prontera
+- **Observado (sin decidir):** el veneno se siente flojo. `S_ApplyWeatherStatus` lo pone 12 s (`.effect_lease`), revisa cada 10 s (`.effect_refresh_interval`) y solo lo vuelve a poner si ya no está (`!getstatus`): queda activo unos 12 s de cada 20 y en el hueco vuelve la regeneración. Mientras dura, rAthena bloquea la regeneración natural y quita 2 + 1,5 % del HP máximo por segundo, pero para al 25 % de HP (regla oficial). Se arregla con una revisión más corta que la duración; afecta a todos los estados del clima, no solo al veneno
+- **Sin probar:** el resto desde el paso a eventos por bioma (0.2.0)
 - **Limitación:** el visual es fijo por mapa; ver «Limitación conocida»
 - **Actualizado:** 2026-10-17
 
@@ -39,17 +41,16 @@ tienen nivel mínimo ni requisitos de atributos.
 | 50832 | `calor_intenso` | Sombrero del Desierto | 5591 | Upper Head | 567 |
 | 50833 | `frio_extremo` | Abrigo Polar | 2309 | Garment | — |
 
-Las propiedades base del objeto de referencia se conservan cuando aplican,
-incluidas sus diferencias de defensa y bonificaciones por era; las
-restricciones de clase y nivel se eliminan. Esas bonificaciones propias
-permanecen independientes de la protección climática y pueden seguir afectando
-estados de cualquier fuente (por ejemplo, la resistencia a Poison de las
-máscaras). El ID 5591 no existe en la base Pre-Renewal fijada, así que el
-Sombrero del Desierto usa allí sus datos base de Renewal. Los nombres y
-descripciones están en `System/itemInfo.lua`; se reutilizan recursos visuales
-del cliente, sin añadir arte. Los cuatro objetos de cabeza también declaran en
-ambas eras el `View` de su referencia, necesario para que su aspecto aparezca
-al equiparlos.
+Las propiedades base del objeto de referencia en Renewal se conservan cuando
+aplican; las restricciones de clase y nivel se eliminan. Esas bonificaciones
+propias permanecen independientes de la protección climática y pueden seguir
+afectando estados de cualquier fuente (por ejemplo, la resistencia a Poison de
+las máscaras). Los objetos están en `renewal/db/item_db.yml`: el mod es solo
+Renewal (`"era": "renewal"`, D1) desde la 0.2.1, que quitó la carpeta
+`pre-renewal/`. Los nombres y descripciones están en `System/itemInfo.lua`; se
+reutilizan recursos visuales del cliente, sin añadir arte. Los cuatro objetos
+de cabeza también declaran el `View` de su referencia, necesario para que su
+aspecto aparezca al equiparlos.
 
 En la tabla, `View` es la apariencia que el servidor comunica al cliente al
 equipar el objeto; para los cuatro objetos de cabeza coincide con `ClassNum` y
@@ -86,16 +87,14 @@ concreto ni únicamente al estado alterado.
    controlador.
 2. **Reserva un ID custom libre.** Los objetos de este mod están en el rango
    `50000–99999`; confirma que el ID no esté usado por otro objeto del mod o
-   por otro mod que se instale junto a él. Usa el mismo ID y `AegisName` en
-   las dos eras.
-3. **Crea la entrada de servidor en ambas eras.** Añade el objeto a
-   `renewal/db/item_db.yml` y `pre-renewal/db/item_db.yml`. Los equipables
+   por otro mod que se instale junto a él (rangos en
+   [`CONVENTIONS.md`](../CONVENTIONS.md#rangos-de-ids-de-objetos)).
+3. **Crea la entrada de servidor.** Añade el objeto a
+   `renewal/db/item_db.yml` (el mod es solo Renewal, D1). Los equipables
    usan `Type: Armor`; el slot efectivo se define en `Locations`. Conserva
-   únicamente las estadísticas y efectos del objeto base que correspondan,
-   y define expresamente `Jobs: All: true` y `Classes: All: true`. No añadas
-   requisitos de nivel o atributos. Mantén las diferencias legítimas de
-   Renewal y Pre-Renewal cuando existan; si el objeto fuente no existe en una
-   era, elige y documenta qué datos base se usarán allí.
+   únicamente las estadísticas y efectos Renewal del objeto base que
+   correspondan, y define expresamente `Jobs: All: true` y
+   `Classes: All: true`. No añadas requisitos de nivel o atributos.
 4. **Copia los recursos de cliente del objeto fuente.** En
    `System/itemInfo.lua`, añade el nuevo ID con el nombre y la descripción
    propios. Copia literalmente del objeto original los campos
@@ -108,7 +107,7 @@ concreto ni únicamente al estado alterado.
 5. **Configura la apariencia equipada cuando corresponda.** Que el icono y la
    imagen de descripción se vean no garantiza que el objeto se dibuje sobre el
    personaje. Para un headgear que reutiliza una apariencia stock, añade
-   `View:` a la entrada de servidor en ambas eras con el `View` del headgear
+   `View:` a la entrada de servidor con el `View` del headgear
    fuente y usa el mismo número como `ClassNum` en `itemInfo.lua`. Este mod
    confirmó ese requisito con los cuatro objetos de cabeza existentes:
    `50826` → `63`, `50827` → `91`, `50830` → `90` y `50832` → `567`.
@@ -139,7 +138,7 @@ concreto ni únicamente al estado alterado.
    Reinicia el servidor después de cambios en `db/` o `npc/`; reinicia la
    aplicación después de cambios en `System/`.
 
-Antes de declarar el trabajo terminado, compara las entradas de ambas eras,
+Antes de declarar el trabajo terminado, compara la entrada de servidor,
 el ID/slot que consulta el NPC y los datos visuales del objeto fuente. Un
 `View` debe verificarse en la base del servidor fijada y los recursos y
 `ClassNum` en la tabla del cliente fijada que usa la aplicación.

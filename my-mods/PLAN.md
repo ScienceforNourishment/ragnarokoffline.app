@@ -110,7 +110,8 @@ Primeras aplicaciones concretas, con lo que ya existe:
   cada ciudad (`prt_in` y equivalentes), el Sacerdote en su iglesia
   (`prt_church`…), la futura taberna en un interior. Hoy están todos a unas
   celdas del tablero de `expedition-board`, lo que contradice «no todo junto».
-  Comprobar las coordenadas de cada interior en el juego.
+  Las de Prontera e Izlude, sacadas del índice de NPC, están en la columna
+  `note` del atlas; comprobarlas en el juego.
 
 **Fuera de este ciclo:** durabilidad del equipo, cartografía con ventana propia
 y mapas custom. Oficios: empezar solo con pesca y minería.

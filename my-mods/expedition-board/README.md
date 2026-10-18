@@ -19,9 +19,10 @@ se entrega»).
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.6.0 (la de `mod.json`): crédito compartido en grupo y contratos de Tier 2. La 0.5.0 añadió el Intendente y marcas de nivel acorde al mapa, la 0.4.0 las cacerías, la 0.3.0 la dificultad según el atlas y la 0.2.0 fue una reescritura de la primera versión, que no cargaba
+- **Versión:** 0.6.1 (la de `mod.json`): `OnNPCKillEvent` sale en su primera línea si nadie del servidor tiene una cacería (`$@eb_hunters`), antes de leer el mapa; importa con la población encendida, porque corre con cada monstruo que matan los bots. La 0.6.0 añadió el crédito compartido en grupo y contratos de Tier 2. La 0.5.0 añadió el Intendente y marcas de nivel acorde al mapa, la 0.4.0 las cacerías, la 0.3.0 la dificultad según el atlas y la 0.2.0 fue una reescritura de la primera versión, que no cargaba
 - **Probado en el juego:** el flujo completo de una marca en Prontera, y que la marca reforzada aguanta claramente más que una normal. El error de carga original (`abs()`) quedó resuelto
-- **Sin probar:** las cacerías, el crédito en grupo (necesita dos personajes), el Intendente (aparece en Prontera, 2026-10-17; no se ha cobrado una marca con él), las marcas de nivel acorde al mapa, las cacerías de Tier 2 (ids 15 a 21), la nota de «contrato aceptado» del diario, las otras seis ciudades (posiciones de tableros y marcas), el escalado de zeny en Tier 2 o más y los casos límite de «Probarlo»
+- **Probado en el juego (0.6.0, 2026-10-17):** una cacería de Fabre en Prontera: cuenta solo los Fabre de su mapa (`prt_fild08`; en `prt_fild06` no cuenta, ni otros monstruos), avisa al completarla y se cobra en el tablero (el Intendente no la acepta: es lo esperado, él solo cobra marcas). Una marca de Prontera: aviso de objetivo abatido y cobro con el Intendente. El diario anota el contrato aceptado y la marca abatida
+- **Sin probar:** el crédito en grupo (necesita dos personajes), las marcas de nivel acorde al mapa, las cacerías de Tier 2 (ids 15 a 21), las otras seis ciudades (posiciones de tableros y marcas), el escalado de zeny en Tier 2 o más y los casos límite de «Probarlo»
 - **Actualizado:** 2026-10-17
 
 ## Qué hace
