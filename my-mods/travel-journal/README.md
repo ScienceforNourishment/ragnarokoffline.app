@@ -1,8 +1,26 @@
 # travel-journal
 
+> **Se integrará en `adventure`** (decidido el 2026-10-17). Este mod sigue
+> funcionando tal cual hasta entonces; después queda como referencia y se
+> retira. Se conservan Alt+J, `@diario`, los tipos de entrada y el evento
+> `TravelJournal::OnLog`. Detalle y migración en
+> [`ADVENTURE.md`](../ADVENTURE.md#el-diario-dentro-de-adventure).
+
 Diario del viajero. Registra por personaje lo que le pasa y lo muestra en una
 ventana. Es la primera versión: solo escribe dos tipos de entrada por sí mismo
 y ofrece un punto de entrada para que otros mods añadan las suyas.
+
+## Estado
+
+Única fuente del estado de este mod; los demás documentos enlazan aquí.
+Actualízala al cambiar el mod o al probarlo.
+
+- **Versión:** 0.2.0 (la de `mod.json`): el `addtimer` de 5 s por personaje (`OnMapTick`) pasa a un solo reloj del NPC (`OnTimer5000`) que entra en cada jugador con `attachrid`. Las entradas propias (mapa nuevo, muerte) se escriben con `callsub`, sin `doevent`, porque `doevent` también pasa por la cola de 2 huecos del personaje. Arregla el error `event queue is full`, que cortaba `OnMapTick` y descartaba `OnLog`. `OnLog` sigue igual para los demás mods. Quitado el diagnóstico `[qdebug]`
+- **Probado:** el cliente con `node --check` y sus funciones de lectura con Node
+- **Sin probar en el juego:** el script del servidor con la 0.2.0 (ver «Instalar y probar»)
+- **Problemas abiertos:** las notas de otros mods siguen llegando por `doevent "TravelJournal::OnLog"`, que usa la cola del personaje; si se lanza durante un diálogo largo junto con otros eventos, puede perderse
+- **Futuro:** se integrará en `adventure` (D12)
+- **Actualizado:** 2026-10-17
 
 ## Qué hace ahora
 
@@ -181,3 +199,13 @@ travel-journal/
 - Que las heridas con nombre se registren al recibirse.
 - Entrada del némesis cuando un monstruo mata al jugador.
 - Filtros por tipo y notas escritas por el jugador.
+- **Resúmenes de expedición** (revisión 2026-10-17): `adventure` escribirá al
+  cerrar cada expedición (al descansar y contar) una entrada de tipo `expedition` con duración,
+  lugares, relatos y lo que pasó ([`ADVENTURE.md`](../ADVENTURE.md#expedición-y-diario)).
+  El cliente necesita un icono y un formato para ese tipo, y para `exp`
+  (experiencia nueva).
+- **Sin temporizador:** cambiar el reloj de 5 s (`OnTimer5000`) por
+  `OnPCLoadMapEvent` con la mapflag `loadevent` en los mapas del atlas. Los
+  mapas fuera del atlas dejarían de registrarse; decidir si importa. Desde la
+  0.2.0 el reloj ya no sufre el error `event queue is full`, así que no corre
+  prisa.

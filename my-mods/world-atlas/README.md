@@ -2,9 +2,18 @@
 
 Tabla de datos por mapa que otros mods consultan desde sus scripts. **Por sí
 solo no cambia nada en el juego**: no añade NPC visibles, objetos ni
-comportamiento. Es la Fase 0 de [`PLAN.md`](../PLAN.md).
+comportamiento. Es la base de datos del mundo para todos los mods (D13 en
+[`DECISIONS.md`](../DECISIONS.md)).
 
-Versión 1: 206 mapas.
+## Estado
+
+Única fuente del estado de este mod; los demás documentos enlazan aquí.
+Actualízala al cambiar el mod o al probarlo.
+
+- **Versión:** 0.1.0 (la de `mod.json`); 206 mapas
+- **Probado en el juego:** nada todavía
+- **Sin probar:** la carga y todas las funciones; `F_Atlas_Name` en el diario
+- **Actualizado:** 2026-10-17
 
 | Tipo | Mapas | Origen |
 |---|---:|---|
@@ -145,3 +154,21 @@ No está probado en el juego. Tras cargar, revisa que no haya errores en
 `ragnarok-stack logs map 100` y, con un personaje de prueba, consulta por
 ejemplo `callfunc("F_Atlas_Tier", "ice_dun02")` (debe dar 4) y
 `F_Atlas_Tier("desconocido")` (debe dar 0) desde un NPC de prueba.
+
+## Próximos cambios propuestos (revisión 2026-10-17)
+
+Sin implementar.
+
+- **Ampliar a campos y ciudades menores.** Con `adventure`, cada mapa del
+  atlas es una experiencia: el atlas pasa a ser el contenido. Hoy los Tier 1 y
+  2 se quedan cortos (meta: 30 o más experiencias por banda de nivel, ver
+  [`ADVENTURE.md`](../ADVENTURE.md#rates-recomendados)). `tier_of.cjs
+  --unlisted` lista los candidatos.
+- **Interiores y posadas** (`kind=interior`, seguros) para los servicios de
+  ciudad.
+- **Mapflag `loadevent`** en todos los mapas del atlas, generada por el script
+  de build, para `adventure` y `travel-journal`.
+- **Columnas candidatas:** la mazmorra a la que pertenece un piso y su
+  profundidad (para la experiencia del piso más hondo); los servicios de cada
+  ciudad (identidad de ciudad).
+- **Origen de los cofres:** `dungeon-chest` generado desde este CSV.

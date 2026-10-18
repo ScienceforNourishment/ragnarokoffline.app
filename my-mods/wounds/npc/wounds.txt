@@ -1,0 +1,492 @@
+//===== Ragnarok Offline: wounds ==========================================
+//= Heridas y maldiciones con nombre. Morir fuera de una ciudad puede dejar una
+//= secuela que resta atributos o HP/SP maximos hasta curarla.
+//=
+//= Estado por personaje (variable permanente de personaje):
+//=   wd_list$   ids de las heridas que tiene, separados por barras: "1|5"
+//=
+//= Dos tipos (.kind): 1 herida (la cura la posada o el templo),
+//=                    2 maldicion (solo la cura el templo).
+//= Las heridas debilitan, nunca impiden jugar: solo restan atributos o
+//= HP/SP maximos. No hay efecto que bloquee movimiento, combate ni ciudades.
+//=
+//= Los penalizadores usan su propio bonus_script (texto distinto del de
+//= survival), asi que conviven con el. Se renueva cada 4 s con un unico reloj
+//= del NPC para todos los personajes (initnpctimer + attachrid), que solo hace
+//= algo con quien tiene alguna herida. Ver CONVENTIONS.md, Temporizadores.
+//=
+//= Dependencias suaves (el mod funciona sin ellas):
+//=   world-atlas     bioma del mapa donde se muere (elige la herida) y ciudades
+//=   travel-journal  anota la herida recibida y la curada
+//===========================================================================
+
+// F_Wounds_Name(id) -> nombre de la herida; "" si no existe.
+function	script	F_Wounds_Name	{
+	.@id = getarg(0);
+	if (.@id < 1 || .@id > getvariableofnpc(.count, "wounds_mgr"))
+		return "";
+	return getvariableofnpc(.name$[.@id], "wounds_mgr");
+}
+
+// F_Wounds_Kind(id) -> 1 herida, 2 maldicion, 0 si no existe.
+function	script	F_Wounds_Kind	{
+	.@id = getarg(0);
+	if (.@id < 1 || .@id > getvariableofnpc(.count, "wounds_mgr"))
+		return 0;
+	return getvariableofnpc(.kind[.@id], "wounds_mgr");
+}
+
+// F_Wounds_Has(id) -> 1 si el personaje tiene esa herida.
+function	script	F_Wounds_Has	{
+	if (wd_list$ == "")
+		return 0;
+	return compare("|" + wd_list$ + "|", "|" + getarg(0) + "|");
+}
+
+// F_Wounds_Count() -> cuantas heridas tiene el personaje.
+function	script	F_Wounds_Count	{
+	if (wd_list$ == "")
+		return 0;
+	explode(.@a$, wd_list$, "|");
+	return getarraysize(.@a$);
+}
+
+// F_Wounds_Price(id, place) -> precio de curarla. place: 1 posada, 2 templo.
+function	script	F_Wounds_Price	{
+	.@kind = callfunc("F_Wounds_Kind", getarg(0));
+	if (.@kind == 0)
+		return 0;
+	if (getarg(1) == 1)
+		return 150 + BaseLevel * 10;
+	if (.@kind == 2)
+		return 300 + BaseLevel * 15;
+	return 100 + BaseLevel * 6;
+}
+
+// F_Wounds_Add(id) -> 1 si se anoto, 0 si no (no existe, ya la tiene, o ya
+// tiene el maximo). El reloj de wounds_mgr aplica el efecto en 4 s o menos.
+function	script	F_Wounds_Add	{
+	.@id = getarg(0);
+	if (callfunc("F_Wounds_Kind", .@id) == 0 || callfunc("F_Wounds_Has", .@id))
+		return 0;
+	if (callfunc("F_Wounds_Count") >= getvariableofnpc(.max, "wounds_mgr"))
+		return 0;
+	if (wd_list$ == "")
+		wd_list$ = "" + .@id;
+	else
+		wd_list$ = wd_list$ + "|" + .@id;
+	return 1;
+}
+
+// F_Wounds_Remove(id) -> 1 si la quito, 0 si no la tenia. Sin ella el
+// bonus_script ya aplicado se agota solo en unos 5 s.
+function	script	F_Wounds_Remove	{
+	if (!callfunc("F_Wounds_Has", getarg(0)))
+		return 0;
+	explode(.@a$, wd_list$, "|");
+	.@n = getarraysize(.@a$);
+	wd_list$ = "";
+	for (.@i = 0; .@i < .@n; .@i++) {
+		if (atoi(.@a$[.@i]) == getarg(0))
+			continue;
+		if (wd_list$ == "")
+			wd_list$ = .@a$[.@i];
+		else
+			wd_list$ = wd_list$ + "|" + .@a$[.@i];
+	}
+	return 1;
+}
+
+// F_Wounds_ClearKind(kind) -> cuantas quito. kind 0 = todas, 1 = solo heridas.
+function	script	F_Wounds_ClearKind	{
+	if (wd_list$ == "")
+		return 0;
+	explode(.@a$, wd_list$, "|");
+	.@n = getarraysize(.@a$);
+	.@removed = 0;
+	for (.@i = 0; .@i < .@n; .@i++) {
+		.@id = atoi(.@a$[.@i]);
+		if (getarg(0) == 0 || callfunc("F_Wounds_Kind", .@id) == getarg(0))
+			.@removed += callfunc("F_Wounds_Remove", .@id);
+	}
+	return .@removed;
+}
+
+// F_Wounds_Log(texto$) -> anota una linea en el diario del viajero, si esta.
+function	script	F_Wounds_Log	{
+	@tj_type$ = "note";
+	@tj_text$ = getarg(0);
+	doevent "TravelJournal::OnLog";
+	return;
+}
+
+-	script	wounds_mgr	-1,{
+	end;
+
+OnInit:
+	// Cuantas heridas puede tener a la vez, y que muerte las provoca.
+	.max = 3;
+	.chance = 100;		// % por muerte fuera de ciudad. Valor de prueba.
+	.safe_maps$ = "|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|";
+
+	// kind 1 herida, 2 maldicion. fx$: efecto; @n se sustituye por el valor.
+	// rate 1 = el valor es un % fijo (HP/SP); rate 0 = depende del nivel.
+	.count = 10;
+	.name$[1] = "Cicatriz del lobo";
+	.kind[1] = 1; .rate[1] = 0; .fx$[1] = "bonus bAgi,-@n;";
+	.name$[2] = "Veneno latente";
+	.kind[2] = 1; .rate[2] = 0; .fx$[2] = "bonus bVit,-@n;";
+	.name$[3] = "Insolacion";
+	.kind[3] = 1; .rate[3] = 0; .fx$[3] = "bonus bInt,-@n;";
+	.name$[4] = "Manos entumecidas";
+	.kind[4] = 1; .rate[4] = 0; .fx$[4] = "bonus bDex,-@n;";
+	.name$[5] = "Costillas rotas";
+	.kind[5] = 1; .rate[5] = 1; .fx$[5] = "bonus bMaxHPrate,-@n;";
+	.name$[6] = "Mente nublada";
+	.kind[6] = 2; .rate[6] = 1; .fx$[6] = "bonus bMaxSPrate,-@n;";
+	.name$[7] = "Maldicion sombria";
+	.kind[7] = 2; .rate[7] = 0; .fx$[7] = "bonus bLuk,-@n;";
+	.name$[8] = "Brazo magullado";
+	.kind[8] = 1; .rate[8] = 0; .fx$[8] = "bonus bStr,-@n;";
+
+	.name$[9] = "Marca de la presa";
+	.kind[9] = 1; .rate[9] = 0; .fx$[9] = "bonus bFlee,-@n;bonus bHit,-@n;";
+	.name$[10] = "Frio en los huesos";
+	.kind[10] = 1; .rate[10] = 0; .fx$[10] = "bonus bAgi,-@n;bonus bDex,-@n;";
+
+	// 1 = escribe en el log del map-server que ve cada muerte (para comprobar
+	// killerrid, la raza del asesino y el clima). Ponlo a 0 al terminar.
+	.debug = 1;
+	// Herida que deja cada evento de clima (indice de combinacion de clima.txt;
+	// 0 = ninguna): 1 lluvia toxica, 2 ventisca, 3 neblina, 4 vapores, 5 fango,
+	// 6 tierra maldita, 7 polen, 8 hojas, 9 calor, 10 frio.
+	setarray .clima_wound[1], 2, 10, 6, 2, 0, 7, 0, 0, 3, 10;
+	// Raza del monstruo (0 informe, 1 no-muerto, 2 bruto, 3 planta, 4 insecto,
+	// 5 pez, 6 demonio, 7 humanoide, 8 angel, 9 dragon) -> candidatas.
+	.race$[0] = "5|2"; .race$[1] = "7|6"; .race$[2] = "1|5"; .race$[3] = "2|8"; .race$[4] = "2|8";
+	.race$[5] = "3|5"; .race$[6] = "7|6"; .race$[7] = "8|4"; .race$[8] = "6|3"; .race$[9] = "5|8";
+
+	bindatcmd "heridas", "wounds_mgr::OnList", 0, 99;
+	bindatcmd "herida", "wounds_mgr::OnGive", 1, 99;
+	initnpctimer;
+	end;
+
+// @heridas: lista las heridas del personaje.
+OnList:
+	if (wd_list$ == "") {
+		dispbottom "No tienes heridas ni maldiciones.";
+		end;
+	}
+	explode(.@a$, wd_list$, "|");
+	.@n = getarraysize(.@a$);
+	for (.@i = 0; .@i < .@n; .@i++) {
+		.@id = atoi(.@a$[.@i]);
+		if (callfunc("F_Wounds_Kind", .@id) == 2)
+			dispbottom "Maldicion: " + callfunc("F_Wounds_Name", .@id);
+		else
+			dispbottom "Herida: " + callfunc("F_Wounds_Name", .@id);
+	}
+	end;
+
+// @herida <id>: para pruebas (solo GM). 0 las quita todas.
+OnGive:
+	.@id = atoi(.@atcmd_parameters$[0]);
+	if (.@id == 0) {
+		callfunc "F_Wounds_ClearKind", 0;
+		dispbottom "Heridas quitadas.";
+		end;
+	}
+	if (!callfunc("F_Wounds_Add", .@id))
+		dispbottom "No se pudo anotar: id " + .@id + " no existe, ya la tienes o llegaste al maximo.";
+	else
+		dispbottom "Recibes: " + callfunc("F_Wounds_Name", .@id);
+	end;
+
+OnPCLoginEvent:
+	callsub S_Join;
+	end;
+
+OnPCLogoutEvent:
+	callsub S_Leave;
+	end;
+
+// Cada 4 s, para cada jugador de la lista. attachrid no pasa por la cola de
+// eventos del personaje, asi que un dialogo abierto no detiene el reloj. Se
+// rearma lo primero, para que un error de script mas abajo no lo pare.
+OnTimer4000:
+	initnpctimer;
+	for (.@i = .pl_n - 1; .@i >= 0; .@i--) {
+		if (!attachrid(.pl[.@i])) {
+			callsub S_Drop, .@i;
+			continue;
+		}
+		if (wd_list$ != "")
+			callsub S_Apply;
+		detachrid;
+	}
+	end;
+
+// Suma el efecto de todas las heridas en un solo bonus_script. Flag 1032 =
+// reemplazar el identico (refresca la duracion) + quitar al cerrar sesion,
+// como hacen survival y refine-matk. No se quita al morir.
+S_Apply:
+	explode(.@a$, wd_list$, "|");
+	.@n = getarraysize(.@a$);
+	.@pts = 2 + BaseLevel / 10;
+	if (.@pts > 14)
+		.@pts = 14;
+	.@fx$ = "";
+	for (.@i = 0; .@i < .@n; .@i++) {
+		.@id = atoi(.@a$[.@i]);
+		if (.@id < 1 || .@id > .count)
+			continue;
+		if (.rate[.@id])
+			.@v = 10;
+		else
+			.@v = .@pts;
+		.@fx$ += replacestr(.fx$[.@id], "@n", "" + .@v);
+	}
+	if (.@fx$ != "")
+		bonus_script .@fx$, 5, 1032;
+	return;
+
+OnPCDieEvent:
+	// Sin heridas en ciudad. La lista del atlas manda si esta; si no, la propia.
+	if ($@wa_ready) {
+		if (callfunc("F_Atlas_IsSafe", strcharinfo(3)))
+			end;
+	}
+	if (compare(.safe_maps$, "|" + strcharinfo(3) + "|"))
+		end;
+	if (rand(100) >= .chance)
+		end;
+	if (callfunc("F_Wounds_Count") >= .max)
+		end;
+	// Quien mato: killerrid es el GID del asesino (0 si no se conoce).
+	// getunitdata llena un array (indices UMOB_*); no devuelve un campo suelto.
+	.@killer = killerrid;
+	.@kname$ = "";
+	.@cands$ = "";
+	.@ktype = -1;
+	if (.@killer)
+		.@ktype = getunittype(.@killer);
+	if (.@ktype == BL_MOB) {
+		getunitdata .@killer, .@ud;
+		.@cls = .@ud[UMOB_CLASS];
+		.@race = getmonsterinfo(.@cls, MOB_RACE);
+		.@kname$ = getmonsterinfo(.@cls, MOB_NAME);
+		if (.debug)
+			debugmes "[wddebug] muerte: killerrid " + .@killer + " clase " + .@cls + " raza " + .@race + " nombre " + .@kname$;
+		if (.@race >= 0 && .@race <= 9)
+			.@cands$ = .race$[.@race];
+	} else if (.debug) {
+		debugmes "[wddebug] muerte: killerrid " + .@killer + " (no es un monstruo o no se conoce)";
+	}
+	// Su propia marca de expedition-board (variable de servidor de ese mod).
+	.@forced = 0;
+	if (.@killer && $@eb_mark[getcharid(0)] == .@killer)
+		.@forced = 9;
+	// Sin asesino conocido: el bioma del mapa (world-atlas).
+	if (.@cands$ == "") {
+		.@biome$ = "";
+		if ($@wa_ready)
+			.@biome$ = callfunc("F_Atlas_Biome", strcharinfo(3));
+		.@cands$ = callsub(S_Candidates, .@biome$);
+	}
+	// Un evento de clima activo en este mapa suma su propia herida a las candidatas.
+	.@cw = callsub(S_ClimateWound, strcharinfo(3));
+	if (.@cw > 0)
+		.@cands$ += "|" + .@cw;
+	if (.debug)
+		debugmes "[wddebug] candidatas " + .@cands$ + " clima " + .@cw + " marca " + .@forced;
+	if (.@forced)
+		.@cands$ = "" + .@forced;
+	explode(.@c$, .@cands$, "|");
+	.@n = getarraysize(.@c$);
+	.@pick = 0;
+	.@free = 0;
+	for (.@i = 0; .@i < .@n; .@i++) {
+		.@id = atoi(.@c$[.@i]);
+		if (callfunc("F_Wounds_Has", .@id))
+			continue;
+		.@free++;
+		// rAthena evalua los dos lados de || y rand(1) falla: dos if separados.
+		if (.@free == 1)
+			.@pick = .@id;
+		else if (rand(.@free) == 0)
+			.@pick = .@id;
+	}
+	if (.@pick == 0)
+		end;
+	if (!callfunc("F_Wounds_Add", .@pick))
+		end;
+	dispbottom "Has quedado marcado: " + callfunc("F_Wounds_Name", .@pick) + ". Hay quien puede curarlo en una posada o en el templo.";
+	if (.@forced)
+		callfunc "F_Wounds_Log", "Mi presa me marco: " + callfunc("F_Wounds_Name", .@pick);
+	else if (.@kname$ != "")
+		callfunc "F_Wounds_Log", "Herida (" + callfunc("F_Wounds_Name", .@pick) + ") a manos de: " + .@kname$;
+	else
+		callfunc "F_Wounds_Log", "Recibi una herida: " + callfunc("F_Wounds_Name", .@pick);
+	end;
+
+// Herida del evento de clima activo en el mapa; 0 si no hay clima, no esta el
+// mod o ese evento no deja herida. Lee las matrices de Clima#clima.
+S_ClimateWound:
+	if (!getnpcid(0, "Clima#clima"))
+		return 0;
+	.@n = getvariableofnpc(.map_count, "Clima#clima");
+	for (.@i = 0; .@i < .@n; .@i++) {
+		if (getvariableofnpc(.map$[.@i], "Clima#clima") != getarg(0))
+			continue;
+		if (!getvariableofnpc(.event_active[.@i], "Clima#clima"))
+			return 0;
+		.@combo = getvariableofnpc(.combination[.@i], "Clima#clima");
+		if (.@combo < 1 || .@combo > 10)
+			return 0;
+		return .clima_wound[.@combo];
+	}
+	return 0;
+
+// Ids candidatos segun el bioma de la world-atlas ("" si no esta el atlas).
+S_Candidates:
+	.@b$ = "|" + getarg(0) + "|";
+	if (.@b$ == "||")
+		return "5|8";
+	if (compare("|bosque|pradera|", .@b$))
+		return "1|8";
+	if (compare("|selva|pantano|", .@b$))
+		return "2|5";
+	if (compare("|desierto|volcan|", .@b$))
+		return "3|5";
+	if (compare("|nieve|montana|", .@b$))
+		return "4|5";
+	if (compare("|costa|", .@b$))
+		return "3|8";
+	if (compare("|cueva|ruinas|", .@b$))
+		return "6|7";
+	return "5|8";
+
+// Jugadores del reloj, por account id. Los bots del Population Engine no
+// disparan OnPCLoginEvent y nunca entran.
+S_Join:
+	.@aid = getcharid(3);
+	for (.@i = 0; .@i < .pl_n; .@i++)
+		if (.pl[.@i] == .@aid)
+			return;
+	.pl[.pl_n] = .@aid;
+	.pl_n++;
+	return;
+
+S_Leave:
+	.@aid = getcharid(3);
+	for (.@i = 0; .@i < .pl_n; .@i++) {
+		if (.pl[.@i] == .@aid) {
+			callsub S_Drop, .@i;
+			return;
+		}
+	}
+	return;
+
+// Quita la posicion getarg(0) poniendo en su lugar la ultima.
+S_Drop:
+	.@i = getarg(0);
+	.pl_n--;
+	.pl[.@i] = .pl[.pl_n];
+	.pl[.pl_n] = 0;
+	return;
+}
+
+//--- Posada: cura todas las heridas (no las maldiciones) por zeny ----------
+prontera,164,193,4	script	Posadero#wd_prt	4_M_MERCAT1,{
+	mes "[Posadero]";
+	if (wd_list$ == "") {
+		mes "Una cama limpia y una sopa caliente, si hace falta. A ti no te veo ninguna herida.";
+		close;
+	}
+	explode(.@a$, wd_list$, "|");
+	.@n = getarraysize(.@a$);
+	.@price = 0;
+	.@curses = 0;
+	for (.@i = 0; .@i < .@n; .@i++) {
+		.@id = atoi(.@a$[.@i]);
+		if (callfunc("F_Wounds_Kind", .@id) == 1)
+			.@price += callfunc("F_Wounds_Price", .@id, 1);
+		else
+			.@curses++;
+	}
+	if (.@price == 0) {
+		mes "Eso que llevas no se cura con una cama. Ve al templo.";
+		close;
+	}
+	mes "Esas heridas piden descanso de verdad. Una noche, curas y comida: " + .@price + " zeny.";
+	if (.@curses)
+		mes "Las maldiciones no, esas las ve el templo.";
+	next;
+	if (select("Descansar:Ahora no") == 2) {
+		mes "[Posadero]";
+		mes "La cama sigue ahi.";
+		close;
+	}
+	if (Zeny < .@price) {
+		mes "[Posadero]";
+		mes "No te alcanza. Vuelve cuando tengas los " + .@price + " zeny.";
+		close;
+	}
+	Zeny -= .@price;
+	.@cured = callfunc("F_Wounds_ClearKind", 1);
+	percentheal 100, 100;
+	callfunc "F_Wounds_Log", "Descanse en una posada y se curaron mis heridas";
+	mes "[Posadero]";
+	mes "A la manana te sentiras otro. (" + .@cured + " curada" + (.@cured > 1 ? "s" : "") + ")";
+	close;
+}
+izlude,132,121,4	duplicate(Posadero#wd_prt)	Posadero#wd_izl	4_M_MERCAT1
+geffen,123,37,4	duplicate(Posadero#wd_prt)	Posadero#wd_gef	4_M_MERCAT1
+payon,192,110,4	duplicate(Posadero#wd_prt)	Posadero#wd_pay	4_M_MERCAT1
+morocc,164,85,4	duplicate(Posadero#wd_prt)	Posadero#wd_moc	4_M_MERCAT1
+alberta,194,144,4	duplicate(Posadero#wd_prt)	Posadero#wd_alb	4_M_MERCAT1
+aldebaran,143,125,4	duplicate(Posadero#wd_prt)	Posadero#wd_alde	4_M_MERCAT1
+
+//--- Templo: cura una herida o maldicion a cambio de una donacion ----------
+prontera,166,193,4	script	Sacerdote del Templo#wd_prt	4_M_JOB_WIZARD,{
+	mes "[Sacerdote]";
+	if (wd_list$ == "") {
+		mes "Que la luz te acompane. No hay sombra en ti.";
+		close;
+	}
+	mes "Dime que te aflige y lo que pueda hacer el templo, lo hare. Se acepta una donacion.";
+	next;
+	explode(.@a$, wd_list$, "|");
+	.@n = getarraysize(.@a$);
+	.@menu$ = "";
+	for (.@i = 0; .@i < .@n; .@i++) {
+		.@id = atoi(.@a$[.@i]);
+		.@menu$ += callfunc("F_Wounds_Name", .@id) + " (" + callfunc("F_Wounds_Price", .@id, 2) + " zeny):";
+	}
+	.@menu$ += "Nada por ahora";
+	.@s = select(.@menu$) - 1;
+	if (.@s >= .@n) {
+		mes "[Sacerdote]";
+		mes "Que la luz te acompane.";
+		close;
+	}
+	.@id = atoi(.@a$[.@s]);
+	.@price = callfunc("F_Wounds_Price", .@id, 2);
+	if (Zeny < .@price) {
+		mes "[Sacerdote]";
+		mes "El templo no pide mas de lo que tienes. Vuelve con " + .@price + " zeny.";
+		close;
+	}
+	Zeny -= .@price;
+	callfunc "F_Wounds_Remove", .@id;
+	callfunc "F_Wounds_Log", "El templo me libro de: " + callfunc("F_Wounds_Name", .@id);
+	mes "[Sacerdote]";
+	mes "Hecho. " + callfunc("F_Wounds_Name", .@id) + " ya no te pertenece.";
+	close;
+}
+izlude,134,121,4	duplicate(Sacerdote del Templo#wd_prt)	Sacerdote del Templo#wd_izl	4_M_JOB_WIZARD
+geffen,125,37,4	duplicate(Sacerdote del Templo#wd_prt)	Sacerdote del Templo#wd_gef	4_M_JOB_WIZARD
+payon,194,110,4	duplicate(Sacerdote del Templo#wd_prt)	Sacerdote del Templo#wd_pay	4_M_JOB_WIZARD
+morocc,166,85,4	duplicate(Sacerdote del Templo#wd_prt)	Sacerdote del Templo#wd_moc	4_M_JOB_WIZARD
+alberta,196,144,4	duplicate(Sacerdote del Templo#wd_prt)	Sacerdote del Templo#wd_alb	4_M_JOB_WIZARD
+aldebaran,145,125,4	duplicate(Sacerdote del Templo#wd_prt)	Sacerdote del Templo#wd_alde	4_M_JOB_WIZARD

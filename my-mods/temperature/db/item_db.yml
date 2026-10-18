@@ -1,0 +1,61 @@
+Header:
+  Type: ITEM_DB
+  Version: 3
+
+Body:
+  - Id: 50840
+    AegisName: Temp_Fur_Cape
+    Name: Capa de Piel
+    Type: Armor
+    Buy: 4000
+    Weight: 600
+    Defense: 3
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+  - Id: 50841
+    AegisName: Temp_Wool_Vest
+    Name: Chaleco de Lana
+    Type: Armor
+    Buy: 1500
+    Weight: 400
+    Defense: 4
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+  - Id: 50842
+    AegisName: Temp_Linen_Mantle
+    Name: Manto de Lino
+    Type: Armor
+    Buy: 3000
+    Weight: 200
+    Defense: 2
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+  - Id: 50843
+    AegisName: Temp_Cool_Tunic
+    Name: Tunica Fresca
+    Type: Armor
+    Buy: 1200
+    Weight: 150
+    Defense: 3
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1

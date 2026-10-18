@@ -5,6 +5,16 @@ registrados en el índice del servidor: 179 mapas en total. Los mapas se agrupan
 por la dificultad aproximada de sus monstruos y cada Tier entrega una comida
 distinta para facilitar las pruebas.
 
+## Estado
+
+Única fuente del estado de este mod; los demás documentos enlazan aquí.
+Actualízala al cambiar el mod o al probarlo.
+
+- **Versión:** 0.2.0 (la de `mod.json`)
+- **Probado en el juego:** sin registro detallado; anota aquí lo que se compruebe
+- **Pendiente:** generar las definiciones desde el atlas (ver «Próximos cambios propuestos»)
+- **Actualizado:** 2026-10-17
+
 - **Cantidad:** un cofre por mapa.
 - **Ubicación:** aleatoria dentro de cada mapa; solo se eligen celdas
   transitables.
@@ -140,3 +150,23 @@ agregar una:
    hablar con el para comprobar que ya no entregue otro objeto.
 
 Este mod no cambia ni requiere `affix-forge` o `arpg-equipments`.
+
+## Próximos cambios propuestos (revisión 2026-10-17)
+
+Sin implementar.
+
+- **Generar las definiciones desde el atlas.** Son 3308 líneas escritas a mano
+  para 179 mapas. Un script de Node en `registry/tools/dungeon-chest/` las
+  generaría desde el CSV de `world-atlas`, y añadir un mapa sería añadir una
+  fila.
+- **Botín por bioma además de por Tier:** equipo de abrigo en mazmorras de
+  hielo, ropa fresca y protección de calor en las de desierto, objetos de
+  `clima` y `temperature`. Las comidas por Tier son de prueba.
+- **Dos jugadores:** cada miembro del grupo cerca del cofre recibe su propio
+  botín, no solo quien lo abre.
+- **Cofres con trampa** que un Rogue o un Hunter puede desarmar.
+- **Cofre de un aventurero caído:** algunos cofres con una nota corta (lore,
+  ver `remnants` en `PLAN.md`).
+- **Experiencias:** primer cofre de un mapa, `chest:<mapa>` (Menor); primer
+  cofre de un Tier, `chesttier:<n>` (Mayor). Ver
+  [`ADVENTURE.md`](../ADVENTURE.md).

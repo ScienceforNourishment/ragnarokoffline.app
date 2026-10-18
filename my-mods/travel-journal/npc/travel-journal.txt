@@ -10,12 +10,19 @@
 //=   doevent "TravelJournal::OnLog";
 //= Types the window knows: map, death, note. Any other type is shown as a note.
 //= If this mod is off, doevent only logs that the event does not exist.
+//=
+//= Maps are checked by one clock for every player (initnpctimer + attachrid),
+//= not by an addtimer chain per player: a player's own events wait in a 2-slot
+//= queue during NPC dialogs and the rest are dropped. This mod's own entries
+//= are written with callsub for the same reason. See CONVENTIONS.md,
+//= Temporizadores.
 //===========================================================================
 -	script	TravelJournal	-1,{
 	end;
 
 OnInit:
 	bindatcmd "diario", strnpcinfo(3) + "::OnCommand", 0, 99;
+	initnpctimer;
 	end;
 
 OnCommand:
@@ -23,52 +30,47 @@ OnCommand:
 	end;
 
 OnPCLoginEvent:
-	// [qdebug] TEMPORAL (diagnostico de "player's event queue is full"). Quitar.
-	$@qd_login_tj[getcharid(0)]++;
-	debugmes "[qdebug] journal login #" + $@qd_login_tj[getcharid(0)] + " char " + getcharid(0) + " map " + strcharinfo(3);
 	@tj_map$ = "";
-	deltimer strnpcinfo(3) + "::OnMapTick";
-	addtimer 5000, strnpcinfo(3) + "::OnMapTick";
+	callsub S_Join;
 	end;
 
 OnPCLogoutEvent:
-	debugmes "[qdebug] journal logout char " + getcharid(0);
-	deltimer strnpcinfo(3) + "::OnMapTick";
+	callsub S_Leave;
 	@tj_map$ = "";
 	@tj_type$ = "";
 	@tj_text$ = "";
 	end;
 
-// Maps are checked on a timer so the mod needs no per-map flag. The first
-// tick after login also records the town the character starts in.
-OnMapTick:
-	// [qdebug] TEMPORAL (diagnostico de "player's event queue is full"). Quitar.
-	.@qd_now = gettimetick(2);
-	if (@qd_j > 0 && .@qd_now - @qd_j < 4 && .@qd_now >= @qd_j && @qd_dup < 20) {
-		@qd_dup++;
-		debugmes "[qdebug] journal MAP tick DUPLICATE: " + (.@qd_now - @qd_j) + "s since the previous one, char " + getcharid(0);
-	}
-	@qd_j = .@qd_now;
-	.@map$ = strcharinfo(3);
-	if (.@map$ != @tj_map$) {
-		@tj_map$ = .@map$;
-		if (modstore_get("char", "visited." + .@map$, 0) == 0) {
-			modstore_set "char", "visited." + .@map$, 1;
-			// A map name the store refuses as a key is not written, and so not logged.
-			if (modstore_get("char", "visited." + .@map$, 0) == 1) {
-				@tj_type$ = "map";
-				@tj_text$ = callsub(S_Place, .@map$);
-				doevent strnpcinfo(3) + "::OnLog";
-			}
+// Every 5 s, for each player in the list; the clock is restarted first, so a
+// script error further down cannot stop it. The first pass after login also
+// records the town the character starts in.
+OnTimer5000:
+	initnpctimer;
+	for (.@i = .pl_n - 1; .@i >= 0; .@i--) {
+		if (!attachrid(.pl[.@i])) {
+			callsub S_Drop, .@i;
+			continue;
 		}
+		callsub S_MapCheck;
+		detachrid;
 	}
-	addtimer 5000, strnpcinfo(3) + "::OnMapTick";
 	end;
 
+S_MapCheck:
+	.@map$ = strcharinfo(3);
+	if (.@map$ == @tj_map$)
+		return;
+	@tj_map$ = .@map$;
+	if (modstore_get("char", "visited." + .@map$, 0) == 0) {
+		modstore_set "char", "visited." + .@map$, 1;
+		// A map name the store refuses as a key is not written, and so not logged.
+		if (modstore_get("char", "visited." + .@map$, 0) == 1)
+			callsub S_Write, "map", callsub(S_Place, .@map$);
+	}
+	return;
+
 OnPCDieEvent:
-	@tj_type$ = "death";
-	@tj_text$ = callsub(S_Place, strcharinfo(3));
-	doevent strnpcinfo(3) + "::OnLog";
+	callsub S_Write, "death", callsub(S_Place, strcharinfo(3));
 	end;
 
 // The readable name of a map from the world-atlas mod; the map code when that
@@ -83,17 +85,54 @@ S_Place:
 	}
 	return .@code$;
 
+// Entry point for other mods (see the header).
 OnLog:
 	if (@tj_type$ == "" || @tj_text$ == "")
 		end;
-	.@type$ = replacestr(@tj_type$, "|", "/");
-	.@text$ = replacestr(@tj_text$, "|", "/");
+	callsub S_Write, @tj_type$, @tj_text$;
+	@tj_type$ = "";
+	@tj_text$ = "";
+	end;
+
+// S_Write(type$, text$): appends one entry for the attached character.
+S_Write:
+	.@type$ = replacestr(getarg(0), "|", "/");
+	.@text$ = replacestr(getarg(1), "|", "/");
+	if (.@type$ == "" || .@text$ == "")
+		return;
 	.@n = modstore_inc("char", "client.n", 1);
 	modstore_set "char", "client.e." + .@n, gettimetick(2) + "|" + .@type$ + "|" + .@text$;
 	if (.@n > 300)
 		modstore_delete "char", "client.e." + (.@n - 300);
-	@tj_type$ = "";
-	@tj_text$ = "";
 	dispbottom "@@event journal new";
-	end;
+	return;
+
+// The clock's players, by account id. Population Engine bots never fire
+// OnPCLoginEvent, so they never join.
+S_Join:
+	.@aid = getcharid(3);
+	for (.@i = 0; .@i < .pl_n; .@i++)
+		if (.pl[.@i] == .@aid)
+			return;
+	.pl[.pl_n] = .@aid;
+	.pl_n++;
+	return;
+
+S_Leave:
+	.@aid = getcharid(3);
+	for (.@i = 0; .@i < .pl_n; .@i++) {
+		if (.pl[.@i] == .@aid) {
+			callsub S_Drop, .@i;
+			return;
+		}
+	}
+	return;
+
+// Removes position getarg(0) by moving the last one into it.
+S_Drop:
+	.@i = getarg(0);
+	.pl_n--;
+	.pl[.@i] = .pl[.pl_n];
+	.pl[.pl_n] = 0;
+	return;
 }

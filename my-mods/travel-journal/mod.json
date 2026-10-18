@@ -1,6 +1,6 @@
 {
   "name": "travel-journal",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Ragnarok Offline",
   "description": "Diario del viajero: registra automáticamente lo que le pasa al personaje (mapas nuevos, muertes) y lo muestra en una ventana.",
   "requires": {

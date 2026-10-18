@@ -23,12 +23,65 @@ API.
 
 ## Plan de trabajo
 
-La hoja de ruta de estos mods está en [`PLAN.md`](./PLAN.md): decisiones
-tomadas, el hilo de la partida, las fases, el orden de arranque y los puntos
-por verificar. Las ideas originales siguen en
-[`conceptsForMods.md`](./conceptsForMods.md). Al empezar un mod nuevo del
-plan, como `world-atlas`, lee primero su sección en `PLAN.md`; lo que dice
-allí es una propuesta hasta que el mod exista.
+La planificación está repartida en estos documentos; léelos en este orden:
+
+| Documento | Contiene |
+|---|---|
+| [`DECISIONS.md`](./DECISIONS.md) | lo decidido, con fecha y porqué. **Manda sobre los demás** |
+| [`ROADMAP.md`](./ROADMAP.md) | la visión, los hitos, el estado de cada mod y los errores abiertos |
+| [`PLAN.md`](./PLAN.md) | el catálogo de diseño: qué sistemas queremos y cómo |
+| [`CONVENTIONS.md`](./CONVENTIONS.md) | rangos de IDs, prefijos, eventos públicos, regla de grupo y restricciones técnicas |
+| [`MODPACK.md`](./MODPACK.md) | qué mods y Settings forman la partida |
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | límites de la plataforma: clima eventual, día y noche y presupuesto de rendimiento |
+
+La partida es **Renewal** (D1). Las ideas originales siguen en
+[`conceptsForMods.md`](./conceptsForMods.md). Al empezar un mod nuevo,
+regístralo en `CONVENTIONS.md` y lee su sección en `PLAN.md`; lo que dice allí
+es una propuesta hasta que el mod exista.
+
+### Por dónde empezar
+
+Al retomar el trabajo en una sesión nueva: este README, luego
+[`ROADMAP.md`](./ROADMAP.md) (en qué hito estamos y qué sigue) y
+[`DECISIONS.md`](./DECISIONS.md) (qué ya no se discute). Después, según la
+tarea:
+
+| Tarea | Lee además |
+|---|---|
+| Arreglar o probar un mod existente | su README; el error abierto y los pendientes en `ROADMAP.md` |
+| Crear un mod nuevo | su entrada en `PLAN.md` («Mods nuevos propuestos»); `CONVENTIONS.md` (IDs, prefijo, eventos, reglas de rendimiento) |
+| Cualquier cosa de EXP, expediciones, relatos o el diario | `ADVENTURE.md` |
+| Castigos, recompensas o valores de balance | `BALANCE.md` |
+| Algo que la plataforma quizá no permite (clima, luz, cliente, rendimiento) | `ARCHITECTURE.md` y la tabla de restricciones de `CONVENTIONS.md` |
+| Activar o recomendar un mod del registro, o cambiar Settings | `MODPACK.md` |
+| Una decisión de diseño nueva | `DECISIONS.md` (añadirla ahí con fecha) |
+
+**Dónde va cada cosa al documentar,** para que no se contradigan:
+
+- Lo que **hace** un mod y su **estado** (versión, qué se probó, problemas
+  abiertos): solo en su README, en la sección «Estado». Este README dice qué
+  es cada mod y `ROADMAP.md` en qué hito entra, sin repetir el estado: enlazan
+  a esa sección.
+- Lo **decidido**: en `DECISIONS.md`, con número (D1, D2…). Los demás
+  documentos citan el número en vez de repetir la decisión.
+- Lo **pendiente o el orden**: en `ROADMAP.md`. El diseño de algo que no
+  existe: en `PLAN.md`, o en su documento propio si es grande (`ADVENTURE.md`).
+- Una regla que debe cumplir **todo** mod: en `CONVENTIONS.md`.
+
+Dos documentos de diseño mandan sobre todos los mods:
+
+- [`ADVENTURE.md`](./ADVENTURE.md): la **columna vertebral**. La EXP sale de
+  las experiencias (lo que el personaje vive por primera vez), cobradas al
+  descansar en una posada, una taberna o la fogata de un refugio restaurado,
+  no de matar monstruos. Un mod que produce algo
+  digno de contarse debe publicarlo como experiencia.
+- [`BALANCE.md`](./BALANCE.md): cómo castigan y premian los sistemas de
+  supervivencia: ejes distintos, escalones con aviso, tope de presión total y
+  un estado positivo por cada castigo.
+
+Lo que trajo el proyecto original y ayuda a hacer mods (límite de 40 ajustes,
+hooks de habilidades, ejemplo `skill-tuning`, ventana del estilista) está
+resumido en [`UPSTREAM-NOTES.md`](./UPSTREAM-NOTES.md).
 
 ## Dirección de diseño
 
@@ -52,6 +105,13 @@ requisito para forzarla dentro de cada mod:
 - **Dar vida al mundo con narrativa.** Aprovechar que la partida es offline
   para añadir detalles narrativos personales en los momentos adecuados y
   reforzar la inmersión sin depender de largos bloques de texto.
+- **Progresar por avanzar, no por repetir.** La EXP viene de lo nuevo: un
+  mapa, un bioma, un cofre, una marca, una cicatriz. Lo repetido paga poco.
+- **Cada castigo con su recompensa.** Un sistema que castiga debe tener un
+  estado positivo que premie la preparación, y la presión crece con el Tier del
+  mapa. Ver [`BALANCE.md`](./BALANCE.md).
+- **Una decisión, no una obligación.** Si un sistema solo pide vigilar una
+  barra, sobra o hay que rediseñarlo.
 
 ### Influencias
 
@@ -127,6 +187,10 @@ con Ragnarok Online, no hace falta reproducir mecánicas de estos juegos:
 
 ## Relación entre los mods de `my-mods/`
 
+Esta sección dice qué es cada mod y cómo se relaciona con los demás. **Su
+versión y qué se probó están solo en la sección «Estado» de su propio
+README.**
+
 Estos mods forman parte de un espacio de trabajo compartido, pero no todos son
 contenido propio ni todas sus interacciones están implementadas. Al crear o
 modificar uno, conserva clara la diferencia entre el comportamiento actual y
@@ -156,9 +220,15 @@ las ideas para futuras iteraciones:
 - **`travel-journal`** es el diario del viajero: registra por personaje la
   primera visita a cada mapa y las muertes, y los muestra en una ventana
   (Alt+J o `@diario`). Otros mods añaden entradas con `doevent
-  "TravelJournal::OnLog"`; no hay dependencia de carga. Su script de servidor
-  no se ha probado en el juego. Ver [`travel-journal/README.md`](./travel-journal/README.md).
+  "TravelJournal::OnLog"`; no hay dependencia de carga. Ver [`travel-journal/README.md`](./travel-journal/README.md).
+  **Se integrará en `adventure`** cuando exista (decidido el 2026-10-17); el
+  evento `TravelJournal::OnLog` se conserva, así que los mods que escriben en
+  el diario no cambian. No actives los dos a la vez.
 - **`expedition-board`** coloca un tablero de contratos en cada ciudad principal, con dos tipos: *marca* (aparece un monstruo con nombre en un mapa cercano) y *caza* (abatir N monstruos de una especie dentro de un mapa; el progreso lo cuenta el mod). En ambos hay que volver a la ciudad que lo publicó: las cacerías se cobran en el tablero y las marcas con el Intendente, un NPC junto al tablero. Escribe notas en `travel-journal` (dependencia suave, sin `requires.mods`) y toma el Tier del mapa de `world-atlas` (también suave) para escalar la recompensa y reforzar las marcas; por lo demás es independiente de los demás mods de esta carpeta y de `bounty-hunt`. Las recompensas actuales son zeny y pociones de prueba; no asumas botín de `dungeon-chest` ni de `clima`.
+
+- **`wounds`** da heridas y maldiciones con nombre al morir fuera de una ciudad; se curan con el Posadero (zeny, solo heridas) o el Sacerdote del Templo (donación, también maldiciones) de las siete ciudades. El nombre de la herida sale de quién te mató, del bioma, del clima activo o de tu marca de `expedition-board`. Penaliza con su propio `bonus_script`, sin tocar `survival`. Usa `world-atlas` (bioma) y `travel-journal` (notas) como dependencias suaves. Ver [`wounds/README.md`](./wounds/README.md).
+
+- **`temperature`** calcula cada 4 s una sensación a partir de la temperatura del mapa (`world-atlas`), la exposición de `clima` y la ropa puesta, y la muestra como estado con nombre e icono (Helado, Fresco, Cómodo, Acalorado...). Penaliza con su propio `bonus_script` y premia con un bono pequeño si la ropa compensa. Sin temperatura en ciudades. Ropa propia (ids 50840–50843, Sastre en Prontera). Requiere `world-atlas`. Ver [`temperature/README.md`](./temperature/README.md).
 
 - **`world-atlas`** es una tabla de datos por mapa (tipo, bioma, Tier,
   temperatura, ciudad ancla) con funciones `F_Atlas_*` que otros mods pueden
@@ -168,6 +238,18 @@ las ideas para futuras iteraciones:
   decide qué eventos ocurren; sin el atlas no hay eventos) y `travel-journal`
   (el nombre legible del mapa, con el código como reserva)**. Se genera desde un CSV; ver
   [`world-atlas/README.md`](./world-atlas/README.md).
+
+**Planeados, sin código todavía** (ver «Mods nuevos propuestos» en
+[`PLAN.md`](./PLAN.md)): `adventure` (expediciones y experiencias, que absorbe
+a `travel-journal`; diseño en [`ADVENTURE.md`](./ADVENTURE.md)), `nemesis`, `campfire`, `refuges`,
+`tavern-rumors` y `remnants`. Cuando `adventure` exista, los demás mods le
+publicarán experiencias con `doevent "Adventure::OnExperience"`, con el mismo
+patrón de dependencia suave que `travel-journal`.
+
+**Datos compartidos entre mods.** El mod store está aislado por mod, así que
+lo que un mod deba leer de otro va en variables de personaje con el prefijo del
+mod que las escribe: `@clima_*` (exposición), `@pr_*` (presión, ver
+[`BALANCE.md`](./BALANCE.md#tope-de-presión)) y `adv_trait_*` (rasgos).
 
 Una relación funcional no significa necesariamente que exista una dependencia
 de carga entre mods. Antes de añadir o cambiar `requires.mods` o `after`, revisa
@@ -201,7 +283,7 @@ solo cuando el comportamiento solicitado requiera esa integración.
   conserva el flujo de temporizador y reclamación del primer jugador y
   actualiza los totales. La receta completa, incluida la forma de validar el
   spawn aleatorio y la carga del script, está en
-  [`my-mods/dungeon-chest/README.md`](./dungeon-chest/README.md#guia-agregar-un-cofre-a-otro-mapa).
+  [`my-mods/dungeon-chest/README.md`](./dungeon-chest/README.md#guía-agregar-un-cofre-a-otro-mapa).
 
 ## Reglas de implementación
 
@@ -214,7 +296,8 @@ solo cuando el comportamiento solicitado requiera esa integración.
   explícitamente cambiarlos. Al redefinir una entrada existente, verifica qué
   mod gana y si se deben combinar efectos.
 - Mantén el comportamiento consistente entre servidor y cliente, los dos
-  modos de juego (Renewal y Pre-Renewal) cuando corresponda, y los personajes
+  modos de juego cuando corresponda (el diseño y el balance son para Renewal;
+  Pre-Renewal solo si sale barato, ver `CONVENTIONS.md`), y los personajes
   que ya tengan datos guardados. No reinicies estado existente sin indicarlo.
 - Si dos penalizaciones o efectos deben acumularse, comprueba cómo los
   implementa realmente rAthena; no asumas que dos llamadas de una misma función
@@ -226,7 +309,8 @@ solo cuando el comportamiento solicitado requiera esa integración.
   razonables, pregúntame antes de elegir. Para los detalles pequeños, sigue el
   patrón del mod y explícame las suposiciones importantes.
 - Actualiza el README del mod cuando cambien instalación, contenido o
-  comportamiento.
+  comportamiento, y su sección «Estado» (versión, qué se probó, problemas
+  abiertos y fecha) al cambiarlo o probarlo.
 
 ## Validación
 

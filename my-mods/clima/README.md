@@ -7,6 +7,17 @@ combinación tiene un ID que determina su efecto de servidor y, cuando
 corresponde, su efecto visual y protección compatible. Requiere `world-atlas`
 (`requires.mods`): sin él no se sortea ningún evento.
 
+## Estado
+
+Única fuente del estado de este mod; los demás documentos enlazan aquí.
+Actualízala al cambiar el mod o al probarlo.
+
+- **Versión:** 0.2.0 (la de `mod.json`)
+- **Probado en el juego:** la versión anterior, con eventos por mapa
+- **Sin probar:** todo desde el paso a eventos por bioma (0.2.0)
+- **Limitación:** el visual es fijo por mapa; ver «Limitación conocida»
+- **Actualizado:** 2026-10-17
+
 ## Equipo de protección por combinación
 
 Cada objeto protege una combinación por su ID estable, no por mapa ni solo
@@ -222,11 +233,21 @@ cambiarlo por evento ni apagarlo al terminar. Por eso hoy un bioma solo sortea
 combinaciones con **su mismo visual**: así lo que se ve coincide con lo que
 ocurre. La consecuencia es poca variedad por bioma.
 
-**Por investigar:** cómo superar esa limitación para que un bioma pueda sortear
-combinaciones con visuales distintos. Las vías posibles son un plugin de cliente
-que reciba el visual por `server:event` (ver «Efecto visual durante el evento»)
-o ver si rAthena puede activar efectos de clima por mapa con mapflags (no
-verificado). No hay decisión ni código al respecto.
+**Investigado el 2026-10-17** (código fijado, sin probar en el juego; detalle en
+[`ARCHITECTURE.md`](../ARCHITECTURE.md#clima-eventual)):
+
+- En roBrowser la lluvia, la nieve, las hojas y la niebla son **efectos**
+  (`EF_RAIN`, `EF_SNOW`, `EF_MAPLE`, `EF_CLOUD*`). El servidor puede
+  **encenderlos** en cualquier momento con `specialeffect2`.
+- **Apagarlos** desde el servidor no funciona todavía: rAthena envía
+  `ZC_REMOVE_EFFECT` con `removespecialeffect2`, pero roBrowser no procesa ese
+  paquete. Hace falta un arreglo pequeño en el fork de roBrowser (vía A), o que
+  el plugin dibuje el clima él mismo (vía B). La recomendada es combinar las
+  dos (vía C): partículas nativas y un pase del plugin para la atmósfera.
+- Con el clima eventual, el `"weather"` fijo de `mod.json` se quita de esos
+  mapas, y cada bioma puede sortear combinaciones con visuales distintos.
+
+Sin decisión ni código todavía.
 
 ## Guía: añadir una combinación climática
 
@@ -506,3 +527,22 @@ upstream. El código específico de clima y su protocolo deben quedarse en este
 mod; evitar parches al motor interno de efectos solo para `clima`. Consultar
 [`FORKS.md`](../../docs/FORKS.md) antes de realizar cambios al fork. Por ahora
 no se añade plugin de cliente ni se modifica el fork.
+
+## Próximos cambios propuestos (revisión 2026-10-17)
+
+Sin implementar. El porqué está en [`BALANCE.md`](../BALANCE.md).
+
+- **Pronóstico.** Hoy un evento empieza al azar y el jugador lo descubre al
+  llegar: es mala suerte, no una decisión. Publicar qué evento viene en cada
+  mapa y cuánto le queda al actual, para que lo lean `tavern-rumors` o un NPC
+  de ciudad. Es el cambio de más impacto en este mod.
+- **Niebla con monstruos** como evento raro que dé **más** recompensa (un
+  monstruo especial con botín o experiencia), no solo más riesgo.
+- **Visual por evento:** un plugin de cliente que reciba el visual por
+  `server:event` (ver «Limitación conocida»).
+- **Presión:** publicar `@pr_clima` (1 con un evento sin protección).
+- **Experiencias:** la primera vez que el equipo bloquea un clima,
+  `weather:<combo>` (Media); la primera vez que se aguanta sin protección hasta
+  que termina, `weatherlived:<combo>` (Menor). Ver
+  [`ADVENTURE.md`](../ADVENTURE.md).
+- **Los objetos de protección como botín** de `dungeon-chest`, por bioma.

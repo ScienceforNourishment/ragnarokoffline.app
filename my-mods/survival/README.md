@@ -4,6 +4,16 @@ Mod único que combina las necesidades de hambre y sed para personajes de
 Ragnarok Offline. Es independiente de `clima`; esa integración es opcional y
 solo se activa cuando ambos mods están habilitados.
 
+## Estado
+
+Única fuente del estado de este mod; los demás documentos enlazan aquí.
+Actualízala al cambiar el mod o al probarlo.
+
+- **Versión:** 1.1.0 (la de `mod.json`): los tres temporizadores por personaje (`OnHungerTick`, `OnThirstTick`, `OnPenaltyTick`) pasan a **un solo reloj del NPC** cada 4 s que entra en cada jugador con `attachrid`. Arregla el error `player's event queue is full`: un diálogo de NPC llenaba la cola de 2 huecos del personaje y la cadena descartada moría para toda la sesión. Hambre y sed siguen bajando de media cada 15 s (contados por hora en `@sv_need_at`); cada punto puede llegar hasta 4 s tarde. Quitado el diagnóstico `[qdebug]`
+- **Probado en el juego:** con la 1.0.0 se usa en partidas; no hay registro detallado de qué se comprobó. 2026-10-17: el vendedor de cantimploras aparece y vende la cantimplora 3/3 y la vacía
+- **Sin probar:** todo con la 1.1.0, sobre todo que hambre, sed y penalización sigan después de hablar un rato con un NPC; la integración con `clima` tras su paso a biomas; las zonas seguras leídas del atlas
+- **Actualizado:** 2026-10-17
+
 ## Qué incluye
 
 - Hambre y sed de **0 a 100**, guardadas por personaje entre sesiones.
@@ -11,8 +21,8 @@ solo se activa cuando ambos mods están habilitados.
   conectado**. Este intervalo rápido es de prueba y no es una opción de
   Settings.
 - **En las ciudades principales no baja ninguna necesidad**: Prontera, Izlude,
-  Geffen, Payon, Morocc, Alberta y Aldebaran (mapas exteriores). Los
-  temporizadores siguen corriendo; solo se omite el descuento. Si una
+  Geffen, Payon, Morocc, Alberta y Aldebaran (mapas exteriores). El reloj
+  sigue corriendo; solo se omite el descuento. Si una
   necesidad ya está en 0, la penalización sigue activa en la ciudad hasta que
   el personaje coma o beba. Para añadir un interior u otro asentamiento, agrega
   su nombre de mapa a `.safe_maps$` en `OnInit` de `npc/survival.txt`.
@@ -61,8 +71,12 @@ survival/
 
 `db/item_db.yml` conserva los efectos de hambre de los alimentos y hace que las
 bebidas y pociones ID 501–506 recuperen solo sed.
-`npc/survival.txt` mantiene los valores, los temporizadores de ambas
-necesidades y un único controlador de penalización. Lee los indicadores
+`npc/survival.txt` mantiene los valores y **un solo reloj** para todos los
+personajes (`OnTimer4000` de `survival_mgr`, con `initnpctimer`): cada 4 s
+entra en cada jugador conectado con `attachrid`, descuenta hambre y sed si les
+toca (`S_Needs`, cada 15 s) y renueva la penalización (`S_Penalty`). No usa
+`addtimer` por personaje, porque esas cadenas morían durante los diálogos (ver
+[`CONVENTIONS.md`](../CONVENTIONS.md#temporizadores)). Lee los indicadores
 `@clima_thirst_extra_loss`, `@clima_hunger_extra_loss` y
 `@clima_exposure_map$` que publica `clima`, sin crear temporizadores
 adicionales. Con la configuración de prueba actual, Calor intenso está en
@@ -95,19 +109,18 @@ reiniciar la aplicación.
 
 ## Ajustar la velocidad de prueba
 
-En `npc/survival.txt`, ajusta las llamadas a `addtimer` de
-`survival_mgr::OnHungerTick` para cambiar el ritmo del hambre y las de
-`survival_mgr::OnThirstTick` para cambiar el ritmo de la sed. Ambos intervalos
-están en milisegundos; por ejemplo, `60000` equivale a un punto por minuto.
-El temporizador `OnPenaltyTick` es independiente y no debe cambiarse para
-ajustar el ritmo de descenso.
+En `OnInit` de `npc/survival.txt`, cambia `.need_every` (segundos entre cada
+punto perdido; hambre y sed comparten el ritmo). Por ejemplo, `60` equivale a
+un punto por minuto. Como el reloj pasa cada 4 s, cada punto llega con hasta
+4 s de retraso, pero el ritmo medio se mantiene. No cambies el `OnTimer4000`
+para ajustar el ritmo: es también el que renueva la penalización, que dura 5 s.
 
 ## Zonas seguras: dónde no bajan hambre y sed
 
-Dentro de una zona segura, `OnHungerTick` y `OnThirstTick` no descuentan
-puntos. Los temporizadores se reprograman igual, por lo que al salir del mapa
-el ritmo normal se reanuda de inmediato, sin reiniciar nada. El medidor sigue
-recibiendo su actualización en cada tick.
+Dentro de una zona segura, `S_Needs` no descuenta puntos. El reloj sigue
+corriendo, por lo que al salir del mapa el ritmo normal se reanuda de
+inmediato, sin reiniciar nada. El medidor sigue recibiendo su actualización en
+cada tick.
 
 Qué no cambia dentro de una zona segura:
 
@@ -334,9 +347,8 @@ tbl = {
 
 ## Cambiar ritmos, límites y penalizaciones
 
-- **Ritmo de descenso:** cambia el intervalo de los temporizadores en
-  `npc/survival.txt`; las llamadas repetidas a cada tick deben conservar el
-  mismo intervalo. Si `clima` está activo, revisa también su pérdida extra por
+- **Ritmo de descenso:** cambia `.need_every` en `OnInit` de
+  `npc/survival.txt` (ver «Ajustar la velocidad de prueba»). Si `clima` está activo, revisa también su pérdida extra por
   exposición para mantener los ritmos integrados.
 - **Máximo de hambre/sed:** el máximo actual es 100 y aparece en los clamps de
   objetos, en las actualizaciones iniciales y en el contrato que valida cada
@@ -376,3 +388,29 @@ tbl = {
   la aplicación para volver a cargar los plugins. Verifica en el juego la
   posición relativa de las barras, valores 0 y 100, aviso de agotamiento,
   tooltip, desconexión y limpieza al cerrar el plugin.
+
+## Próximos cambios propuestos (revisión 2026-10-17)
+
+Sin implementar. Es el mod que más cambia con el rebalanceo; el porqué está en
+[`BALANCE.md`](../BALANCE.md).
+
+- **Escalones por eje en vez de −20 % a todo.** Hambre: Hambriento (< 30) sin
+  regeneración natural de HP; Famélico (0) −10 % HP máx y ATK. Sed: Sediento
+  (< 30) sin regeneración natural de SP; Deshidratado (0) más tiempo de casteo
+  y menos ASPD. La velocidad solo baja con ambas a 0. Hoy el −20 % a los seis
+  atributos y la velocidad (−40 % con ambas) se suma a `temperature` y
+  `wounds` sin tope.
+- **Estados positivos:** Bien alimentado (hambre > 70, +regeneración de HP) e
+  Hidratado (sed > 70, +regeneración de SP). Con Bien abrigado de
+  `temperature`, forman **En forma**, que sube los relatos de `adventure`.
+- **Desgaste según el lugar:** más rápido con el Tier del mapa y con la
+  temperatura extrema; casi nulo en Tier 1. Así la presión crece donde la
+  recompensa también.
+- **Compañía:** en grupo de dos en el mismo mapa, hambre y sed bajan un 25 %
+  más lento.
+- **Presión:** publicar `@pr_survival` (0–3) y respetar el tope total.
+- **Rasgo:** leer `adv_trait_forager` (desgaste −20 %).
+- **Ritmo:** el tick de 15 s es de prueba; pasarlo a `settings` en
+  `mod.json` junto con los umbrales y castigos.
+- **Zonas seguras:** usar solo `F_Atlas_IsSafe` cuando el atlas esté, y añadir
+  posadas e interiores al atlas en vez de a `.safe_maps$`.

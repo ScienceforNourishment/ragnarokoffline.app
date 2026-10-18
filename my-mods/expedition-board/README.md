@@ -14,14 +14,15 @@ pero no con el mismo NPC: las **cacerías se entregan en el tablero** y las
 **marcas con el Intendente**, un NPC aparte junto a cada tablero (ver «Dónde
 se entrega»).
 
-Versión 0.6.0 (crédito compartido en grupo y contratos de Tier 2). La 0.5.0 añadió
-el Intendente y marcas de nivel acorde al mapa, la 0.4.0 las cacerías, la 0.3.0 añadió la dificultad según el
-atlas y la 0.2.0 fue una reescritura de la primera versión, que no cargaba.
-Probado en el juego: el flujo completo de una marca en Prontera y que la marca
-reforzada aguanta claramente más que una normal. **Sin probar:** las
-cacerías, el crédito en grupo, el Intendente, las marcas nuevas, los contratos de Tier 2, la nota de «contrato aceptado» del
-diario, las otras seis ciudades,
-el escalado de zeny en Tier 2 o más y los casos límite de «Probarlo».
+## Estado
+
+Única fuente del estado de este mod; los demás documentos enlazan aquí.
+Actualízala al cambiar el mod o al probarlo.
+
+- **Versión:** 0.6.0 (la de `mod.json`): crédito compartido en grupo y contratos de Tier 2. La 0.5.0 añadió el Intendente y marcas de nivel acorde al mapa, la 0.4.0 las cacerías, la 0.3.0 la dificultad según el atlas y la 0.2.0 fue una reescritura de la primera versión, que no cargaba
+- **Probado en el juego:** el flujo completo de una marca en Prontera, y que la marca reforzada aguanta claramente más que una normal. El error de carga original (`abs()`) quedó resuelto
+- **Sin probar:** las cacerías, el crédito en grupo (necesita dos personajes), el Intendente (aparece en Prontera, 2026-10-17; no se ha cobrado una marca con él), las marcas de nivel acorde al mapa, las cacerías de Tier 2 (ids 15 a 21), la nota de «contrato aceptado» del diario, las otras seis ciudades (posiciones de tableros y marcas), el escalado de zeny en Tier 2 o más y los casos límite de «Probarlo»
+- **Actualizado:** 2026-10-17
 
 ## Qué hace
 
@@ -356,8 +357,7 @@ cuenta las muertes del propio personaje (y de su mascota). Las de Tier 3 o más
 13. **Era.** Repite lo básico (aceptar, abatir, cobrar) también en Pre-Renewal, si
     la usas: los ids de monstruo del CSV se comprobaron solo contra Renewal.
 14. **Diagnóstico de la cola de eventos.** No es de este mod, pero se mide en la
-    misma sesión: busca `qdebug` en el log al terminar (ver `PLAN.md`,
-    «player's event queue is full») y pásalo para analizarlo.
+    misma sesión: busca `qdebug` en el log al terminar (ver [`ROADMAP.md`](../ROADMAP.md#error-abierto-players-event-queue-is-full)) y pásalo para analizarlo.
 
 ## Variables
 
@@ -384,3 +384,22 @@ expedition-board/
     ├── expedition-strength.txt    refuerzo de la marca por Tier (a mano)
     └── expedition-contracts.txt   datos de los contratos (generado)
 ```
+
+## Próximos cambios propuestos (revisión 2026-10-17)
+
+Sin implementar.
+
+- **Recompensas reales:** las marcas sueltan un **trofeo** con nombre (para
+  cocinar, fabricar o restaurar refugios) además del zeny; las pociones son de
+  prueba.
+- **Contratos que llevan a algo:** una marca o caza que apunta a un punto de
+  interés, la cadena «Rumor → Pista → Hallazgo» del plan. Los rumores vendrían
+  de `tavern-rumors`.
+- **Contratos de dos roles** para jugar de a dos.
+- **Pistas del bestiario:** el contrato dice a qué elemento es débil la marca.
+- **Experiencias:** primera vez que se abate cada marca, `mark:<contrato>`
+  (Media); primera vez que se completa cada caza, `hunt:<contrato>` (Menor). Con
+  `@adv_party = 1` para el crédito en grupo. Ver
+  [`ADVENTURE.md`](../ADVENTURE.md).
+- **Tier 3 o más:** sin contratos todavía; con `adventure`, son donde más
+  pagan las experiencias.
