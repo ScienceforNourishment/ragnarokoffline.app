@@ -395,7 +395,8 @@ OnRest:
 	end;
 }
 
-// The journal entry point other mods already use (see travel-journal's README).
+// The journal entry point other mods already use (see "Escribir en el diario"
+// in this mod's README).
 -	script	TravelJournal	-1,{
 	end;
 

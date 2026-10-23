@@ -1,0 +1,10 @@
+{
+  "name": "nemesis",
+  "version": "0.1.0",
+  "author": "Alejandro",
+  "description": "Némesis: el monstruo que te mató fuera de una ciudad te espera con nombre donde caíste, más fuerte cada vez que vuelve a matarte. Vencerlo da un trofeo con tu nombre, un relato y cura sus heridas.",
+  "requires": {
+    "app": ">=1.5.2",
+    "era": "any"
+  }
+}

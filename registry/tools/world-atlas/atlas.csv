@@ -1,26 +1,26 @@
 map,kind,biome,tier,temp,anchor,water,rest,name,note
 prontera,city,ciudad,0,0,prontera,0,0,Prontera,
-izlude,city,ciudad,0,0,izlude,0,0,Izlude,
+izlude,city,ciudad,0,0,izlude,1,0,Izlude,
 geffen,city,ciudad,0,0,geffen,0,0,Geffen,
 payon,city,ciudad,0,0,payon,0,0,Payon,
 morocc,city,ciudad,0,0,morocc,0,0,Morocc,
 alberta,city,ciudad,0,0,alberta,0,0,Alberta,
 aldebaran,city,ciudad,0,0,aldebaran,0,0,Aldebaran,
-prt_fild00,field,pradera,1,0,prontera,0,0,Campo de Prontera 00,cruce hacia Geffen y Mjolnir
-prt_fild01,field,pradera,1,0,prontera,0,0,Campo de Prontera 01,
-prt_fild02,field,pradera,1,0,prontera,0,0,Campo de Prontera 02,
+prt_fild00,field,pradera,1,0,prontera,1,0,Campo de Prontera 00,cruce hacia Geffen y Mjolnir
+prt_fild01,field,pradera,1,0,prontera,1,0,Campo de Prontera 01,
+prt_fild02,field,pradera,1,0,prontera,1,0,Campo de Prontera 02,
 prt_fild03,field,pradera,1,0,prontera,0,0,Campo de Prontera 03,
-prt_fild04,field,pradera,1,0,prontera,0,0,Campo de Prontera 04,
-prt_fild05,field,pradera,1,0,prontera,0,0,Campo de Prontera 05,
+prt_fild04,field,pradera,1,0,prontera,1,0,Campo de Prontera 04,
+prt_fild05,field,pradera,1,0,prontera,1,0,Campo de Prontera 05,
 prt_fild06,field,pradera,1,0,prontera,0,0,Campo de Prontera 06,
 prt_fild07,field,pradera,1,0,prontera,0,0,Campo de Prontera 07,
 prt_fild08,field,pradera,1,0,prontera,0,0,Campo de Prontera 08,
 prt_fild09,field,pradera,1,0,prontera,0,0,Campo de Prontera 09,
-prt_fild10,field,pradera,1,0,prontera,0,0,Campo de Prontera 10,
+prt_fild10,field,pradera,1,0,prontera,1,0,Campo de Prontera 10,
 prt_fild11,field,pradera,2,0,prontera,0,0,Campo de Prontera 11,
-prt_gld,field,pradera,1,0,prontera,0,0,Campo de los Castillos de Prontera,sin monstruos; castillos de gremio (WoE) y paso a gld_dun
+prt_gld,field,pradera,1,0,prontera,1,0,Campo de los Castillos de Prontera,sin monstruos; castillos de gremio (WoE) y paso a gld_dun
 prt_monk,field,bosque,1,0,prontera,0,0,Abadía de Santa Capitolina,sin monstruos; se llega por prt_fild03; candidata a refugio (rest)
-izlu2dun,field,costa,1,0,izlude,1,0,Isla de Byalan,sin monstruos; entrada a la Cueva Marina; agua por el bioma sin comprobar
+izlu2dun,field,costa,1,0,izlude,0,0,Isla de Byalan,sin monstruos; entrada a la Cueva Marina; el mar no es agua para rAthena (celdas no caminables)
 prt_q,field,ruinas,5,0,prontera,0,0,Prontera Asediada,mapa de misión Renewal (Immortal Corps); se entra por NPC; nombre por confirmar
 gef_fild07,field,bosque,1,0,geffen,0,0,Campo de Geffen 07,
 pay_fild08,field,bosque,1,0,payon,0,0,Campo de Payon 08,
@@ -68,7 +68,7 @@ c_tower4,dungeon,ruinas,3,0,aldebaran,0,0,Torre del Reloj 4,
 dew_dun01,dungeon,selva,3,1,alberta,0,0,Cueva de Dewata 1,
 dew_dun02,dungeon,selva,3,1,alberta,0,0,Cueva de Dewata 2,
 dic_dun01,dungeon,ruinas,5,0,prontera,0,0,Mazmorra de Dicastes 1,
-dic_dun02,dungeon,ruinas,5,0,prontera,0,0,Mazmorra de Dicastes 2,
+dic_dun02,dungeon,ruinas,5,0,prontera,1,0,Mazmorra de Dicastes 2,
 dic_dun03,dungeon,ruinas,5,0,prontera,0,0,Mazmorra de Dicastes 3,
 ein_dun01,dungeon,cueva,3,0,aldebaran,0,0,Mina de Einbroch 1,
 ein_dun02,dungeon,cueva,4,0,aldebaran,0,0,Mina de Einbroch 2,
@@ -107,16 +107,16 @@ gld2_pay,dungeon,ruinas,5,0,payon,0,0,Fortaleza de Payon,
 gld2_prt,dungeon,ruinas,5,0,prontera,0,0,Fortaleza de Prontera,
 gld_dun01,dungeon,ruinas,5,0,prontera,0,0,Mazmorra de Castillo 1,
 gld_dun01_2,dungeon,ruinas,5,0,prontera,0,0,Mazmorra de Castillo 1 (2),
-gld_dun02,dungeon,ruinas,5,0,prontera,0,0,Mazmorra de Castillo 2,
+gld_dun02,dungeon,ruinas,5,0,prontera,1,0,Mazmorra de Castillo 2,
 gld_dun02_2,dungeon,ruinas,5,0,prontera,0,0,Mazmorra de Castillo 2 (2),
-gld_dun03,dungeon,ruinas,4,0,prontera,0,0,Mazmorra de Castillo 3,
+gld_dun03,dungeon,ruinas,4,0,prontera,1,0,Mazmorra de Castillo 3,
 gld_dun03_2,dungeon,ruinas,5,0,prontera,0,0,Mazmorra de Castillo 3 (2),
-gld_dun04,dungeon,ruinas,4,0,prontera,0,0,Mazmorra de Castillo 4,
+gld_dun04,dungeon,ruinas,4,0,prontera,1,0,Mazmorra de Castillo 4,
 gld_dun04_2,dungeon,ruinas,5,0,prontera,0,0,Mazmorra de Castillo 4 (2),
 gon_dun01,dungeon,cueva,3,0,alberta,0,0,Mazmorra de Gonryun 1,
 gon_dun02,dungeon,cueva,3,0,alberta,0,0,Mazmorra de Gonryun 2,
 gon_dun03,dungeon,cueva,3,0,alberta,0,0,Mazmorra de Gonryun 3,
-ice_dun01,dungeon,nieve,4,-2,prontera,0,0,Cueva de Hielo 1,
+ice_dun01,dungeon,nieve,4,-2,prontera,1,0,Cueva de Hielo 1,
 ice_dun02,dungeon,nieve,4,-2,prontera,0,0,Cueva de Hielo 2,
 ice_dun03,dungeon,nieve,4,-2,prontera,0,0,Cueva de Hielo 3,
 in_sphinx1,dungeon,ruinas,2,1,morocc,0,0,Esfinge 1,
@@ -127,11 +127,11 @@ in_sphinx5,dungeon,ruinas,3,1,morocc,0,0,Esfinge 5,
 iz_dun00,dungeon,costa,1,0,izlude,1,0,Cueva Marina de Izlude 0,
 iz_dun01,dungeon,costa,1,0,izlude,1,0,Cueva Marina de Izlude 1,
 iz_dun02,dungeon,costa,2,0,izlude,1,0,Cueva Marina de Izlude 2,
-iz_dun03,dungeon,costa,2,0,izlude,1,0,Cueva Marina de Izlude 3,
-iz_dun04,dungeon,costa,2,0,izlude,1,0,Cueva Marina de Izlude 4,
-iz_dun05,dungeon,costa,4,0,izlude,1,0,Cueva Marina de Izlude 5,
-iz_d04_i,dungeon,costa,5,0,izlude,1,0,Ilusión Submarina 1,versión de nivel 150 de iz_dun04; se entra por NPC; reto
-iz_d05_i,dungeon,costa,6,0,izlude,1,0,Ilusión Submarina 2,versión de nivel 200 de iz_dun05; reto
+iz_dun03,dungeon,costa,2,0,izlude,0,0,Cueva Marina de Izlude 3,
+iz_dun04,dungeon,costa,2,0,izlude,0,0,Cueva Marina de Izlude 4,
+iz_dun05,dungeon,costa,4,0,izlude,0,0,Cueva Marina de Izlude 5,
+iz_d04_i,dungeon,costa,5,0,izlude,0,0,Ilusión Submarina 1,versión de nivel 150 de iz_dun04; se entra por NPC; reto
+iz_d05_i,dungeon,costa,6,0,izlude,0,0,Ilusión Submarina 2,versión de nivel 200 de iz_dun05; reto
 jupe_core,dungeon,ruinas,4,0,aldebaran,0,0,Núcleo de Juperos,
 juperos_01,dungeon,ruinas,4,0,aldebaran,0,0,Juperos 1,
 juperos_02,dungeon,ruinas,4,0,aldebaran,0,0,Juperos 2,
@@ -162,11 +162,11 @@ moc_prydn2,dungeon,ruinas,5,1,morocc,0,0,Sótano de la Pirámide de Morocc 2,
 mosk_dun01,dungeon,pantano,3,1,alberta,1,0,Cueva de Mosk 1,
 mosk_dun02,dungeon,pantano,3,1,alberta,1,0,Cueva de Mosk 2,
 mosk_dun03,dungeon,pantano,3,1,alberta,1,0,Cueva de Mosk 3,
-nameless_n,dungeon,ruinas,4,0,prontera,0,0,Isla sin Nombre,
+nameless_n,dungeon,ruinas,4,0,prontera,1,0,Isla sin Nombre,
 nyd_dun01,dungeon,cueva,4,0,geffen,0,0,Nido de Nidhogg 1,
 odin_tem01,dungeon,ruinas,3,0,prontera,0,0,Templo de Odín 1,
-odin_tem02,dungeon,ruinas,4,0,prontera,0,0,Templo de Odín 2,
-odin_tem03,dungeon,ruinas,3,0,prontera,0,0,Templo de Odín 3,
+odin_tem02,dungeon,ruinas,4,0,prontera,1,0,Templo de Odín 2,
+odin_tem03,dungeon,ruinas,3,0,prontera,1,0,Templo de Odín 3,
 orcsdun01,dungeon,cueva,2,0,payon,0,0,Cueva de los Orcos 1,
 orcsdun02,dungeon,cueva,2,0,payon,0,0,Cueva de los Orcos 2,
 pay_dun00,dungeon,cueva,1,0,payon,0,0,Cueva de Payon 0,
@@ -180,7 +180,7 @@ prt_maze03,dungeon,bosque,2,0,prontera,0,0,Laberinto de Prontera 3,
 prt_mz03_i,dungeon,bosque,6,0,prontera,0,0,Ilusión del Laberinto,versión de nivel 175 de prt_maze03; se entra desde prt_maze02; reto
 prt_prison,dungeon,ruinas,5,0,prontera,0,0,Prisión de Prontera,se entra por prt_pri00; reto
 prt_sewb1,dungeon,cueva,1,0,prontera,0,0,Alcantarillas de Prontera 1,
-prt_sewb2,dungeon,cueva,1,0,prontera,0,0,Alcantarillas de Prontera 2,
+prt_sewb2,dungeon,cueva,1,0,prontera,1,0,Alcantarillas de Prontera 2,
 prt_sewb3,dungeon,cueva,1,0,prontera,0,0,Alcantarillas de Prontera 3,
 prt_sewb4,dungeon,cueva,1,0,prontera,0,0,Alcantarillas de Prontera 4,
 ra_san01,dungeon,ruinas,5,0,aldebaran,0,0,Santuario de Rachel 1,
@@ -221,7 +221,7 @@ prt_cas,interior,ciudad,0,0,prontera,0,0,Palacio Real de Prontera,cocinas reales
 prt_pri00,interior,ciudad,0,0,prontera,0,0,Entrada de la Prisión de Prontera,sala de guardia entre prt_cas y prt_prison
 prt_are_in,interior,ciudad,0,0,prontera,0,0,Arena de Prontera,vestíbulo de la arena
 monk_in,interior,ciudad,0,0,prontera,0,0,Abadía de Santa Capitolina (interior),
-izlude_in,interior,ciudad,0,0,izlude,0,0,Interiores de Izlude,gremio de espadachines; Master Tailor en 123 175; tiendas
+izlude_in,interior,ciudad,0,0,izlude,0,0,Interiores de Izlude,gremio de espadachines; tiendas
 iz_ac01,interior,ciudad,0,0,izlude,0,0,Academia Criatura 1,4 monstruos de práctica de nivel 10; seguro a propósito
 iz_ac02,interior,ciudad,0,0,izlude,0,0,Academia Criatura 2,aulas de clase
 iz_int,interior,ciudad,0,0,izlude,0,0,Sala de Inicio de Izlude,punto de inicio Renewal de los personajes nuevos

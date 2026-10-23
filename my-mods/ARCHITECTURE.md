@@ -154,7 +154,7 @@ Con 1 o 2 jugadores, la CPU que gastan los scripts es despreciable:
 | Consultar el atlas | una lectura de variable (`getd "$@wa_<mapa>$"`) |
 | Cofres | 179 NPC, cada uno con un temporizador de 10 min |
 | `clima` | un temporizador global cada segundo y `OnPCLoadMapEvent` |
-| Cadenas por jugador | `survival` 3 (15 s, 15 s, 4 s), `temperature` 1 (4 s), `wounds` 1 (4 s, solo con heridas), `travel-journal` 1 (5 s) |
+| Relojes (D22) | uno por mod, no por jugador: `survival`, `temperature` y `wounds`, cada 4 s; `adventure`, `nemesis` y `tavern-rumors` no tienen |
 
 Lo que limita no es la cantidad de mods, sino cuatro cosas concretas.
 

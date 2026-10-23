@@ -42,9 +42,11 @@ Todos los de `my-mods/` salvo los de referencia. El estado de cada uno, en la
 sección «Estado» de su README.
 
 `world-atlas`, `survival`, `clima`, `temperature`, `wounds`,
-`adventure` (sustituye a `travel-journal`: nunca los dos a la vez), `expedition-board`,
-`dungeon-chest`. **No se activan:** `affix-forge` y `arpg-equipments`
-(referencia), `world-atlas-test` (solo pruebas).
+`adventure`, `expedition-board`, `dungeon-chest`, `nemesis` y
+`tavern-rumors`. **No se activan:** `affix-forge` y `arpg-equipments`
+(referencia). Retirados el 2026-10-23: `travel-journal` (lo sustituye
+`adventure`, D12) y `world-atlas-test` (ahora es `@atlas`, de
+`world-atlas`).
 
 ### Del proyecto y del registro: clasificación
 
@@ -108,7 +110,8 @@ en lugar de uno gratis, por ejemplo.
   sueltos (55001). No cuadra con esta página, **a propósito** (D23):
   `common-npcs` está en «Contrarios» y `world-atlas-test` es solo de pruebas,
   pero ayudan a probar. Se apagan al cerrar la porción vertical. `temperature`
-  sí debería estar encendido.
+  sí debería estar encendido. **2026-10-23:** `travel-journal` y
+  `world-atlas-test` ya no existen; desinstálalos de Settings si siguen ahí.
 - Revisar en detalle, y luego decidir: los «Compatibles», los de
   navegación (frente a una cartografía que se desbloquee) y cada uno de los
   «A evaluar».

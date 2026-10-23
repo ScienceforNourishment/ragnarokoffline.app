@@ -220,14 +220,11 @@ las ideas para futuras iteraciones:
   eventos de `clima` pueden acelerar esa reducción. En los mapas exteriores
   de las siete ciudades principales no bajan; la lista se edita según la guía
   "Zonas seguras" de [`survival/README.md`](./survival/README.md).
-- **`travel-journal`** es el diario del viajero: registra por personaje la
-  primera visita a cada mapa y las muertes, y los muestra en una ventana
-  (Alt+J o `@diario`). Otros mods añaden entradas con `doevent
-  "TravelJournal::OnLog"`; no hay dependencia de carga. Ver [`travel-journal/README.md`](./travel-journal/README.md).
-  **Sustituido por `adventure`** (D12), que trae el mismo diario; el evento
-  `TravelJournal::OnLog` se conserva, así que los mods que escriben en el
-  diario no cambian. No actives los dos a la vez.
-- **`expedition-board`** coloca un tablero de contratos en cada ciudad principal, con dos tipos: *marca* (aparece un monstruo con nombre en un mapa cercano) y *caza* (abatir N monstruos de una especie dentro de un mapa; el progreso lo cuenta el mod). En ambos hay que volver a la ciudad que lo publicó: las cacerías se cobran en el tablero y las marcas con el Intendente, un NPC junto al tablero. Escribe notas en `travel-journal` (dependencia suave, sin `requires.mods`) y toma el Tier del mapa de `world-atlas` (también suave) para escalar la recompensa y reforzar las marcas; por lo demás es independiente de los demás mods de esta carpeta y de `bounty-hunt`. Las recompensas actuales son zeny y pociones de prueba; no asumas botín de `dungeon-chest` ni de `clima`.
+- **`travel-journal`**, el diario del viajero, **se retiró el 2026-10-23**
+  (D12): el diario vive ahora en `adventure`, que conserva
+  `TravelJournal::OnLog`, así que los mods que escriben en él no cambian. Su
+  código queda en el historial de git.
+- **`expedition-board`** coloca un tablero de contratos en cada ciudad principal, con dos tipos: *marca* (aparece un monstruo con nombre en un mapa cercano) y *caza* (abatir N monstruos de una especie dentro de un mapa; el progreso lo cuenta el mod). En ambos hay que volver a la ciudad que lo publicó: las cacerías se cobran en el tablero y las marcas con el Intendente, un NPC junto al tablero. Escribe notas en el diario de `adventure` (`TravelJournal::OnLog`, dependencia suave, sin `requires.mods`) y toma el Tier del mapa de `world-atlas` (también suave) para escalar la recompensa y reforzar las marcas; por lo demás es independiente de los demás mods de esta carpeta y de `bounty-hunt`. Las recompensas actuales son zeny y pociones de prueba; no asumas botín de `dungeon-chest` ni de `clima`.
 
 - **`wounds`** da heridas y maldiciones con nombre al morir fuera de una ciudad; se curan con el Posadero (zeny, solo heridas) o el Sacerdote del Templo (donación, también maldiciones) de las siete ciudades. El nombre de la herida sale de quién te mató, del bioma, del clima activo o de tu marca de `expedition-board`. Penaliza con su propio `bonus_script`, sin tocar `survival`. Usa `world-atlas` (bioma) y `travel-journal` (notas) como dependencias suaves. Ver [`wounds/README.md`](./wounds/README.md).
 
@@ -238,7 +235,7 @@ las ideas para futuras iteraciones:
   consultar con `callfunc`. No hace nada por sí solo y **lo usan `survival` (qué
   mapas son ciudad, con su lista propia como reserva) y `dungeon-chest` (sus
   cofres se generan desde las mazmorras del atlas, y en el juego toma de él el Tier) y `clima` (el bioma
-  decide qué eventos ocurren; sin el atlas no hay eventos) y `travel-journal`
+  decide qué eventos ocurren; sin el atlas no hay eventos) y `adventure`
   (el nombre legible del mapa, con el código como reserva)**. Se genera desde un CSV; ver
   [`world-atlas/README.md`](./world-atlas/README.md).
 
@@ -251,9 +248,22 @@ las ideas para futuras iteraciones:
   experiencias con `callfunc "F_Adv_Experience"` tras comprobar
   `getnpcid(0, "Adventure")`. Ver [`adventure/README.md`](./adventure/README.md).
 
+- **`nemesis`** convierte en némesis al monstruo que te mató fuera de una
+  ciudad (uno a la vez): te espera con nombre donde caíste, sube de rango si
+  vuelve a matarte y, al vencerlo, da trofeos firmados, un relato de
+  `adventure` y cura las heridas que te dejó (`wounds` 0.5.0,
+  `F_Wounds_CureFrom`). Todo con dependencias suaves; sin temporizadores. Ver
+  [`nemesis/README.md`](./nemesis/README.md).
+
+- **`tavern-rumors`** es la taberna de Prontera (`prt_in`): por una ronda de
+  zeny, el Tabernero cuenta qué tiempo hace donde vas (`clima`), qué le duele
+  al monstruo de tu contrato (`expedition-board`) y dónde te espera tu
+  némesis (`nemesis`); y allí se cuentan gratis los relatos de `adventure`
+  (`Adventure::OnRest`). Todo con dependencias suaves. Ver
+  [`tavern-rumors/README.md`](./tavern-rumors/README.md).
+
 **Planeados, sin código todavía** (ver «Mods nuevos propuestos» en
-[`PLAN.md`](./PLAN.md)): `nemesis`, `campfire`, `refuges`, `tavern-rumors` y
-`remnants`.
+[`PLAN.md`](./PLAN.md)): `campfire`, `refuges` y `remnants`.
 
 **Datos compartidos entre mods.** El mod store está aislado por mod, así que
 lo que un mod deba leer de otro va en variables de personaje con el prefijo del

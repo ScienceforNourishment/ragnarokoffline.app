@@ -16,9 +16,21 @@ Actualízala al cambiar el mod o al probarlo.
   tope de presión común; nuevo comando `@presion`. Los medidores avisan desde
   30, no solo en 0. La 1.1.0: los tres temporizadores por personaje (`OnHungerTick`, `OnThirstTick`, `OnPenaltyTick`) pasan a **un solo reloj del NPC** cada 4 s que entra en cada jugador con `attachrid`. Arregla el error `player's event queue is full`: un diálogo de NPC llenaba la cola de 2 huecos del personaje y la cadena descartada moría para toda la sesión. Hambre y sed siguen bajando de media cada 15 s (contados por hora en `@sv_need_at`); cada punto puede llegar hasta 4 s tarde. Quitado el diagnóstico `[qdebug]`
 - **Probado en el juego:** con la 1.0.0 se usa en partidas; no hay registro detallado de qué se comprobó. 2026-10-17: el vendedor de cantimploras aparece y vende la cantimplora 3/3 y la vacía
-- **Sin probar:** todo con la 1.2.0: los escalones, sus efectos y mensajes,
-  el tope y `@presion` (guion en «Probarlo en una sesión larga»). Con la 1.1.0: sobre todo que hambre, sed y penalización sigan después de hablar un rato con un NPC; la integración con `clima` tras su paso a biomas; las zonas seguras leídas del atlas
-- **Actualizado:** 2026-10-17
+- **Probado en el juego (1.2.0, 2026-10-23),** con el guion de
+  [`SESION-DE-PRUEBA.md`](../SESION-DE-PRUEBA.md): los cinco escalones de
+  hambre en los dos sentidos, con un solo mensaje por cambio; los de sed
+  (Sediento sin regeneración de SP, Deshidratado con más tiempo de
+  lanzamiento y menos ASPD, las dos en 0 más despacio); Bien alimentado e
+  Hidratado (un 20 % más de regeneración); el tope en `xmas_fild01` (total 7,
+  85 %, −8 % en vez de −10 %) y que desaparece con el Abrigo Polar;
+  `@presion`; que el castigo sigue en la ciudad y no baja nada en las zonas
+  seguras ni en los interiores del atlas; que todo sigue tras un diálogo de un
+  minuto. Los tres bonos dudosos (`bNoRegen,3`, `bAtkRate` y `bSpeedRate`
+  negativos) funcionan
+- **Sin probar:** la integración con `clima` tras su paso a biomas (pérdida
+  doble con Calor intenso o Frío extremo); llenar la cantimplora en el agua
+  medida del atlas 0.2.1 (`prt_fild00 267,240`)
+- **Actualizado:** 2026-10-23
 
 ## Qué incluye
 

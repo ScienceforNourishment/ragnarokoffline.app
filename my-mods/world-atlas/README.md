@@ -10,15 +10,33 @@ comportamiento. Es la base de datos del mundo para todos los mods (D13 en
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.2.0 (la de `mod.json`); 230 mapas. La región de Prontera e
+- **Versión:** 0.2.1 (la de `mod.json`); 230 mapas. La región de Prontera e
   Izlude está completa (ver «Región de Prontera e Izlude»)
-- **Probado en el juego:** nada todavía
-- **Sin probar:** la carga y todas las funciones; `F_Atlas_Name` en el diario;
-  que los interiores nuevos detengan hambre, sed y temperatura
+- **Probado en el juego (0.2.0, 2026-10-23):** la carga sin errores; las 9
+  consultas de `AtlasTest` (hoy `@atlas`); que `prt_in`, `prt_church`, `izlude_in` e
+  `iz_ac01` detienen hambre, sed y temperatura; los campos nuevos
+  (`prt_fild00`, `prt_monk`, `izlu2dun`) sí bajan; `F_Atlas_Name` en el diario
+  de `adventure`; las coordenadas del Inn Employee y el Bartender de `prt_in`
+- **Fallos de esa prueba, corregidos en 0.2.1:**
+  - El Master Tailor de `izlude_in` 123,175 no existe en el juego: es de
+    `npc/custom/quests/bandit_beard.txt`, un script *custom* que rAthena no
+    carga (el índice de `navigation-server-npcs` lo lista igual). Quitado
+    de la nota.
+  - `izlu2dun` decía `water=1` y la cantimplora no llenaba: el mar de la isla
+    es celda no caminable y rAthena no lo cuenta como agua. La columna
+    `water` de la región se midió en los mapas reales (ver `water` en
+    «Columnas y valores»): 0 en `izlu2dun`, `iz_dun03`–`05`, `iz_d04_i` e
+    `iz_d05_i`; 1 en Izlude, `prt_fild00`, `01`, `02`, `04`, `05` y `10`,
+    `prt_gld`, `prt_sewb2` y otras 8 mazmorras (siguen en 1 `iz_dun00`–`02`)
+- **También en 0.2.1:** el comando de GM `@atlas [mapa]`
+  (`npc/atlas-command.txt`), que sustituye al mod `world-atlas-test` y su NPC
+  `AtlasTest` (retirados el 2026-10-23)
+- **Sin probar:** el agua de 0.2.1 en el juego (cantimplora en
+  `prt_fild00 267,240`) y el comando `@atlas`
 - **Cambio de comportamiento en 0.2.0:** `F_Atlas_IsSafe` también da 1 en los
   mapas `interior`, así que `survival`, `temperature` y `wounds` los tratan
   como ciudad (no bajan hambre ni sed, no hay temperatura, morir no deja herida)
-- **Actualizado:** 2026-10-17
+- **Actualizado:** 2026-10-23
 
 | Tipo | Mapas | Origen |
 |---|---:|---|
@@ -116,7 +134,7 @@ recompensa de reserva sigan al atlas.
 | `biome` | Lo que se ve y se siente al estar allí, no el nombre del mapa. Es una lista cerrada (la valida el build); si falta un bioma, añádelo a `BIOMES` en `build_atlas.cjs` y a la tabla de arriba. |
 | `temp` | -2 frío extremo, -1 fresco, 0 cómodo, 1 cálido, 2 calor extremo. Partida habitual: nieve -2, montaña -1, selva y pantano 1, desierto y volcán 2, el resto 0; sube o baja uno por razones de lugar (pirámides y esfinge 1). |
 | `anchor` | La ciudad principal desde la que se llega más naturalmente (la que será su tablero y su servicio). Debe ser una fila `city`. Para mapas de ultramar, la ciudad portuaria (hoy Alberta). |
-| `water` | 1 solo si hay agua de la que llenar una botella. Lo ideal es comprobarlo con `checkcell ... cell_chkwater` en el mapa real, no por el nombre. |
+| `water` | 1 solo si hay agua de la que llenar una botella, comprobada en el mapa real, no por el nombre ni el bioma. Para rAthena es agua la celda de tipo 3 del `.gat`, o la caminable (tipo 0) por debajo del nivel de agua del `.rsw` (`map_readgat`); el mar y los ríos dibujados sobre celdas no caminables **no** cuentan. Se pone 1 con 20 celdas de agua o más: con menos (`prt_fild08` tiene 2) nadie la encuentra jugando. Los dos ficheros se piden al servidor de assets (`http://127.0.0.1:3338/data/<mapa>.gat` y `.rsw`). |
 | `rest` | 1 solo cuando exista un refugio o campamento allí. |
 
 ## Región de Prontera e Izlude
@@ -139,8 +157,10 @@ La lista sale de los warps y NPC del rAthena fijado
 **Servicios para H1.** La columna `note` de los interiores guarda dónde están
 los NPC que interesan para mover servicios (D23): la posada de `prt_in` (Inn
 Employee en 244,135 y 61,141), su taberna (Bartender en 180,20), la iglesia
-(`prt_church`) y el Master Tailor de `izlude_in` (123,175). Son las
-coordenadas del índice de NPC, no comprobadas en el juego.
+(`prt_church`). Salen del índice de NPC y se comprobaron en el juego el
+2026-10-23. Ese índice también lista NPC de scripts *custom* que rAthena no
+carga (el Master Tailor de `izlude_in` 123,175 es uno): confirma cada uno
+con `/where` antes de usarlo.
 
 **Fuera a propósito:**
 
@@ -170,8 +190,11 @@ coordenadas del índice de NPC, no comprobadas en el juego.
 - **Prontera e Izlude:** `prt_q` («Prontera Asediada») y las ilusiones llevan
   nombres provisionales; `prt_gld`, `prt_monk` e `izlu2dun` no tienen
   monstruos y su Tier 1 es por la región, no por `tier_of.cjs`.
-- **`water`:** 1 solo en biomas `costa` y `pantano`; no se comprobó con las
-  celdas reales del mapa. `rest` es 0 en todos hasta que existan campamentos.
+- **`water`:** medido en el mapa real solo en la región de Prontera e Izlude
+  (0.2.1), salvo `dic_dun03` y los `gld_dun0N_2`, cuyo `.rsw` no está en el
+  cliente. En el resto, 1 solo en biomas `costa` y `pantano`, sin comprobar:
+  se mide al hacer cada región (H3). `rest` es 0 en todos hasta que existan
+  campamentos.
 - **`name`:** los nombres se escribieron a mano por prefijo de mapa. Los de
   `arug_dun`, `bossnia`, `schg_dun`, `gld_dun` y `gld2_*` son los menos
   seguros; los sufijos `_`/`_2` de variantes se muestran como `(alterno)` o
@@ -200,35 +223,37 @@ coordenadas del índice de NPC, no comprobadas en el juego.
   climáticas pueden ocurrir allí. Es una dependencia obligatoria
   (`requires.mods`); sin el atlas `clima` no sortea ningún evento.
 
-- `travel-journal`: las entradas de primera visita y de muerte guardan el
+- `adventure` (su diario): las entradas de primera visita y de muerte guardan el
   nombre del mapa (`F_Atlas_Name`), con el código como reserva si el atlas no
   está.
 
 ## Probarlo
 
-No está probado en el juego. Guion para una sesión larga; cabe en la misma
+Probado el 2026-10-23 (ver «Estado»). Guion para una sesión larga; cabe en la misma
 sesión que las pruebas de `survival`, `temperature` y `wounds`, porque los
 interiores cambian lo que hacen los tres.
 
-**Preparación.** Activa `world-atlas` y `world-atlas-test` (un NPC,
-`AtlasTest`, en `prontera 150,180`, que muestra lo que devuelve el atlas
-para un mapa: al preguntarle, deja el campo vacío para el mapa actual).
+**Preparación.** Activa `world-atlas`. El comando de GM `@atlas [mapa]`
+(`npc/atlas-command.txt`) escribe en el chat lo que devuelve el atlas para un
+mapa, o para el actual si no das ninguno. Sustituye al NPC `AtlasTest` del
+mod `world-atlas-test`, retirado el 2026-10-23.
 Reemplaza la carpeta del mod instalada en vez de copiar encima. Con
 `survival`, `temperature` y `wounds` activos se prueba también el efecto de
 los interiores. Usa un personaje con GM (`tester`) para `@warp`.
 
 **1. Carga.** Tras recargar los mods, `ragnarok-stack logs map 200` no debe
-dar errores de `world-atlas.txt`. Pregunta a `AtlasTest` por `prontera`:
+dar errores de `world-atlas.txt` ni de `atlas-command.txt`. `@atlas prontera`:
 `has=1 safe=1 kind=city`.
 
-**2. Datos, desde `AtlasTest`** (escribe el mapa sin moverte):
+**2. Datos, con `@atlas <mapa>`** (sin moverte):
 
 | Mapa | Debe dar |
 |---|---|
 | `prt_in` | `kind=interior safe=1 tier=0 biome=ciudad`, nombre «Interiores de Prontera» |
 | `iz_int` | `kind=interior safe=1 tier=0 anchor=izlude` |
 | `prt_fild00` | `kind=field safe=0 tier=1 biome=pradera` |
-| `izlu2dun` | `kind=field tier=1 biome=costa water=1 anchor=izlude` |
+| `izlu2dun` | `kind=field tier=1 biome=costa water=0 anchor=izlude` |
+| `prt_fild00` | `water=1` |
 | `prt_maze01` | `biome=bosque` (antes `cueva`) |
 | `prt_mz03_i` | `kind=dungeon tier=6` |
 | `izlude_a` | `has=0 safe=0` (copia de canal, fuera a propósito) |
@@ -245,19 +270,18 @@ de Prontera, o `@warp prt_in 244 135`, la posada) y espera 1 minuto:
 
 **4. Campos nuevos, no seguros.** `@warp prt_fild00`, `@warp prt_monk` y
 `@warp izlu2dun`: hambre y sed vuelven a bajar y `@temperatura` da un estado
-(Cómodo sin ropa). En `izlu2dun`, la cantimplora vacía cerca de la orilla
-comprueba si `water=1` es cierto (si no llena, corrige la fila).
+(Cómodo sin ropa). La cantimplora vacía debe llenarse en `@warp prt_fild00
+267 240` (agua medida) y no en `izlu2dun` (`water=0`). Si no coincide,
+corrige la fila.
 
 **5. Coordenadas de servicios.** Comprueba que el Inn Employee de `prt_in`
-está en 244,135 y 61,141, el Bartender en 180,20 y el Master Tailor de
-`izlude_in` en 123,175 (`/where` junto a ellos). Corrige la columna
-`note` si no.
+está en 244,135 y 61,141 y el Bartender en 180,20 (`/where` junto a ellos).
+Corrige la columna `note` si no.
 
-**6. Diario.** Con `travel-journal`, la primera visita a `prt_fild00` debe
+**6. Diario.** Con `adventure`, la primera visita a `prt_fild00` debe
 escribir «Campo de Prontera 00», no el código del mapa.
 
-**Al acabar:** anota el resultado en «Estado», arriba, desactiva
-`world-atlas-test` y revisa `ragnarok-stack logs map 2000` en busca de
+**Al acabar:** anota el resultado en «Estado», arriba, y revisa `ragnarok-stack logs map 2000` en busca de
 errores de `F_Atlas_*`.
 
 ## Próximos cambios propuestos (revisión 2026-10-17)
@@ -272,7 +296,8 @@ Sin implementar.
 - **Interiores de las demás ciudades** (`kind=interior`), al llegar cada
   región (H3). Prontera e Izlude ya los tienen.
 - **Mapflag `loadevent`** en todos los mapas del atlas, generada por el script
-  de build, para `adventure` y `travel-journal`.
+  de build, para `adventure`. Hecha: `adventure-maps.txt`, generada por
+  `registry/tools/adventure/`.
 - **Columnas candidatas:** la mazmorra a la que pertenece un piso y su
   profundidad (para la experiencia del piso más hondo); los servicios de cada
   ciudad (identidad de ciudad).

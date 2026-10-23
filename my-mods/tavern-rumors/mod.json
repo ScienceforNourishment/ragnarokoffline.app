@@ -1,0 +1,13 @@
+{
+  "name": "tavern-rumors",
+  "version": "0.1.0",
+  "author": "Alejandro",
+  "description": "La taberna de Prontera: por una ronda, el Tabernero cuenta qué tiempo hace donde vas, qué le duele a tu marca y dónde te espera tu némesis. También se cuentan allí los relatos de adventure.",
+  "requires": {
+    "app": ">=1.5.2",
+    "era": "renewal"
+  },
+  "settings": [
+    { "key": "round_price", "type": "number", "default": 200, "min": 0, "max": 100000, "label": "Precio de una ronda (zeny, banda de nivel 1)", "description": "Valor de prueba. Sube con la banda de nivel: x2 desde el 40, x3,5 desde el 60, x5 desde el 90, x7,5 desde el 120 y x10 desde el 150." }
+  ]
+}

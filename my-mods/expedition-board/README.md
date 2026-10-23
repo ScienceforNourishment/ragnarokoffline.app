@@ -37,7 +37,7 @@ Actualízala al cambiar el mod o al probarlo.
   tablero puede mostrar el estado y dejar abandonarlo.
 - Un contrato que se quite del CSV se retira solo del personaje la próxima vez
   que hable con un tablero.
-- Escribe notas en el diario del viajero (`travel-journal`) al aceptar, al
+- Escribe notas en el diario del viajero (`adventure`) al aceptar, al
   abatir la marca y al completar una caza. La integración es suave: si el
   diario no está activo, `doevent` solo deja una advertencia en el log y el
   contrato funciona igual.

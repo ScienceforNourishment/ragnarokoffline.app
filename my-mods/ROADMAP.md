@@ -59,14 +59,15 @@ Que lo que ya existe funcione y no se rompa.
 **Terminado cuando:** el log del map-server sale limpio tras una sesión de una
 hora con todos los mods del modpack, y cada README dice qué se probó.
 
-**Próxima sesión larga:** el guion completo, paso a paso y con tabla de
-resultados, está en [`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md). Cubre
+**Sesión larga del 2026-10-23, hecha:** el guion y su tabla de resultados
+están en [`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md). Cubrió
 `world-atlas` 0.2.0 (región de Prontera e Izlude, interiores seguros) y el
 rebalanceo de presión (`survival` 1.2.0, `temperature` 0.3.0, `wounds`
 0.4.0, `clima` 0.3.0), el pronóstico del clima (`clima` 0.4.0) y los cofres
 generados desde el atlas (`dungeon-chest` 0.3.0) y, en su Parte 3, `adventure` 0.1 con
-el relato de herida de `wounds` 0.4.1. Si sobra tiempo, lo pendiente de antes: los iconos de
-`temperature` (ver arriba).
+el relato de herida de `wounds` 0.4.1; después, `nemesis` y `tavern-rumors`.
+Queda de ella: los cofres nuevos (sin encontrar), la cantimplora en el agua
+medida, `@atlas` y los iconos de `temperature` (ver arriba).
 
 ### H1. Porción vertical: Prontera e Izlude, Tier 1 y 2
 
@@ -78,19 +79,17 @@ Contenido:
 - [x] Atlas completo de la región (`world-atlas` 0.2.0, 2026-10-17): 14
       campos, 12 mazmorras de Tier 1–2, 6 retos de Tier 4–6 y 15 interiores
       seguros. Lista y exclusiones en
-      [su README](./world-atlas/README.md#región-de-prontera-e-izlude). Falta
-      probarlo en el juego.
+      [su README](./world-atlas/README.md#región-de-prontera-e-izlude). Probado
+      en el juego el 2026-10-23; la 0.2.1 corrige el agua y trae `@atlas`.
 - [x] Rebalanceo de presión ([`BALANCE.md`](./BALANCE.md)): tope `@pr_*`,
       escalones por eje en `survival`, Bien alimentado e Hidratado. Hecho
       el 2026-10-17 (`survival` 1.2.0, `temperature` 0.3.0, `wounds` 0.4.0,
-      `clima` 0.3.0); falta probarlo con el guion de
-      [`survival`](./survival/README.md#probarlo-en-una-sesión-larga).
+      `clima` 0.3.0). Probado en el juego el 2026-10-23.
 - [x] Pronóstico del clima, aunque sea un NPC simple en Prontera. Hecho el
       2026-10-17 (`clima` 0.4.0): el Pronosticador junto al tablero y las
-      funciones `F_Clima_*`. Falta probarlo en el juego.
+      funciones `F_Clima_*`. Probado en el juego el 2026-10-23.
 - [x] `adventure` 0.1, con el diario integrado y su Cronista (D25–D27).
-      Escrito el 2026-10-17; **falta probarlo en el juego** con
-      [«Probarlo»](./adventure/README.md#probarlo).
+      Escrito el 2026-10-17 y probado en el juego el 2026-10-23.
 - [ ] Servicios en interiores reales: Posadero y Sacerdote de `wounds`.
       **Se quedan junto al tablero mientras duren las pruebas** (D23): así
       se llega a ellos rápido. Se mueven al cerrar la porción vertical.
@@ -110,10 +109,13 @@ experiencias pesan lo justo frente a la EXP de monstruos a 1x.
 Cerrar los dos extremos del bucle: el Rumor y la Consecuencia que queda en el
 mundo.
 
-- [ ] `nemesis`.
+- [x] `nemesis` 0.1 (con `wounds` 0.5.0). Escrito y probado en el juego el
+      2026-10-23.
 - [ ] `campfire`: Descansando, cocinar, venda.
 - [ ] `refuges`: al menos un refugio restaurable en la región.
-- [ ] `tavern-rumors`: la taberna de Prontera, con pronóstico y pistas.
+- [x] `tavern-rumors` 0.1: la taberna de Prontera, con pronóstico, pistas
+      del contrato y del némesis, y donde se cuentan los relatos. Escrito el
+      2026-10-23 y probado en el juego el mismo día (con `clima` 0.4.1).
 - [ ] `remnants`: unos pocos restos con lore, cuando exista `LORE.md`.
 - [ ] Recompensas reales: trofeos de marcas y botín de cofre por bioma.
 - [ ] Integraciones de `adventure` 0.2: cofres, contratos, clima,
@@ -162,17 +164,18 @@ Qué hace cada mod, su versión y qué se probó están **solo** en la sección
 
 | Mod | Estado | Siguiente paso |
 |---|---|---|
-| `world-atlas` | [README](./world-atlas/README.md#estado) | H0; ampliar en H1 |
+| `world-atlas` | [README](./world-atlas/README.md#estado) | H0; ampliar en H1. Incluye `@atlas` (antes `world-atlas-test`) |
 | `survival` | [README](./survival/README.md#estado) | H0; rebalanceo en H1 |
 | `clima` | [README](./clima/README.md#estado) | H0; probar el pronóstico |
 | `temperature` | [README](./temperature/README.md#estado) | H0 |
 | `wounds` | [README](./wounds/README.md#estado) | H0; interiores en H1 |
-| `travel-journal` | [README](./travel-journal/README.md#estado) | sustituido por `adventure`; se retira cuando este funcione en el juego |
-| `adventure` | [README](./adventure/README.md#estado) | probar la 0.1; 0.2 en H2 |
+| `adventure` | [README](./adventure/README.md#estado) | 0.1 probada; 0.2 en H2 (con la pestaña de expediciones) |
 | `expedition-board` | [README](./expedition-board/README.md#estado) | H0 |
 | `dungeon-chest` | [README](./dungeon-chest/README.md#estado) | probar los 4 cofres nuevos; botín por bioma en H2 |
 | `affix-forge`, `arpg-equipments` | referencia externa, no se activan | extraer datos para botín |
-| `nemesis`, `campfire`, `refuges`, `tavern-rumors`, `remnants` | diseño, sin código | H2 |
+| `nemesis` | [README](./nemesis/README.md#estado) | probado; H2 |
+| `tavern-rumors` | [README](./tavern-rumors/README.md#estado) | probado; otras ciudades en H3 |
+| `campfire`, `refuges`, `remnants` | diseño, sin código | H2 |
 
 ## Frentes abiertos
 

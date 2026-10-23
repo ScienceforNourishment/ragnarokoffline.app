@@ -12,13 +12,20 @@ corresponde, su efecto visual y protección compatible. Requiere `world-atlas`
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.4.0 (la de `mod.json`): **pronóstico**. El siguiente evento de cada mapa se sortea al empezar el actual (`.next_combo[]`), en vez de al empezar él; el Pronosticador de Prontera lo dice, y las funciones `F_Clima_*` lo publican para otros mods. Ver «Pronóstico». La 0.3.0 publica `@pr_clima` (1 si el personaje está en un evento sin su protección) y `@pr_clima_map$` (el mapa del evento), para el tope de presión de [`BALANCE.md`](../BALANCE.md#tope-de-presión). Quien lo lee solo lo cuenta si `@pr_clima_map$` es el mapa actual: salir a un mapa sin `loadevent` no lo borra. El estado alterado del clima no se reduce con el tope. La 0.2.1: solo Renewal (`"era": "renewal"`, D1). Quitada la carpeta `pre-renewal/` y `prerenewalFolder`; en un mundo Pre-Renewal la app rechaza el mod en vez de cargarlo sin sus objetos de protección. La 0.2.0 pasó los eventos de por mapa a por bioma
+- **Versión:** 0.4.1 (la de `mod.json`): arregla `F_Clima_Now` y `F_Clima_EndsIn` con un mapa sin clima. Hacían `if (.@i < 0 || …event_active[.@i])`, y en rAthena `||` evalúa los dos lados: con un mapa fuera de la lista leían `.event_active[-1]`, un error de script que corta el script de quien llama (el Tabernero de `tavern-rumors` se quedaba con la ventana abierta, 2026-10-23). El Pronosticador no lo notaba porque solo pregunta por mapas con clima. La 0.4.0: **pronóstico**. El siguiente evento de cada mapa se sortea al empezar el actual (`.next_combo[]`), en vez de al empezar él; el Pronosticador de Prontera lo dice, y las funciones `F_Clima_*` lo publican para otros mods. Ver «Pronóstico». La 0.3.0 publica `@pr_clima` (1 si el personaje está en un evento sin su protección) y `@pr_clima_map$` (el mapa del evento), para el tope de presión de [`BALANCE.md`](../BALANCE.md#tope-de-presión). Quien lo lee solo lo cuenta si `@pr_clima_map$` es el mapa actual: salir a un mapa sin `loadevent` no lo borra. El estado alterado del clima no se reduce con el tope. La 0.2.1: solo Renewal (`"era": "renewal"`, D1). Quitada la carpeta `pre-renewal/` y `prerenewalFolder`; en un mundo Pre-Renewal la app rechaza el mod en vez de cargarlo sin sus objetos de protección. La 0.2.0 pasó los eventos de por mapa a por bioma
 - **Probado en el juego:** la versión anterior, con eventos por mapa
 - **Probado en el juego (0.2.0, 2026-10-17):** los eventos por bioma arrancan (log `[clima] Evento … iniciado`); el Poison de Lluvia tóxica afecta en los campos de Prontera
 - **Observado (sin decidir):** el veneno se siente flojo. `S_ApplyWeatherStatus` lo pone 12 s (`.effect_lease`), revisa cada 10 s (`.effect_refresh_interval`) y solo lo vuelve a poner si ya no está (`!getstatus`): queda activo unos 12 s de cada 20 y en el hueco vuelve la regeneración. Mientras dura, rAthena bloquea la regeneración natural y quita 2 + 1,5 % del HP máximo por segundo, pero para al 25 % de HP (regla oficial). Se arregla con una revisión más corta que la duración; afecta a todos los estados del clima, no solo al veneno
-- **Sin probar:** el resto desde el paso a eventos por bioma (0.2.0), y todo el pronóstico (0.4.0): el NPC, que el evento anunciado sea el que empieza y los minutos. Comprobado sin el juego: llaves y comillas equilibradas, tabuladores en las declaraciones `function script`
+- **Probado en el juego (0.4.0, 2026-10-23):** el pronóstico entero: el
+  Pronosticador en `prontera 168,193` con los nombres del atlas, «Toda la
+  región», un campo con «Ahora», «Te protege» y «Después», «Otras tierras»,
+  y que el evento anunciado para `prt_fild08` es el que empezó después. El
+  log de esa sesión muestra los eventos por bioma de toda la lista
+  arrancando y terminando, sin errores
+- **Sin probar:** `@pr_clima` en el tope (la prueba del tope dio total 7,
+  sin clima); la pérdida doble de hambre o sed en `survival`
 - **Limitación:** el visual es fijo por mapa; ver «Limitación conocida»
-- **Actualizado:** 2026-10-17
+- **Actualizado:** 2026-10-23
 
 ## Pronóstico
 

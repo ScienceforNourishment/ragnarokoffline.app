@@ -16,19 +16,34 @@ Actualízala al cambiar el mod o al probarlo.
 
 - **Versión:** 0.1.0 (la de `mod.json`), la primera. Expedición (salida, tiempo fuera, muertes, cierre al contar), relatos de mapa, bioma y Tier, relatos que publiquen otros mods (`wounds` 0.4.1 ya lo hace), el Cronista en las 7 ciudades, `@relatos` y el diario con las pestañas Diario y Relatos. Sin temporizadores
 - **Probado:** el cliente con `node --check` y sus funciones de lectura (`parseTale`, `duration`, `timeOutside`, `parseEntry`) con Node; el script, solo con comprobaciones estáticas (llaves, cabeceras con tabuladores); `build_mapflags.cjs --check`
-- **Sin probar en el juego:** todo. Ver «Probarlo»
-- **Suposiciones que hay que comprobar en el juego:**
-  - que las mapflags `loadevent` de `adventure-maps.txt` conviven con las de `clima`, que pone la misma en sus campos (no debería importar);
-  - que las celdas del Cronista (dos a la izquierda del tablero en cada ciudad) son transitables y que el sprite `1_M_BARD` se ve;
-  - las tildes de los textos escritos por el script («la montaña», «Expedición», «·», «→») en el chat y en la ventana.
+- **Probado en el juego (0.1.0, 2026-10-23),** toda la Parte 3 de
+  [`SESION-DE-PRUEBA.md`](../SESION-DE-PRUEBA.md) con un personaje nuevo:
+  diario y pestaña Relatos al entrar; el Cronista en Izlude (`126,121`) se ve
+  y responde; empezar la expedición con sus tres relatos en orden y sin
+  mostrar la EXP (D27); 63 % con tres relatos a nivel 1 (esperado ~64 %); un
+  solo relato al pisar otro campo de la misma pradera; volver sin contar no
+  cierra nada y en la ciudad no corre el tiempo; morir da el relato de la
+  herida de `wounds` 0.4.1 y una caída; salir del juego conserva la
+  expedición sin contar el tiempo desconectado; contar paga la EXP, escribe
+  el resumen 🏕️ y vacía la pestaña; una expedición sin nada nuevo; el factor
+  de Tier (21 % frente a ~22 % esperado). Las mapflags conviven con las de
+  `clima` y las tildes se ven bien
+- **Ojo con los rates:** `getexp` multiplica por `quest_exp_rate`. En la
+  prueba estaba a 4x y el personaje subió dos niveles con un 77 %; ya está
+  a 1x (D8)
+- **Sin probar:** el Cronista de las otras 5 ciudades (solo se vio el de
+  Izlude); `Adventure::OnRest` llamado desde otro mod (lo cubre
+  [`tavern-rumors`](../tavern-rumors/README.md#probarlo))
+- **Pedido (2026-10-23):** una pestaña solo con las expediciones terminadas,
+  para leer la historia del personaje. Va en la 0.2
 - **Problemas abiertos:** las notas que otros mods envían con `doevent "TravelJournal::OnLog"` todavía pasan por la cola de 2 huecos del personaje (igual que en `travel-journal`); los relatos no tienen ese problema
-- **Actualizado:** 2026-10-17
+- **Actualizado:** 2026-10-23
 
 ## Instalar
 
-1. **Desactiva `travel-journal`** y activa `adventure` en el mismo Apply.
-   Nunca los dos: los dos definen el NPC `TravelJournal` y el comando
-   `@diario`. Las entradas que guardó `travel-journal` no pasan al diario
+1. `travel-journal` se retiró el 2026-10-23 (D12). Si sigue instalado,
+   **desinstálalo** en el mismo Apply: los dos definen el NPC
+   `TravelJournal` y el comando `@diario`. Sus entradas no pasan al diario
    nuevo (su mod store es del otro mod); se acepta perderlas (ADVENTURE.md).
 2. Necesita `world-atlas` activo (`requires.mods`).
 3. Reinicia la aplicación para cargar el plugin del cliente.
@@ -110,10 +125,26 @@ if (getnpcid(0, "Adventure"))
 **Contar desde otro lugar de descanso** (taberna, refugio):
 `doevent "Adventure::OnRest";` con el jugador adjunto.
 
-**Escribir en el diario:** igual que con `travel-journal`
-(`@tj_type$`, `@tj_text$`, `doevent "TravelJournal::OnLog"`); ver su
-[README](../travel-journal/README.md#añadir-una-entrada-desde-otro-mod). Tipos
-con icono: `map`, `death`, `exp`, `expedition`, `note`.
+**Escribir en el diario** (la entrada que heredó de `travel-journal`), con el
+jugador adjunto:
+
+```c
+@tj_type$ = "note";
+@tj_text$ = "Lo que quieres que diga el diario.";
+doevent "TravelJournal::OnLog";
+```
+
+- `@tj_type$` y `@tj_text$` son variables temporales del personaje; `OnLog`
+  las limpia al terminar.
+- Tipos con icono: `map`, `death`, `exp`, `expedition` y `note`. Cualquier
+  otro se muestra como nota.
+- El texto no debe llevar `|` (se cambia por `/`). Se guarda tal cual, en
+  español: para un lugar, pasa el nombre legible (`F_Atlas_Name`, con el
+  código como reserva).
+- Sin `adventure` activo, `doevent` solo deja un aviso en el log y el mod que
+  llama sigue. No hace falta `requires.mods`.
+- Pasa por la cola de 2 huecos del personaje: una nota lanzada durante un
+  diálogo largo puede perderse (ver «Problemas abiertos» en «Estado»).
 
 ## Datos que guarda
 
@@ -152,14 +183,13 @@ node registry/tools/adventure/build_mapflags.cjs --check   # ¿está al día?
 
 ## Probarlo
 
-**El guion completo, paso a paso, con los textos exactos que deben salir y
-una tabla de resultados, es la Parte 3 de
-[`SESION-DE-PRUEBA.md`](../SESION-DE-PRUEBA.md#parte-3-adventure-con-un-personaje-nuevo).**
-Antes, sigue su «Antes de entrar» (instalar, desactivar `travel-journal`,
-reiniciar la aplicación y revisar el log). Lo que sigue es el resumen.
+El guion completo, con los textos exactos que deben salir, fue la Parte 3 de
+`SESION-DE-PRUEBA.md` hasta el 2026-10-23 (ya probado; está en el historial de
+git). Antes de probar, instala, reinicia la aplicación y revisa el log. Lo que
+sigue es el resumen.
 
 Con un personaje **nuevo** (la cuenta `tester`), `adventure` y `world-atlas`
-activos y `travel-journal` apagado:
+activos y sin `travel-journal` instalado:
 
 1. **Carga.** `ragnarok-stack logs map 100`: sin errores en `adventure.txt`;
    el Cronista aparece a la izquierda del tablero de Prontera (158,193).

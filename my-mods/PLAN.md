@@ -244,7 +244,8 @@ Diseño y límites en [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## Mods nuevos propuestos
 
-Por orden de impacto. Ninguno existe todavía. Rangos de IDs y prefijos en
+Por orden de impacto. Existen `adventure` (0.1), `nemesis` (0.1) y `tavern-rumors` (0.1); lo que
+hacen está en su README, y lo de aquí abajo es la propuesta original. Rangos de IDs y prefijos en
 [`CONVENTIONS.md`](./CONVENTIONS.md).
 
 1. **`adventure`**: expediciones y experiencias; la EXP sale de vivir cosas por

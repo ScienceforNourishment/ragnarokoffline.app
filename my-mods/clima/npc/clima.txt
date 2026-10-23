@@ -416,7 +416,10 @@ function	script	F_Clima_Index	{
 // F_Clima_Now(map$) -> the combination active on the map now, 0 when none.
 function	script	F_Clima_Now	{
 	.@i = callfunc("F_Clima_Index", getarg(0));
-	if (.@i < 0 || !getvariableofnpc(.event_active[.@i], "Clima#clima"))
+	// Two ifs: || evaluates both sides, and .event_active[-1] is a script error.
+	if (.@i < 0)
+		return 0;
+	if (!getvariableofnpc(.event_active[.@i], "Clima#clima"))
 		return 0;
 	return getvariableofnpc(.combination[.@i], "Clima#clima");
 }
@@ -424,7 +427,9 @@ function	script	F_Clima_Now	{
 // F_Clima_EndsIn(map$) -> seconds until the active event ends, 0 when none.
 function	script	F_Clima_EndsIn	{
 	.@i = callfunc("F_Clima_Index", getarg(0));
-	if (.@i < 0 || !getvariableofnpc(.event_active[.@i], "Clima#clima"))
+	if (.@i < 0)
+		return 0;
+	if (!getvariableofnpc(.event_active[.@i], "Clima#clima"))
 		return 0;
 	return max(0, getvariableofnpc(.event_end[.@i], "Clima#clima") - gettimetick(2));
 }

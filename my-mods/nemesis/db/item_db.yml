@@ -1,0 +1,68 @@
+Header:
+  Type: ITEM_DB
+  Version: 3
+
+# Trofeos de nemesis: uno por raza del monstruo (51200 + raza, 0-9). Se dan
+# con getnameditem, firmados con el nombre del personaje. Sin efecto: son
+# recuerdos y, mas adelante, material de campfire o refuges.
+Body:
+  - Id: 51200
+    AegisName: Nm_Trophy_Formless
+    Name: Esquirla del Nemesis
+    Type: Etc
+    Buy: 20
+    Weight: 10
+  - Id: 51201
+    AegisName: Nm_Trophy_Undead
+    Name: Hueso del Nemesis
+    Type: Etc
+    Buy: 20
+    Weight: 10
+  - Id: 51202
+    AegisName: Nm_Trophy_Brute
+    Name: Colmillo del Nemesis
+    Type: Etc
+    Buy: 20
+    Weight: 10
+  - Id: 51203
+    AegisName: Nm_Trophy_Plant
+    Name: Raiz del Nemesis
+    Type: Etc
+    Buy: 20
+    Weight: 10
+  - Id: 51204
+    AegisName: Nm_Trophy_Insect
+    Name: Antena del Nemesis
+    Type: Etc
+    Buy: 20
+    Weight: 10
+  - Id: 51205
+    AegisName: Nm_Trophy_Fish
+    Name: Cola del Nemesis
+    Type: Etc
+    Buy: 20
+    Weight: 10
+  - Id: 51206
+    AegisName: Nm_Trophy_Demon
+    Name: Cuerno del Nemesis
+    Type: Etc
+    Buy: 20
+    Weight: 10
+  - Id: 51207
+    AegisName: Nm_Trophy_Demihuman
+    Name: Trenza del Nemesis
+    Type: Etc
+    Buy: 20
+    Weight: 10
+  - Id: 51208
+    AegisName: Nm_Trophy_Angel
+    Name: Pluma del Nemesis
+    Type: Etc
+    Buy: 20
+    Weight: 10
+  - Id: 51209
+    AegisName: Nm_Trophy_Dragon
+    Name: Escama del Nemesis
+    Type: Etc
+    Buy: 20
+    Weight: 10

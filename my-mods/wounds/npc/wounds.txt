@@ -4,6 +4,8 @@
 //=
 //= Estado por personaje (variable permanente de personaje):
 //=   wd_list$   ids de las heridas que tiene, separados por barras: "1|5"
+//=   wd_src$    que monstruo dejo cada una (id:clase), solo las de un
+//=              monstruo: "1:1013|5:1002". Lo usa F_Wounds_CureFrom (nemesis)
 //=
 //= Dos tipos (.kind): 1 herida (la cura la posada o el templo),
 //=                    2 maldicion (solo la cura el templo).
@@ -19,7 +21,7 @@
 //=
 //= Dependencias suaves (el mod funciona sin ellas):
 //=   world-atlas     bioma del mapa donde se muere (elige la herida) y ciudades
-//=   travel-journal  anota la herida recibida y la curada
+//=   adventure (su diario)  anota la herida recibida y la curada
 //===========================================================================
 
 // F_Wounds_Name(id) -> nombre de la herida; "" si no existe.
@@ -96,7 +98,39 @@ function	script	F_Wounds_Remove	{
 		else
 			wd_list$ = wd_list$ + "|" + .@a$[.@i];
 	}
+	// Y su origen, si lo tenia ("id:clase").
+	if (wd_src$ != "") {
+		explode(.@s$, wd_src$, "|");
+		.@n = getarraysize(.@s$);
+		wd_src$ = "";
+		for (.@i = 0; .@i < .@n; .@i++) {
+			if (atoi(.@s$[.@i]) == getarg(0))
+				continue;
+			if (wd_src$ == "")
+				wd_src$ = .@s$[.@i];
+			else
+				wd_src$ = wd_src$ + "|" + .@s$[.@i];
+		}
+	}
 	return 1;
+}
+
+// F_Wounds_CureFrom(clase) -> cuantas quito: todas las heridas y maldiciones
+// que dejo un monstruo de esa clase. PUBLICA; la usa nemesis al vencerlo.
+function	script	F_Wounds_CureFrom	{
+	if (wd_src$ == "")
+		return 0;
+	explode(.@s$, wd_src$, "|");
+	.@n = getarraysize(.@s$);
+	.@removed = 0;
+	for (.@i = 0; .@i < .@n; .@i++) {
+		explode(.@p$, .@s$[.@i], ":");
+		if (getarraysize(.@p$) < 2)
+			continue;
+		if (atoi(.@p$[1]) == getarg(0))
+			.@removed += callfunc("F_Wounds_Remove", atoi(.@p$[0]));
+	}
+	return .@removed;
 }
 
 // F_Wounds_ClearKind(kind) -> cuantas quito. kind 0 = todas, 1 = solo heridas.
@@ -290,6 +324,7 @@ OnPCDieEvent:
 	.@killer = killerrid;
 	.@kname$ = "";
 	.@cands$ = "";
+	.@cls = 0;
 	.@ktype = -1;
 	if (.@killer)
 		.@ktype = getunittype(.@killer);
@@ -343,6 +378,13 @@ OnPCDieEvent:
 		end;
 	if (!callfunc("F_Wounds_Add", .@pick))
 		end;
+	// Quien la dejo, para que nemesis la cure al vencerlo.
+	if (.@cls) {
+		if (wd_src$ == "")
+			wd_src$ = .@pick + ":" + .@cls;
+		else
+			wd_src$ = wd_src$ + "|" + .@pick + ":" + .@cls;
+	}
 	dispbottom "Has quedado marcado: " + callfunc("F_Wounds_Name", .@pick) + ". Hay quien puede curarlo en una posada o en el templo.";
 	// La primera vez con cada herida es un relato de adventure (Media), si
 	// esta. adventure no la repite: deduplica por clave.

@@ -28,9 +28,9 @@ pegados, sin margen; desde ahora cada mod nuevo recibe un **bloque de 100**.
 | 50844–50999 | `clima`, `survival`, `temperature` | ampliaciones de estos tres; anotar aquí cada ID que se use |
 | 51000–51099 | `adventure` | (planeado) |
 | 51100–51199 | `campfire` | (planeado) leña, kits, comida cocinada, vendas |
-| 51200–51299 | `nemesis` | (planeado) trofeos |
+| 51200–51299 | `nemesis` | trofeos: 51200–51209 (51200 + raza del monstruo) |
 | 51300–51399 | `refuges` | (planeado) materiales |
-| 51400–51499 | `tavern-rumors` | (planeado) |
+| 51400–51499 | `tavern-rumors` | sin objetos en 0.1 |
 | 51500–51599 | `remnants` | (planeado) objetos con lore |
 | 51600–51699 | `expedition-board` | (planeado) trofeos de marcas |
 | 51700–51799 | `dungeon-chest` | (planeado) botín propio |
@@ -48,15 +48,16 @@ Cada mod tiene un **prefijo** corto para todo lo que otros podrían ver:
 
 | Mod | Variables de personaje | Temporales y globales | Funciones | NPC |
 |---|---|---|---|---|
-| `world-atlas` | — | `$@wa_ready` | `F_Atlas_*` | `WorldAtlas` |
+| `world-atlas` | — | `$@wa_ready` | `F_Atlas_*` | `WorldAtlas`, `atlas_cmd` |
 | `survival` | `hm_*`, `thirst_*` (nombres heredados, no cambiar) | `@hm_penalty_*`, `@thirst_penalty_*`, `@sv_*` | `F_Survival_*` | `survival_mgr` |
 | `clima` | — | publica `@clima_*` | `F_Clima_*` | `Clima#clima`, `Pronosticador#clima_prt` |
 | `temperature` | — | `@tp_*` | `F_Temperature_*` | `temp_mgr` |
 | `wounds` | `wd_*` | — | `F_Wounds_*` | `wounds_mgr` |
+| `nemesis` | `nm_*` | `$@nm_gid[]`, `$@nm_owner[]` | `F_Nemesis_*` | `nemesis_mgr` |
 | `expedition-board` | `eb_*` | `$@eb_*` | `F_Expedition_*` | `ExpeditionCtrl`, `ExpeditionData` |
-| `travel-journal` (sustituido por `adventure`) | — | `@tj_*` | — | `TravelJournal` |
 | `dungeon-chest` | — | — | `F_DungeonChest_*` | — |
-| `adventure` | `adv_*` (aún ninguna) | `@adv_*` (entrada y cola `@adv_q*`) | `F_Adv_*` | `Adventure`, `TravelJournal`, `Cronista#adv_*` |
+| `tavern-rumors` | — | `@tr_l$[]` | `F_Tavern_*` | `Tabernero#tr_*`, `tavern_data` |
+| `adventure` | `adv_*` (aún ninguna) | `@adv_*` (entrada y cola `@adv_q*`); `@tj_*` (entrada del diario, heredada de `travel-journal`) | `F_Adv_*` | `Adventure`, `TravelJournal`, `Cronista#adv_*` |
 
 Un mod nuevo elige un prefijo de 2 a 4 letras, comprueba que nadie lo use
 (`grep -rn "<prefijo>_" my-mods mods registry/mods`) y lo añade a esta tabla.
@@ -73,6 +74,8 @@ El mod store está aislado por mod. Lo que otro mod deba leer va en
 | `@pr_clima_map$` | `clima` | quien lee `@pr_clima` | mapa del evento; `@pr_clima` solo cuenta si es el mapa actual |
 | `adv_trait_*` | `adventure` (0.3, planeado) | `temperature`, `wounds`, `survival` | rasgos permanentes |
 | `$@eb_mark[char_id]` | `expedition-board` | `wounds` | GID de la marca viva de ese personaje |
+| `$@eb_markowner[gid]` | `expedition-board` | `nemesis` | dueño de esa marca; su marca no se vuelve némesis |
+| `$@nm_owner[gid]` | `nemesis` | `nemesis` (otros, si lo necesitan) | dueño de ese némesis vivo; 0 si no lo es |
 | `.map$[]`, `.event_active[]`, `.combination[]` de `Clima#clima` | `clima` | `wounds` (con `getvariableofnpc`) | qué evento hay en cada mapa. **No son públicas**: si `clima` cambia su orden o sus nombres, hay que tocar `wounds`. Desde `clima` 0.4.0 lo mismo se lee con `F_Clima_Now` (ver abajo); `wounds` aún no se ha pasado a ella |
 
 `@pr_*` es la excepción al prefijo por mod: es un espacio común y cada mod
@@ -99,6 +102,11 @@ publicar una experiencia: se llama con `callfunc` tras comprobar
 (ver el [README de `adventure`](./adventure/README.md#para-otros-mods)). Las
 demás funciones `F_Adv_*` son internas: usan el mod store, que es del mod del
 NPC que corre el script.
+
+**`F_Wounds_CureFrom(clase)`** (desde `wounds` 0.5.0), con el personaje
+adjunto: quita las heridas y maldiciones que dejó un monstruo de esa clase y
+devuelve cuántas. Comprobar antes `getnpcid(0, "wounds_mgr")`. La usa
+`nemesis`.
 
 Las funciones `F_Atlas_*` se llaman con `callfunc` y funcionan sin personaje
 adjunto si se les pasa el mapa.

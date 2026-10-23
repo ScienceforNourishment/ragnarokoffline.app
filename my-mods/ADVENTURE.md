@@ -98,7 +98,7 @@ descanso, cada uno desde su mod y con dependencia suave:
 |---|---|---|
 | Cronista | `adventure` | hecho en 0.1 (D26) |
 | Posadero, al dormir | `wounds` | **no** en 0.1 (D26); se puede reconsiderar |
-| Tabernero | `tavern-rumors` | planeado |
+| Tabernero | `tavern-rumors` | hecho en 0.1, solo en Prontera; gratis (D26) |
 | Fogata de un refugio restaurado | `refuges` | planeado |
 
 `adventure` 0.1 lleva su propio NPC, el **Cronista**, junto al tablero de las
@@ -183,7 +183,7 @@ experiencias**.
 | `weatherlived:<combo>` | primera vez que aguantas ese clima sin protección hasta que termina | Menor | `clima` |
 | `temp:extreme` | Cómodo en un mapa de temperatura ±2 gracias a la ropa | Media | `temperature` |
 | `wound:<id>` | primera vez que recibes esa herida o maldición | Media | `wounds` |
-| `nemesis:<id>` | vencer a tu némesis | Mayor | `nemesis` (planeado) |
+| `nemesis:<clase>` | vencer a tu némesis (una vez por clase de monstruo) | Mayor; Hito si era de rango 3 | `nemesis` 0.1 |
 | `refuge:<id>` | restaurar un refugio | Mayor | `refuges` (planeado) |
 | `lore:<id>` | encontrar un resto con historia | Menor | `remnants` (planeado) |
 
@@ -303,8 +303,8 @@ siguen escribiendo en el diario sin cambiar nada.
 - `adventure` requiere `world-atlas` (`requires.mods`), así que el diario
   también pasa a requerirlo. Los mapas fuera del atlas dejan de registrarse
   como visitados; la entrada de muerte sigue funcionando en cualquier mapa.
-- `my-mods/travel-journal/` se queda como referencia hasta que `adventure`
-  funcione en el juego, y entonces se retira.
+- `my-mods/travel-journal/` se retiró el 2026-10-23, tras probar `adventure`
+  en el juego; su código queda en el historial de git.
 
 ## Cómo lo usan los demás mods
 

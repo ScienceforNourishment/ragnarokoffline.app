@@ -1,0 +1,21 @@
+// @atlas [mapa] -- what the atlas says about a map (GM). Without a map, the
+// current one. Hand-written; build_atlas.cjs does not touch this file.
+// Replaces the old world-atlas-test mod and its AtlasTest NPC.
+-	script	atlas_cmd	-1,{
+OnInit:
+	bindatcmd "atlas", strnpcinfo(3) + "::OnAtlas", 1, 99;
+	end;
+
+OnAtlas:
+	.@m$ = strcharinfo(3);
+	if (.@atcmd_numparameters > 0)
+		.@m$ = strtolower(.@atcmd_parameters$[0]);
+	if (!$@wa_ready) {
+		dispbottom "Atlas: la tabla todavia no esta lista.";
+		end;
+	}
+	dispbottom "Atlas: " + .@m$ + " (" + callfunc("F_Atlas_Name", .@m$) + ")";
+	dispbottom "has=" + callfunc("F_Atlas_Has", .@m$) + " safe=" + callfunc("F_Atlas_IsSafe", .@m$) + " kind=" + callfunc("F_Atlas_Kind", .@m$) + " biome=" + callfunc("F_Atlas_Biome", .@m$);
+	dispbottom "tier=" + callfunc("F_Atlas_Tier", .@m$) + " temp=" + callfunc("F_Atlas_Temp", .@m$) + " anchor=" + callfunc("F_Atlas_Anchor", .@m$) + " water=" + callfunc("F_Atlas_Water", .@m$) + " rest=" + callfunc("F_Atlas_Rest", .@m$);
+	end;
+}

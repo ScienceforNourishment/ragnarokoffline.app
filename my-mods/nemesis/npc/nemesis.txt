@@ -1,0 +1,381 @@
+//===== Ragnarok Offline: nemesis ==========================================
+//= El monstruo que te mata fuera de una ciudad se convierte en tu nemesis: la
+//= proxima vez que entres en ese mapa te espera, con nombre y mas fuerte, cerca
+//= de donde caiste. Si vuelve a matarte sube de rango (hasta 3). Vencerlo da
+//= un trofeo firmado con tu nombre, un relato de adventure y cura las heridas
+//= que te dejo (wounds).
+//=
+//= Un solo nemesis a la vez: mientras tengas uno, morir ante otro monstruo no
+//= crea otro. No cuentan los MVP, las marcas de expedition-board ni el nemesis
+//= de otro jugador.
+//=
+//= Estado por personaje (variables permanentes):
+//=   nm_mob        clase del monstruo; 0 = sin nemesis
+//=   nm_map$       mapa donde te espera
+//=   nm_x, nm_y    celda donde caiste; aparece cerca
+//=   nm_rank       1 a 3; sube cada vez que vuelve a matarte
+//=   nm_owed       trofeo que no cupo (id del objeto), nm_owed_n cuantos
+//= Estado del servidor (se pierde al reiniciar, a proposito):
+//=   $@nm_gid[char_id]  GID del nemesis vivo de ese personaje
+//=   $@nm_owner[gid]    char_id del dueno de ese nemesis
+//=
+//= Sin temporizadores: aparece con OnPCLoadMapEvent, que solo corre en mapas
+//= con la mapflag loadevent. Se la pone el propio mod a su mapa (setmapflag)
+//= al nacer el nemesis y al entrar el personaje, porque tras un reinicio se
+//= pierde. Ver CONVENTIONS.md, Temporizadores.
+//=
+//= Dependencias suaves (el mod funciona sin ellas):
+//=   world-atlas  ciudades, nombre del lugar y Tier (refuerzo y relato)
+//=   wounds       F_Wounds_CureFrom: cura las heridas que dejo esa clase
+//=   adventure    relato "nemesis:<clase>" al vencerlo
+//=   adventure    notas en el diario (TravelJournal::OnLog)
+//===========================================================================
+
+// F_Nemesis_Name(clase, rango) -> nombre del nemesis, 23 caracteres como
+// mucho (NAME_LENGTH de rAthena); si no cabe, se acorta el del monstruo.
+function	script	F_Nemesis_Name	{
+	.@rank = getarg(1);
+	.@t$ = "el Verdugo";
+	if (.@rank == 2)
+		.@t$ = "el Implacable";
+	if (.@rank >= 3)
+		.@t$ = "el Eterno";
+	.@m$ = getmonsterinfo(getarg(0), MOB_NAME);
+	.@room = 23 - getstrlen(.@t$) - 1;
+	if (getstrlen(.@m$) > .@room)
+		.@m$ = substr(.@m$, 0, .@room - 1);
+	return .@m$ + " " + .@t$;
+}
+
+// F_Nemesis_Alive() -> 1 si el nemesis del personaje esta en pie.
+function	script	F_Nemesis_Alive	{
+	.@gid = $@nm_gid[getcharid(0)];
+	return (.@gid > 0 && unitexists(.@gid));
+}
+
+// F_Nemesis_Place(mapa$) -> nombre del lugar segun el atlas, o el codigo.
+function	script	F_Nemesis_Place	{
+	if (!$@wa_ready)
+		return getarg(0);
+	.@n$ = callfunc("F_Atlas_Name", getarg(0));
+	if (.@n$ == "")
+		return getarg(0);
+	return .@n$;
+}
+
+// F_Nemesis_Log(texto$) -> anota una linea en el diario del viajero, si esta.
+function	script	F_Nemesis_Log	{
+	@tj_type$ = "note";
+	@tj_text$ = getarg(0);
+	doevent "TravelJournal::OnLog";
+	return;
+}
+
+// F_Nemesis_Retire() -> retira del mapa el nemesis vivo del personaje, sin
+// premio: se olvida su GID antes de matarlo, asi OnNemesisDead lo ignora.
+function	script	F_Nemesis_Retire	{
+	.@cid = getcharid(0);
+	.@gid = $@nm_gid[.@cid];
+	$@nm_gid[.@cid] = 0;
+	if (.@gid < 1)
+		return;
+	$@nm_owner[.@gid] = 0;
+	if (unitexists(.@gid))
+		unitkill .@gid;
+	return;
+}
+
+-	script	nemesis_mgr	-1,{
+	end;
+
+OnInit:
+	.max_rank = 3;
+	// Sin atlas, estas son las ciudades (la misma lista que wounds).
+	.safe_maps$ = "|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|";
+	bindatcmd "nemesis", "nemesis_mgr::OnShow", 0, 99;
+	bindatcmd "nemesisgm", "nemesis_mgr::OnGM", 1, 99;
+	end;
+
+OnPCLoginEvent:
+	if (nm_owed)
+		callsub S_GiveOwed;
+	if (!nm_mob)
+		end;
+	setmapflag nm_map$, mf_loadevent;
+	if (strcharinfo(3) == nm_map$)
+		callsub S_Spawn;
+	end;
+
+// Corre en cada cambio de mapa con loadevent, de todos los personajes: la
+// primera linea descarta a quien no tiene nemesis.
+OnPCLoadMapEvent:
+	if (!nm_mob)
+		end;
+	if (strcharinfo(3) != nm_map$)
+		end;
+	callsub S_Spawn;
+	end;
+
+OnPCDieEvent:
+	.@map$ = strcharinfo(3);
+	// Ni en ciudad ni en instancias (1@xxx).
+	if ($@wa_ready) {
+		if (callfunc("F_Atlas_IsSafe", .@map$))
+			end;
+	}
+	if (compare(.safe_maps$, "|" + .@map$ + "|"))
+		end;
+	if (charat(.@map$, 1) == "@")
+		end;
+	.@killer = killerrid;
+	if (!.@killer)
+		end;
+	if (getunittype(.@killer) != BL_MOB)
+		end;
+	.@cid = getcharid(0);
+	if (.@killer == $@nm_gid[.@cid]) {
+		callsub S_RankUp;
+		end;
+	}
+	// Uno a la vez: el primero se queda.
+	if (nm_mob)
+		end;
+	// Ni el nemesis de otro ni la marca de un contrato (expedition-board).
+	if ($@nm_owner[.@killer])
+		end;
+	if ($@eb_markowner[.@killer])
+		end;
+	getunitdata .@killer, .@ud;
+	.@cls = .@ud[UMOB_CLASS];
+	if (getmonsterinfo(.@cls, MOB_MODE) & MD_MVP)
+		end;
+	getmapxy(.@m$, .@x, .@y);
+	nm_mob = .@cls;
+	nm_map$ = .@map$;
+	nm_x = .@x;
+	nm_y = .@y;
+	nm_rank = 1;
+	setmapflag .@map$, mf_loadevent;
+	.@mob$ = getmonsterinfo(.@cls, MOB_NAME);
+	.@name$ = callfunc("F_Nemesis_Name", .@cls, 1);
+	dispbottom "Has caido ante " + .@mob$ + ". No te olvidara: desde ahora es " + .@name$ + ", y te espera en " + callfunc("F_Nemesis_Place", .@map$) + ".";
+	callfunc "F_Nemesis_Log", .@mob$ + " me mato en " + callfunc("F_Nemesis_Place", .@map$) + ". Desde hoy es mi nemesis: " + .@name$ + ".";
+	end;
+
+// El nemesis vuelve a matarte: sube de rango y se retira; reaparece con su
+// nuevo nombre y mas fuerte la proxima vez que entres en el mapa.
+S_RankUp:
+	if (nm_rank >= .max_rank) {
+		dispbottom callfunc("F_Nemesis_Name", nm_mob, nm_rank) + " vuelve a vencerte.";
+		return;
+	}
+	nm_rank++;
+	callfunc "F_Nemesis_Retire";
+	.@name$ = callfunc("F_Nemesis_Name", nm_mob, nm_rank);
+	dispbottom "Tu nemesis se hace mas fuerte con tu caida: ahora es " + .@name$ + ".";
+	callfunc "F_Nemesis_Log", "Mi nemesis volvio a vencerme. Ahora lo llaman " + .@name$ + ".";
+	return;
+
+// Pone al nemesis cerca de donde caiste, si no esta ya en pie.
+S_Spawn:
+	if (callfunc("F_Nemesis_Alive"))
+		return;
+	.@map$ = nm_map$;
+	.@sx = 0;
+	.@sy = 0;
+	for (.@r = 3; .@r <= 15 && .@sx == 0; .@r += 3) {
+		for (.@t = 0; .@t < 12; .@t++) {
+			.@nx = nm_x - .@r + rand(0, .@r * 2);
+			.@ny = nm_y - .@r + rand(0, .@r * 2);
+			if (checkcell(.@map$, .@nx, .@ny, cell_chkpass)) {
+				.@sx = .@nx;
+				.@sy = .@ny;
+				break;
+			}
+		}
+	}
+	// Sin celda libre cerca: en cualquier punto del mapa (0,0).
+	.@name$ = callfunc("F_Nemesis_Name", nm_mob, nm_rank);
+	monster .@map$, .@sx, .@sy, .@name$, nm_mob, 1, "nemesis_mgr::OnNemesisDead";
+	.@gid = $@mobid[0];
+	if (.@gid < 1) {
+		debugmes "nemesis: monster() failed for " + nm_mob + " on " + .@map$;
+		return;
+	}
+	$@nm_gid[getcharid(0)] = .@gid;
+	$@nm_owner[.@gid] = getcharid(0);
+	callsub S_Strengthen, .@gid;
+	dispbottom "Algo te esperaba: " + .@name$ + " ronda cerca de donde caiste.";
+	return;
+
+// Refuerzo con el Tier del mapa (como las marcas de expedition-board) y el
+// rango. Tier T (1 sin atlas), rango R:
+//   HP  = (150% + 50% por Tier sobre el 1) x (100% + 50% por rango sobre el 1)
+//   ATK = (100% + 15% por Tier sobre el 1) x (100% + 20% por rango sobre el 1)
+// T1 R1: HP x1,5, ATK x1. T1 R3: HP x3, ATK x1,4. T6 R3: HP x8, ATK x2,45.
+S_Strengthen:
+	.@gid = getarg(0);
+	// getunitdata sobre algo que no es un monstruo tumba el map-server.
+	if (getunittype(.@gid) != BL_MOB)
+		return;
+	.@tier = 0;
+	if ($@wa_ready)
+		.@tier = callfunc("F_Atlas_Tier", nm_map$);
+	if (.@tier < 1)
+		.@tier = 1;
+	.@hp_pct = (150 + 50 * (.@tier - 1)) * (100 + 50 * (nm_rank - 1)) / 100;
+	.@atk_pct = (100 + 15 * (.@tier - 1)) * (100 + 20 * (nm_rank - 1)) / 100;
+	getunitdata .@gid, .@u;
+	.@maxhp = .@u[UMOB_MAXHP] * .@hp_pct / 100;
+	setunitdata .@gid, UMOB_MAXHP, .@maxhp;
+	setunitdata .@gid, UMOB_HP, .@maxhp;
+	setunitdata .@gid, UMOB_ATKMIN, .@u[UMOB_ATKMIN] * .@atk_pct / 100;
+	setunitdata .@gid, UMOB_ATKMAX, .@u[UMOB_ATKMAX] * .@atk_pct / 100;
+	return;
+
+// Corre con quien mato al nemesis. Sin jugador (se retiro por script) no hay
+// nada. Se acredita al dueno: al propio killer o a su companero de grupo si
+// esta conectado y en el mismo mapa (CONVENTIONS.md, Regla comun de grupo).
+OnNemesisDead:
+	if (!playerattached())
+		end;
+	.@gid = killedgid;
+	.@owner = $@nm_owner[.@gid];
+	if (.@owner < 1)
+		end;
+	$@nm_owner[.@gid] = 0;
+	if (.@owner != getcharid(0)) {
+		.@map$ = strcharinfo(3);
+		.@pid = getcharid(1);
+		if (!.@pid)
+			end;
+		.@aid = callsub(S_PartyAid, .@pid, .@owner);
+		if (!.@aid)
+			end;
+		if (!attachrid(.@aid))
+			end;
+		if (strcharinfo(3) != .@map$)
+			end;
+	}
+	// Desde aqui el personaje adjunto es el dueno.
+	if ($@nm_gid[getcharid(0)] != .@gid)
+		end;
+	$@nm_gid[getcharid(0)] = 0;
+	callsub S_Defeat;
+	end;
+
+// Premio y cierre: trofeos (uno por rango), cura de sus heridas y relato.
+S_Defeat:
+	.@cls = nm_mob;
+	.@rank = nm_rank;
+	.@map$ = nm_map$;
+	.@name$ = callfunc("F_Nemesis_Name", .@cls, .@rank);
+	nm_mob = 0;
+	nm_map$ = "";
+	nm_x = 0;
+	nm_y = 0;
+	nm_rank = 0;
+	dispbottom "Has vencido a tu nemesis, " + .@name$ + ".";
+	.@race = getmonsterinfo(.@cls, MOB_RACE);
+	if (.@race < 0 || .@race > 9)
+		.@race = 0;
+	nm_owed = 51200 + .@race;
+	nm_owed_n = .@rank;
+	callsub S_GiveOwed;
+	if (getnpcid(0, "wounds_mgr")) {
+		.@cured = callfunc("F_Wounds_CureFrom", .@cls);
+		if (.@cured)
+			dispbottom "Con su caida se cierra" + (.@cured > 1 ? "n las heridas" : " la herida") + " que te dejo.";
+	}
+	if (getnpcid(0, "Adventure")) {
+		.@tier = 0;
+		if ($@wa_ready)
+			.@tier = callfunc("F_Atlas_Tier", .@map$);
+		// Mayor; un nemesis de rango 3 es un Hito.
+		.@size = 3;
+		if (.@rank >= 3)
+			.@size = 4;
+		callfunc "F_Adv_Experience", "nemesis:" + .@cls, .@size, .@tier, "Venci a mi nemesis, " + .@name$;
+	}
+	callfunc "F_Nemesis_Log", "Venci a mi nemesis, " + .@name$ + ", en " + callfunc("F_Nemesis_Place", .@map$) + ".";
+	return;
+
+// Entrega los trofeos pendientes (nm_owed, nm_owed_n) si caben.
+S_GiveOwed:
+	if (!checkweight(nm_owed, nm_owed_n)) {
+		dispbottom "No puedes cargar el trofeo de tu nemesis. Haz sitio y escribe @nemesis.";
+		return;
+	}
+	.@item = nm_owed;
+	.@n = nm_owed_n;
+	nm_owed = 0;
+	nm_owed_n = 0;
+	for (.@i = 0; .@i < .@n; .@i++)
+		getnameditem .@item, getcharid(0);
+	dispbottom "Recibes " + .@n + " " + getitemname(.@item) + ", con tu nombre grabado.";
+	return;
+
+// S_PartyAid(party id, char id) -> account id de ese miembro si esta
+// conectado; 0 si no. La misma busqueda que F_Expedition_PartyAid.
+S_PartyAid:
+	getpartymember getarg(0), 1;
+	.@n = $@partymembercount;
+	if (.@n < 1)
+		return 0;
+	copyarray .@cid[0], $@partymembercid[0], .@n;
+	getpartymember getarg(0), 2;
+	copyarray .@aid[0], $@partymemberaid[0], .@n;
+	for (.@i = 0; .@i < .@n; .@i++) {
+		if (.@cid[.@i] == getarg(1))
+			return .@aid[.@i];
+	}
+	return 0;
+
+// @nemesis: quien te espera y donde; entrega un trofeo pendiente.
+OnShow:
+	if (nm_owed)
+		callsub S_GiveOwed;
+	if (!nm_mob) {
+		dispbottom "No tienes nemesis. Nadie te espera ahi fuera.";
+		end;
+	}
+	.@name$ = callfunc("F_Nemesis_Name", nm_mob, nm_rank);
+	if (callfunc("F_Nemesis_Alive"))
+		dispbottom "Tu nemesis: " + .@name$ + " (rango " + nm_rank + "), suelto en " + callfunc("F_Nemesis_Place", nm_map$) + ".";
+	else
+		dispbottom "Tu nemesis: " + .@name$ + " (rango " + nm_rank + "). Te espera en " + callfunc("F_Nemesis_Place", nm_map$) + ".";
+	end;
+
+// @nemesisgm <clase> [rango]: para pruebas (solo GM). Hace nemesis a esa
+// clase aqui mismo y lo pone a tu lado. @nemesisgm 0 lo quita.
+OnGM:
+	.@cls = atoi(.@atcmd_parameters$[0]);
+	callfunc "F_Nemesis_Retire";
+	if (.@cls == 0) {
+		nm_mob = 0;
+		nm_map$ = "";
+		nm_rank = 0;
+		dispbottom "Nemesis quitado.";
+		end;
+	}
+	if (getmonsterinfo(.@cls, MOB_NAME) == "null") {
+		dispbottom "No existe el monstruo " + .@cls + ".";
+		end;
+	}
+	.@rank = 1;
+	if (.@atcmd_numparameters > 1)
+		.@rank = atoi(.@atcmd_parameters$[1]);
+	if (.@rank < 1)
+		.@rank = 1;
+	if (.@rank > .max_rank)
+		.@rank = .max_rank;
+	getmapxy(.@m$, .@x, .@y);
+	nm_mob = .@cls;
+	nm_map$ = .@m$;
+	nm_x = .@x;
+	nm_y = .@y;
+	nm_rank = .@rank;
+	setmapflag .@m$, mf_loadevent;
+	callsub S_Spawn;
+	end;
+}

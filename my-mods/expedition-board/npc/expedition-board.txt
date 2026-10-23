@@ -280,7 +280,7 @@ OnMarkDead:
 	$@eb_mark[getcharid(0)] = 0;
 	eb_state = 2;
 	dispbottom "Expedicion: objetivo abatido. Entrega con el Intendente de " + getvariableofnpc(.cityname$[eb_qid], "ExpeditionData") + ", junto al tablero.";
-	// Entrada en el diario del viajero. Si travel-journal no esta activo, doevent
+	// Entrada en el diario del viajero. Si adventure (su diario) no esta activo, doevent
 	// solo deja una advertencia en el log del servidor.
 	@tj_type$ = "note";
 	@tj_text$ = "Marca abatida: " + getvariableofnpc(.name$[eb_qid], "ExpeditionData") + " (" + getvariableofnpc(.place$[eb_qid], "ExpeditionData") + ").";
@@ -542,7 +542,7 @@ prontera,160,193,4	script	Expedicion#eb_prt	4_BOARD3,{
 			eb_hunt_map$ = getvariableofnpc(.map$[.@id], "ExpeditionData");
 			$@eb_hunters++;
 		}
-		// Diario del viajero (ver OnMarkDead): si travel-journal no esta, solo hay un aviso en el log.
+		// Diario del viajero (ver OnMarkDead): si adventure no esta, solo hay un aviso en el log.
 		@tj_type$ = "note";
 		if (.@type == 2)
 			@tj_text$ = "Acepte en " + getvariableofnpc(.cityname$[.@id], "ExpeditionData") + " cazar " + getvariableofnpc(.count[.@id], "ExpeditionData") + " " + getmonsterinfo(getvariableofnpc(.mob[.@id], "ExpeditionData"), MOB_NAME) + " en " + getvariableofnpc(.place$[.@id], "ExpeditionData") + ".";

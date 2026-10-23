@@ -1,0 +1,285 @@
+//===== Ragnarok Offline: tavern-rumors ====================================
+//= La taberna: se paga una ronda y el Tabernero cuenta lo que se dice de un
+//= tema, y es un lugar de descanso donde se cuentan los relatos de adventure.
+//= Diseño: my-mods/PLAN.md («Mods nuevos propuestos») y ADVENTURE.md.
+//=
+//= Solo publica datos de otros mods, todos con dependencia suave:
+//=   clima             F_Clima_*: el tiempo donde vas y en los campos
+//=   expedition-board  eb_qid, eb_state, eb_prog y ExpeditionData: tu contrato
+//=   nemesis           nm_mob, nm_map$, nm_x, nm_y, nm_rank: tu némesis
+//=   world-atlas       F_Atlas_Name: el nombre del lugar
+//=   adventure         Adventure::OnRest: contar los relatos (gratis, D26)
+//= Sin un mod, su tema dice que no se sabe nada y no cobra.
+//=
+//= Una ronda por tema: el precio solo se cobra cuando hay algo que contar.
+//= Sin temporizadores ni estado guardado. Temporales: @tr_l$[] (las líneas
+//= del rumor que se está preparando).
+//=
+//= La debilidad por elemento sale de tavern_data (tavern-elements.txt,
+//= generado desde el attr_fix.yml de Renewal).
+//===========================================================================
+
+// F_Tavern_Say(texto$): añade una línea al rumor que se está preparando.
+function	script	F_Tavern_Say	{
+	@tr_l$[getarraysize(@tr_l$)] = getarg(0);
+	return;
+}
+
+// F_Tavern_Price() -> zeny de una ronda para el personaje adjunto: el ajuste
+// round_price en la banda 1, y más en cada banda de nivel (la de adventure).
+function	script	F_Tavern_Price	{
+	.@base = callfunc("F_ModSetting", "tavern-rumors", "round_price", 200);
+	setarray .@f[1], 10, 20, 35, 50, 75, 100;
+	.@band = 1;
+	if (BaseLevel >= 150) .@band = 6;
+	else if (BaseLevel >= 120) .@band = 5;
+	else if (BaseLevel >= 90) .@band = 4;
+	else if (BaseLevel >= 60) .@band = 3;
+	else if (BaseLevel >= 40) .@band = 2;
+	return .@base * .@f[.@band] / 10;
+}
+
+// F_Tavern_Place(mapa$) -> nombre del lugar según el atlas, o el código.
+function	script	F_Tavern_Place	{
+	if (!$@wa_ready)
+		return getarg(0);
+	.@n$ = callfunc("F_Atlas_Name", getarg(0));
+	return (.@n$ == "" ? getarg(0) : .@n$);
+}
+
+// F_Tavern_Minutes(segundos) -> "unos N minutos", redondeado hacia arriba.
+function	script	F_Tavern_Minutes	{
+	.@m = (getarg(0) + 59) / 60;
+	if (.@m <= 1)
+		return "menos de un minuto";
+	return "unos " + .@m + " minutos";
+}
+
+// F_Tavern_Fields(ciudad$) -> los campos de esa ciudad de los que se habla en
+// su taberna, separados por "|". Se amplía con cada región (H3).
+function	script	F_Tavern_Fields	{
+	if (getarg(0) == "prontera")
+		return "prt_fild00|prt_fild01|prt_fild02|prt_fild03|prt_fild04|prt_fild05|prt_fild06|prt_fild07|prt_fild08|prt_fild09|prt_fild10|prt_fild11";
+	return "";
+}
+
+// F_Tavern_Sky(mapa$) -> 1 si añadió lo que se sabe del tiempo en ese mapa.
+// Necesita clima: compruébalo antes con getnpcid(0, "Clima#clima").
+function	script	F_Tavern_Sky	{
+	.@m$ = getarg(0);
+	.@where$ = callfunc("F_Tavern_Place", .@m$);
+	if (callfunc("F_Clima_Index", .@m$) < 0) {
+		callfunc "F_Tavern_Say", "En " + .@where$ + " el cielo no da sorpresas.";
+		return 1;
+	}
+	.@now = callfunc("F_Clima_Now", .@m$);
+	.@next = callfunc("F_Clima_Next", .@m$);
+	if (.@now) {
+		.@t$ = "En " + .@where$ + " hay " + callfunc("F_Clima_Name", .@now) + ", para " + callfunc("F_Tavern_Minutes", callfunc("F_Clima_EndsIn", .@m$)) + " más.";
+		.@g = callfunc("F_Clima_Gear", .@now);
+		if (.@g)
+			.@t$ += " Quien va sin " + getitemname(.@g) + " lo pasa mal.";
+		callfunc "F_Tavern_Say", .@t$;
+	} else {
+		callfunc "F_Tavern_Say", "En " + .@where$ + " el cielo está en calma.";
+	}
+	if (.@next) {
+		.@t$ = (callfunc("F_Clima_Chance", .@m$) < 100 ? "Puede que luego llegue " : "Luego llega ") + callfunc("F_Clima_Name", .@next) + ", dentro de " + callfunc("F_Tavern_Minutes", callfunc("F_Clima_NextIn", .@m$)) + ".";
+		.@g = callfunc("F_Clima_Gear", .@next);
+		if (.@g && .@next != .@now)
+			.@t$ += " Contra eso, " + getitemname(.@g) + ".";
+		callfunc "F_Tavern_Say", .@t$;
+	} else {
+		callfunc "F_Tavern_Say", "Lo que vendrá después, nadie lo sabe.";
+	}
+	return 1;
+}
+
+// F_Tavern_Gossip(ciudad$) -> 1 si añadió lo que se comenta del tiempo en los
+// campos de esa ciudad: hasta tres eventos en curso, o el próximo que viene.
+function	script	F_Tavern_Gossip	{
+	.@list$ = callfunc("F_Tavern_Fields", getarg(0));
+	if (.@list$ == "")
+		return 0;
+	explode(.@f$, .@list$, "|");
+	.@n = getarraysize(.@f$);
+	.@said = 0;
+	.@soon = -1;
+	for (.@i = 0; .@i < .@n; .@i++) {
+		.@now = callfunc("F_Clima_Now", .@f$[.@i]);
+		if (.@now && .@said < 3) {
+			callfunc "F_Tavern_Say", "En " + callfunc("F_Tavern_Place", .@f$[.@i]) + " hay " + callfunc("F_Clima_Name", .@now) + " (" + callfunc("F_Tavern_Minutes", callfunc("F_Clima_EndsIn", .@f$[.@i])) + ").";
+			.@said++;
+		}
+		if (callfunc("F_Clima_Next", .@f$[.@i])) {
+			.@in = callfunc("F_Clima_NextIn", .@f$[.@i]);
+			if (.@soon < 0 || .@in < .@soon) {
+				.@soon = .@in;
+				.@sm$ = .@f$[.@i];
+			}
+		}
+	}
+	if (.@said)
+		return 1;
+	if (.@soon < 0)
+		return 0;
+	callfunc "F_Tavern_Say", "Los campos están tranquilos. Lo primero que se espera es " + callfunc("F_Clima_Name", callfunc("F_Clima_Next", .@sm$)) + " en " + callfunc("F_Tavern_Place", .@sm$) + ", dentro de " + callfunc("F_Tavern_Minutes", .@soon) + ".";
+	return 1;
+}
+
+// F_Tavern_Adj(lista$) -> "de fuego o sagrados", de una lista de elementos
+// separados por "|" (Ele_*).
+function	script	F_Tavern_Adj	{
+	setarray .@adj$[0], "neutros", "de agua", "de tierra", "de fuego", "de viento", "de veneno", "sagrados", "oscuros", "fantasma", "de no muerto";
+	explode(.@e$, getarg(0), "|");
+	.@n = getarraysize(.@e$);
+	.@t$ = "";
+	for (.@i = 0; .@i < .@n; .@i++) {
+		if (.@i > 0)
+			.@t$ += (.@i == .@n - 1 ? " o " : ", ");
+		.@t$ += .@adj$[atoi(.@e$[.@i])];
+	}
+	return .@t$;
+}
+
+// F_Tavern_Weak(clase): añade su elemento, su tamaño y qué le duele.
+function	script	F_Tavern_Weak	{
+	.@mob = getarg(0);
+	.@e = getmonsterinfo(.@mob, MOB_ELEMENT);
+	.@lv = getmonsterinfo(.@mob, MOB_ELEMENTLV);
+	if (.@e < 0 || .@e > 9 || .@lv < 1 || .@lv > 4)
+		return;
+	setarray .@el$[0], "neutro", "de agua", "de tierra", "de fuego", "de viento", "de veneno", "sagrado", "oscuro", "fantasma", "no muerto";
+	setarray .@size$[0], "pequeño", "mediano", "grande";
+	.@s = getmonsterinfo(.@mob, MOB_SIZE);
+	.@t$ = "Dicen que es " + .@el$[.@e] + " (nivel " + .@lv + ")";
+	if (.@s >= 0 && .@s <= 2)
+		.@t$ += " y de tamaño " + .@size$[.@s];
+	callfunc "F_Tavern_Say", .@t$ + ".";
+	.@k = .@e * 10 + .@lv;
+	.@best$ = getvariableofnpc(.best$[.@k], "tavern_data");
+	.@none$ = getvariableofnpc(.none$[.@k], "tavern_data");
+	.@low$ = getvariableofnpc(.low$[.@k], "tavern_data");
+	if (.@best$ != "")
+		callfunc "F_Tavern_Say", "Le duelen los ataques " + callfunc("F_Tavern_Adj", .@best$) + ".";
+	else
+		callfunc "F_Tavern_Say", "No hay elemento que le duela más que otro.";
+	if (.@none$ != "")
+		callfunc "F_Tavern_Say", "Los ataques " + callfunc("F_Tavern_Adj", .@none$) + " no le hacen nada.";
+	if (.@low$ != "")
+		callfunc "F_Tavern_Say", "Los " + callfunc("F_Tavern_Adj", .@low$) + " apenas le hacen mella.";
+	return;
+}
+
+// El Tabernero. Duplícalo en la taberna de cada ciudad: la ciudad sale del
+// atlas (ancla del interior donde está).
+prt_in,180,23,2	script	Tabernero#tr_prt	4_M_MANAGER,{
+	.@price = callfunc("F_Tavern_Price");
+	.@city$ = "prontera";
+	if ($@wa_ready) {
+		.@a$ = callfunc("F_Atlas_Anchor", strnpcinfo(4));
+		if (.@a$ != "")
+			.@city$ = .@a$;
+	}
+	mes "[Tabernero]";
+	mes "Pasa, viajero. Aquí se bebe, se descansa y se oye de todo.";
+	mes "Una ronda son " + .@price + " zeny, y con ella te cuento lo que se dice.";
+	next;
+	while (1) {
+		.@rest$ = (getnpcid(0, "Adventure") ? "Sentarme a contar lo vivido" : "");
+		.@s = select("Preguntar por el tiempo:Preguntar por mi contrato:Preguntar por mi némesis:" + .@rest$ + ":Nada, gracias");
+		if (.@s == 5)
+			break;
+		if (.@s == 4) {
+			mes "[Tabernero]";
+			mes "Siéntate junto al fuego. Aquí todo el mundo cuenta lo suyo, y nadie interrumpe.";
+			doevent "Adventure::OnRest";
+			close;
+		}
+		deletearray @tr_l$;
+		.@free$ = "";
+		if (.@s == 1)
+			.@free$ = callsub(S_Weather, .@city$);
+		else if (.@s == 2)
+			.@free$ = callsub(S_Contract);
+		else
+			.@free$ = callsub(S_Nemesis);
+		mes "[Tabernero]";
+		if (.@free$ != "") {
+			mes .@free$;
+			next;
+			continue;
+		}
+		mes "De eso algo se oye. ¿Pides una ronda? Son " + .@price + " zeny.";
+		next;
+		if (select("Pagar la ronda:Mejor no") == 2)
+			continue;
+		mes "[Tabernero]";
+		if (Zeny < .@price) {
+			mes "Con eso no llega ni para el vaso.";
+			next;
+			continue;
+		}
+		Zeny -= .@price;
+		.@n = getarraysize(@tr_l$);
+		for (.@i = 0; .@i < .@n; .@i++)
+			mes @tr_l$[.@i];
+		deletearray @tr_l$;
+		next;
+	}
+	mes "[Tabernero]";
+	mes "Vuelve cuando tengas sed, o algo que contar.";
+	close;
+
+// Cada tema deja el rumor en @tr_l$ y devuelve "", o devuelve lo que el
+// Tabernero dice sin cobrar cuando no hay nada que contar.
+
+// S_Weather(ciudad$): el tiempo donde está tu contrato y tu némesis; si no
+// tienes ninguno, lo que se comenta de los campos de la ciudad.
+S_Weather:
+	if (!getnpcid(0, "Clima#clima"))
+		return "Del tiempo no sé nada. Pregunta a quien mire el cielo.";
+	if (getnpcid(0, "ExpeditionData") && eb_qid > 0 && eb_state == 1)
+		.@m$[getarraysize(.@m$)] = getvariableofnpc(.map$[eb_qid], "ExpeditionData");
+	if (getnpcid(0, "nemesis_mgr") && nm_mob > 0 && nm_map$ != "" && (getarraysize(.@m$) == 0 || .@m$[0] != nm_map$))
+		.@m$[getarraysize(.@m$)] = nm_map$;
+	.@n = getarraysize(.@m$);
+	for (.@i = 0; .@i < .@n; .@i++)
+		callfunc "F_Tavern_Sky", .@m$[.@i];
+	if (.@n == 0 && !callfunc("F_Tavern_Gossip", getarg(0)))
+		return "Hoy nadie habla del tiempo. Mala señal, o buena.";
+	return "";
+
+// S_Contract: tu contrato del tablero y qué le duele al monstruo.
+S_Contract:
+	if (!getnpcid(0, "ExpeditionData") || eb_qid < 1 || eb_state == 0)
+		return "¿Contrato? No te he visto en el tablero. Mira allí primero.";
+	.@q = eb_qid;
+	if (!getvariableofnpc(.valid[.@q], "ExpeditionData"))
+		return "De ese contrato ya no se acuerda nadie.";
+	if (eb_state == 2)
+		return "Eso ya está hecho, ¿no? Ve a cobrarlo a " + getvariableofnpc(.cityname$[.@q], "ExpeditionData") + ".";
+	.@mob = getvariableofnpc(.mob[.@q], "ExpeditionData");
+	.@place$ = getvariableofnpc(.place$[.@q], "ExpeditionData");
+	.@name$ = getmonsterinfo(.@mob, MOB_NAME);
+	if (getvariableofnpc(.type[.@q], "ExpeditionData") == 1) {
+		callfunc "F_Tavern_Say", "Tu marca, un " + .@name$ + " con nombre, anda por " + .@place$ + ".";
+	} else {
+		.@left = getvariableofnpc(.count[.@q], "ExpeditionData") - eb_prog;
+		callfunc "F_Tavern_Say", "Te faltan " + .@left + " " + .@name$ + " en " + .@place$ + ".";
+	}
+	callfunc "F_Tavern_Weak", .@mob;
+	return "";
+
+// S_Nemesis: dónde te espera tu némesis, cuánto ha crecido y qué le duele.
+S_Nemesis:
+	if (!getnpcid(0, "nemesis_mgr") || nm_mob < 1)
+		return "Nadie con nombre te anda buscando. Que siga así.";
+	callfunc "F_Tavern_Say", "Dicen que " + callfunc("F_Nemesis_Name", nm_mob, nm_rank) + " ronda " + callfunc("F_Tavern_Place", nm_map$) + ", cerca de donde caíste (" + nm_x + ", " + nm_y + ").";
+	if (nm_rank == 2)
+		callfunc "F_Tavern_Say", "Desde la última vez se ha hecho más fuerte.";
+	else if (nm_rank >= 3)
+		callfunc "F_Tavern_Say", "Ya no hay quien lo pare, dicen. Ve preparado.";
+	callfunc "F_Tavern_Weak", nm_mob;
+	return "";
+}
