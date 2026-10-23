@@ -33,6 +33,7 @@ La planificación está repartida en estos documentos; léelos en este orden:
 | [`CONVENTIONS.md`](./CONVENTIONS.md) | rangos de IDs, prefijos, eventos públicos, regla de grupo y restricciones técnicas |
 | [`MODPACK.md`](./MODPACK.md) | qué mods y Settings forman la partida |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | límites de la plataforma: clima eventual, día y noche y presupuesto de rendimiento |
+| [`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md) | el guion de la próxima sesión de prueba larga en el juego, con su tabla de resultados |
 
 La partida es **Renewal** (D1). Las ideas originales siguen en
 [`conceptsForMods.md`](./conceptsForMods.md). Al empezar un mod nuevo,
@@ -49,6 +50,7 @@ tarea:
 | Tarea | Lee además |
 |---|---|
 | Arreglar o probar un mod existente | su README; el error abierto y los pendientes en `ROADMAP.md` |
+| Preparar o hacer una sesión de prueba en el juego | `SESION-DE-PRUEBA.md`; al acabar, sus resultados pasan a «Estado» de cada README |
 | Crear un mod nuevo | su entrada en `PLAN.md` («Mods nuevos propuestos»); `CONVENTIONS.md` (IDs, prefijo, eventos, reglas de rendimiento) |
 | Cualquier cosa de EXP, expediciones, relatos o el diario | `ADVENTURE.md` |
 | Castigos, recompensas o valores de balance | `BALANCE.md` |
@@ -205,7 +207,8 @@ las ideas para futuras iteraciones:
   definidos dentro del propio mod, permiten bloquear esos efectos. Esos
   objetos podrían convertirse en recompensas de `dungeon-chest` más adelante.
   Algunos eventos también interactúan con `survival` y aceleran la pérdida de
-  sed o hambre.
+  sed o hambre. El **Pronosticador** de Prontera dice el evento de cada mapa y
+  el siguiente, ya sorteado; otros mods pueden leer lo mismo con `F_Clima_*`.
 - **`dungeon-chest`** añade cofres a mapas de dungeon. Sus cofres están
   categorizados para entregar distintos tipos de recompensa. A futuro, el
   botín podría incluir objetos de `clima` o equipo inspirado en los mods de
@@ -221,9 +224,9 @@ las ideas para futuras iteraciones:
   primera visita a cada mapa y las muertes, y los muestra en una ventana
   (Alt+J o `@diario`). Otros mods añaden entradas con `doevent
   "TravelJournal::OnLog"`; no hay dependencia de carga. Ver [`travel-journal/README.md`](./travel-journal/README.md).
-  **Se integrará en `adventure`** cuando exista (decidido el 2026-10-17); el
-  evento `TravelJournal::OnLog` se conserva, así que los mods que escriben en
-  el diario no cambian. No actives los dos a la vez.
+  **Sustituido por `adventure`** (D12), que trae el mismo diario; el evento
+  `TravelJournal::OnLog` se conserva, así que los mods que escriben en el
+  diario no cambian. No actives los dos a la vez.
 - **`expedition-board`** coloca un tablero de contratos en cada ciudad principal, con dos tipos: *marca* (aparece un monstruo con nombre en un mapa cercano) y *caza* (abatir N monstruos de una especie dentro de un mapa; el progreso lo cuenta el mod). En ambos hay que volver a la ciudad que lo publicó: las cacerías se cobran en el tablero y las marcas con el Intendente, un NPC junto al tablero. Escribe notas en `travel-journal` (dependencia suave, sin `requires.mods`) y toma el Tier del mapa de `world-atlas` (también suave) para escalar la recompensa y reforzar las marcas; por lo demás es independiente de los demás mods de esta carpeta y de `bounty-hunt`. Las recompensas actuales son zeny y pociones de prueba; no asumas botín de `dungeon-chest` ni de `clima`.
 
 - **`wounds`** da heridas y maldiciones con nombre al morir fuera de una ciudad; se curan con el Posadero (zeny, solo heridas) o el Sacerdote del Templo (donación, también maldiciones) de las siete ciudades. El nombre de la herida sale de quién te mató, del bioma, del clima activo o de tu marca de `expedition-board`. Penaliza con su propio `bonus_script`, sin tocar `survival`. Usa `world-atlas` (bioma) y `travel-journal` (notas) como dependencias suaves. Ver [`wounds/README.md`](./wounds/README.md).
@@ -233,18 +236,24 @@ las ideas para futuras iteraciones:
 - **`world-atlas`** es una tabla de datos por mapa (tipo, bioma, Tier,
   temperatura, ciudad ancla) con funciones `F_Atlas_*` que otros mods pueden
   consultar con `callfunc`. No hace nada por sí solo y **lo usan `survival` (qué
-  mapas son ciudad, con su lista propia como reserva) y `dungeon-chest` (el Tier
-  de cada cofre, con el escrito en el cofre como reserva) y `clima` (el bioma
+  mapas son ciudad, con su lista propia como reserva) y `dungeon-chest` (sus
+  cofres se generan desde las mazmorras del atlas, y en el juego toma de él el Tier) y `clima` (el bioma
   decide qué eventos ocurren; sin el atlas no hay eventos) y `travel-journal`
   (el nombre legible del mapa, con el código como reserva)**. Se genera desde un CSV; ver
   [`world-atlas/README.md`](./world-atlas/README.md).
 
+- **`adventure`** es la columna vertebral ([`ADVENTURE.md`](./ADVENTURE.md)):
+  expediciones y **relatos**. Lo vivido por primera vez (mapa, bioma, Tier,
+  herida) queda como relato sin contar y se cobra en EXP al contarlo con el
+  **Cronista** de una ciudad, lo que cierra la expedición. Trae el diario de
+  `travel-journal` con una pestaña Relatos. Requiere `world-atlas`; `wounds`
+  le publica la primera vez de cada herida. Los demás mods publican
+  experiencias con `callfunc "F_Adv_Experience"` tras comprobar
+  `getnpcid(0, "Adventure")`. Ver [`adventure/README.md`](./adventure/README.md).
+
 **Planeados, sin código todavía** (ver «Mods nuevos propuestos» en
-[`PLAN.md`](./PLAN.md)): `adventure` (expediciones y experiencias, que absorbe
-a `travel-journal`; diseño en [`ADVENTURE.md`](./ADVENTURE.md)), `nemesis`, `campfire`, `refuges`,
-`tavern-rumors` y `remnants`. Cuando `adventure` exista, los demás mods le
-publicarán experiencias con `doevent "Adventure::OnExperience"`, con el mismo
-patrón de dependencia suave que `travel-journal`.
+[`PLAN.md`](./PLAN.md)): `nemesis`, `campfire`, `refuges`, `tavern-rumors` y
+`remnants`.
 
 **Datos compartidos entre mods.** El mod store está aislado por mod, así que
 lo que un mod deba leer de otro va en variables de personaje con el prefijo del
@@ -267,11 +276,11 @@ solo cuando el comportamiento solicitado requiera esa integración.
   encima no quita scripts `.txt` obsoletos, que pueden seguir cargándose como
   NPC duplicados aunque ya no existan en la versión del proyecto.
 - `dungeon-chest` coloca un cofre por mapa en una celda transitable aleatoria.
-  Su lista actual cubre 179 mapas clasificados provisionalmente por Tier con
-  un promedio ponderado de los niveles de sus spawns normales Renewal; es una
-  estimación para ordenar el contenido, no un nivel recomendado oficial.
-  Quedan fuera 17 mapas de la lista de RateMyServer sin spawns normales en el
-  índice consultado.
+  Su `npc/dungeon-chests.txt` **se genera** desde las filas `kind=dungeon` del
+  atlas (183 mapas) con `registry/tools/dungeon-chest/build_chests.cjs`; no se
+  edita a mano. El Tier es el del atlas: un promedio ponderado de los niveles
+  de los spawns normales Renewal, una estimación para ordenar el contenido, no
+  un nivel recomendado oficial.
 - Los intervalos actuales de 10 minutos para reubicar un cofre no abierto y
   para reponer uno abierto son valores de prueba, no el balance definitivo.
   Para diagnosticar cofres ausentes, revisa el log del map-server: que el
@@ -279,8 +288,7 @@ solo cuando el comportamiento solicitado requiera esa integración.
   parseado; un error de sintaxis puede detener la carga del archivo entero.
 - Para añadir un mapa a los cofres, valida primero que el servidor lo cargue,
   que cumpla el alcance de dungeon y que tenga spawns normales en el índice;
-  asigna el Tier con el criterio existente, usa un ID interno de NPC único,
-  conserva el flujo de temporizador y reclamación del primer jugador y
+  añádelo al atlas como `kind=dungeon`, regenera el atlas y los cofres y
   actualiza los totales. La receta completa, incluida la forma de validar el
   spawn aleatorio y la carga del script, está en
   [`my-mods/dungeon-chest/README.md`](./dungeon-chest/README.md#guía-agregar-un-cofre-a-otro-mapa).

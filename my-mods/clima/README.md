@@ -12,13 +12,43 @@ corresponde, su efecto visual y protección compatible. Requiere `world-atlas`
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.2.1 (la de `mod.json`): solo Renewal (`"era": "renewal"`, D1). Quitada la carpeta `pre-renewal/` y `prerenewalFolder`; en un mundo Pre-Renewal la app rechaza el mod en vez de cargarlo sin sus objetos de protección. La 0.2.0 pasó los eventos de por mapa a por bioma
+- **Versión:** 0.4.0 (la de `mod.json`): **pronóstico**. El siguiente evento de cada mapa se sortea al empezar el actual (`.next_combo[]`), en vez de al empezar él; el Pronosticador de Prontera lo dice, y las funciones `F_Clima_*` lo publican para otros mods. Ver «Pronóstico». La 0.3.0 publica `@pr_clima` (1 si el personaje está en un evento sin su protección) y `@pr_clima_map$` (el mapa del evento), para el tope de presión de [`BALANCE.md`](../BALANCE.md#tope-de-presión). Quien lo lee solo lo cuenta si `@pr_clima_map$` es el mapa actual: salir a un mapa sin `loadevent` no lo borra. El estado alterado del clima no se reduce con el tope. La 0.2.1: solo Renewal (`"era": "renewal"`, D1). Quitada la carpeta `pre-renewal/` y `prerenewalFolder`; en un mundo Pre-Renewal la app rechaza el mod en vez de cargarlo sin sus objetos de protección. La 0.2.0 pasó los eventos de por mapa a por bioma
 - **Probado en el juego:** la versión anterior, con eventos por mapa
 - **Probado en el juego (0.2.0, 2026-10-17):** los eventos por bioma arrancan (log `[clima] Evento … iniciado`); el Poison de Lluvia tóxica afecta en los campos de Prontera
 - **Observado (sin decidir):** el veneno se siente flojo. `S_ApplyWeatherStatus` lo pone 12 s (`.effect_lease`), revisa cada 10 s (`.effect_refresh_interval`) y solo lo vuelve a poner si ya no está (`!getstatus`): queda activo unos 12 s de cada 20 y en el hueco vuelve la regeneración. Mientras dura, rAthena bloquea la regeneración natural y quita 2 + 1,5 % del HP máximo por segundo, pero para al 25 % de HP (regla oficial). Se arregla con una revisión más corta que la duración; afecta a todos los estados del clima, no solo al veneno
-- **Sin probar:** el resto desde el paso a eventos por bioma (0.2.0)
+- **Sin probar:** el resto desde el paso a eventos por bioma (0.2.0), y todo el pronóstico (0.4.0): el NPC, que el evento anunciado sea el que empieza y los minutos. Comprobado sin el juego: llaves y comillas equilibradas, tabuladores en las declaraciones `function script`
 - **Limitación:** el visual es fijo por mapa; ver «Limitación conocida»
 - **Actualizado:** 2026-10-17
+
+## Pronóstico
+
+Para que el clima sea preparación y no mala suerte (ver
+[`BALANCE.md`](../BALANCE.md#lo-positivo)): el **Pronosticador**
+(`Pronosticador#clima_prt`, `prontera 168,193`, junto al tablero mientras
+duren las pruebas, D23) dice, para cada mapa con clima:
+
+- **Ahora:** el evento activo y los minutos que le quedan, con el objeto que
+  protege de él.
+- **Después:** el próximo evento y en cuántos minutos puede empezar, con su
+  protección. Es exacto: ese evento ya está sorteado y es el que empezará.
+  Si la probabilidad de inicio del mapa baja de 100 %, lo dice («quizá»).
+
+El menú lista primero los mapas cuya ciudad ancla en el atlas es Prontera o
+Izlude, con una opción «Toda la región» que los resume en una línea cada uno;
+los demás mapas con clima están en «Otras tierras». El pronóstico es gratis.
+
+**Cómo funciona.** Cada mapa guarda en `.next_combo[]` la combinación del
+próximo evento. Se sortea en la primera revisión tras arrancar el servidor y,
+luego, cada vez que empieza un evento (el siguiente queda decidido mientras
+dura el actual). Al empezar, el evento usa la combinación guardada. En los
+primeros 30 s tras un reinicio aún no hay pronóstico («todavía no lo sé»).
+
+**Funciones públicas** para `tavern-rumors` y otros mods: `F_Clima_Now`,
+`F_Clima_EndsIn`, `F_Clima_Next`, `F_Clima_NextIn`, `F_Clima_Chance`,
+`F_Clima_Name` y `F_Clima_Gear`, al final de `npc/clima.txt`; la tabla está
+en [`CONVENTIONS.md`](../CONVENTIONS.md#eventos-públicos). Leen las
+variables de `Clima#clima` con `getvariableofnpc`, así que el orden de los
+mapas y los índices de combinación siguen siendo internos de este mod.
 
 ## Equipo de protección por combinación
 
@@ -531,15 +561,12 @@ no se añade plugin de cliente ni se modifica el fork.
 
 Sin implementar. El porqué está en [`BALANCE.md`](../BALANCE.md).
 
-- **Pronóstico.** Hoy un evento empieza al azar y el jugador lo descubre al
-  llegar: es mala suerte, no una decisión. Publicar qué evento viene en cada
-  mapa y cuánto le queda al actual, para que lo lean `tavern-rumors` o un NPC
-  de ciudad. Es el cambio de más impacto en este mod.
+- **Pronóstico en cada ciudad** o en la taberna (`tavern-rumors`), con las
+  funciones `F_Clima_*`; hoy solo hay un Pronosticador, en Prontera.
 - **Niebla con monstruos** como evento raro que dé **más** recompensa (un
   monstruo especial con botín o experiencia), no solo más riesgo.
 - **Visual por evento:** un plugin de cliente que reciba el visual por
   `server:event` (ver «Limitación conocida»).
-- **Presión:** publicar `@pr_clima` (1 con un evento sin protección).
 - **Experiencias:** la primera vez que el equipo bloquea un clima,
   `weather:<combo>` (Media); la primera vez que se aguanta sin protección hasta
   que termina, `weatherlived:<combo>` (Menor). Ver

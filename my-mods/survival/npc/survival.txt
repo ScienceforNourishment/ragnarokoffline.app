@@ -15,6 +15,17 @@ function	script	F_Survival_IsSafe	{
 // player's own events wait in a 2-slot queue while they talk to an NPC and the
 // rest are dropped, which killed the old chains for the whole session.
 // attachrid does not go through that queue. See CONVENTIONS.md, Temporizadores.
+//
+// Each need is in one of five stages (BALANCE.md, "Ejes por sistema"):
+//   4 good  (> .good)    Bien alimentado / Hidratado: more natural regen
+//   3 fine
+//   2 warn  (< .warn)    a message only
+//   1 low   (< .low)     no natural HP regen (hunger) / SP regen (thirst)
+//   0 empty              Famelico: -max HP and -ATK / Deshidratado: +cast
+//                        time and -ASPD. Both empty: also slower walking.
+// The worst stage is published as @pr_survival (0 fine .. 3 empty) for the
+// shared pressure cap: above .pr_cap points in total, every mod scales its own
+// penalty by .pr_cap / total (BALANCE.md, "Tope de presion").
 -	script	survival_mgr	-1,{
 OnInit:
     // Maps where hunger and thirst do not drop. Main cities only; add an
@@ -22,7 +33,32 @@ OnInit:
     .safe_maps$ = "|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|";
     // Testing rate: each need loses 1 point every 15 seconds.
     .need_every = 15;
+    // Stage thresholds, on the 0-100 scale.
+    .good = 70;
+    .warn = 50;
+    .low = 30;
+    // Effects, in percent. Penalties shrink under the pressure cap; the
+    // regen bonus does not.
+    .regen_bonus = 20;	// good stage: natural HP or SP regen
+    .starve_rate = 10;	// hunger empty: max HP and ATK
+    .dry_cast = 10;		// thirst empty: cast time
+    .dry_aspd = 10;		// thirst empty: ASPD
+    .both_speed = 20;	// both empty: walking speed
+    // Shared pressure cap; temperature and wounds use the same number.
+    .pr_cap = 6;
+    bindatcmd "presion", "survival_mgr::OnPressure", 0, 99;
     initnpctimer;
+    end;
+
+// @presion: the pressure of every system and whether the cap applies.
+OnPressure:
+    .@clima = (@pr_clima && @pr_clima_map$ == strcharinfo(3));
+    .@total = @pr_survival + @pr_temp + @pr_wounds + .@clima;
+    dispbottom "Presion: " + .@total + " (tope " + .pr_cap + ").";
+    dispbottom "Necesidades " + @pr_survival + ", temperatura " + @pr_temp + ", heridas " + @pr_wounds + ", clima " + .@clima + ".";
+    dispbottom "Hambre " + hm_hunger + " (" + callsub(S_HungerName, callsub(S_Stage, hm_hunger)) + "), sed " + thirst_value + " (" + callsub(S_ThirstName, callsub(S_Stage, thirst_value)) + ").";
+    if (.@total > .pr_cap)
+        dispbottom "Por encima del tope: cada castigo se reduce al " + (.pr_cap * 100 / .@total) + "%.";
     end;
 
 OnPCLoginEvent:
@@ -40,23 +76,14 @@ OnPCLoginEvent:
     dispbottom "@@event hunger update " + hm_hunger;
     dispbottom "@@event thirst update " + thirst_value;
     @sv_need_at = gettimetick(2) + .need_every;
+    // Unknown stages, so the first tick reports the current ones.
+    @sv_hstage = -1;
+    @sv_tstage = -1;
     callsub S_Join;
     end;
 
 OnPCLogoutEvent:
     callsub S_Leave;
-    set @hm_penalty_str, 0;
-    set @hm_penalty_agi, 0;
-    set @hm_penalty_vit, 0;
-    set @hm_penalty_int, 0;
-    set @hm_penalty_dex, 0;
-    set @hm_penalty_luk, 0;
-    set @thirst_penalty_str, 0;
-    set @thirst_penalty_agi, 0;
-    set @thirst_penalty_vit, 0;
-    set @thirst_penalty_int, 0;
-    set @thirst_penalty_dex, 0;
-    set @thirst_penalty_luk, 0;
     set @clima_hunger_extra_loss, 0;
     set @clima_thirst_extra_loss, 0;
     set @clima_exposure_map$, "";
@@ -110,75 +137,151 @@ S_Needs:
     dispbottom "@@event thirst update " + thirst_value;
     return;
 
-S_Penalty:
-    if (hm_hunger == 0 || thirst_value == 0) {
-    	// Restore this system's previous debuffs before recalculating both.
-    	.@str = readparam(bStr) + @hm_penalty_str + @thirst_penalty_str;
-    	.@agi = readparam(bAgi) + @hm_penalty_agi + @thirst_penalty_agi;
-    	.@vit = readparam(bVit) + @hm_penalty_vit + @thirst_penalty_vit;
-    	.@int = readparam(bInt) + @hm_penalty_int + @thirst_penalty_int;
-    	.@dex = readparam(bDex) + @hm_penalty_dex + @thirst_penalty_dex;
-    	.@luk = readparam(bLuk) + @hm_penalty_luk + @thirst_penalty_luk;
+// S_Stage(value) -> 0 empty, 1 low, 2 warn, 3 fine, 4 good.
+S_Stage:
+    .@v = getarg(0);
+    if (.@v <= 0)
+        return 0;
+    if (.@v < .low)
+        return 1;
+    if (.@v < .warn)
+        return 2;
+    if (.@v > .good)
+        return 4;
+    return 3;
 
-    	if (hm_hunger == 0) {
-    		set @hm_penalty_str, .@str * 20 / 100;
-    		set @hm_penalty_agi, .@agi * 20 / 100;
-    		set @hm_penalty_vit, .@vit * 20 / 100;
-    		set @hm_penalty_int, .@int * 20 / 100;
-    		set @hm_penalty_dex, .@dex * 20 / 100;
-    		set @hm_penalty_luk, .@luk * 20 / 100;
-    	} else {
-    		set @hm_penalty_str, 0;
-    		set @hm_penalty_agi, 0;
-    		set @hm_penalty_vit, 0;
-    		set @hm_penalty_int, 0;
-    		set @hm_penalty_dex, 0;
-    		set @hm_penalty_luk, 0;
-    	}
-
-    	if (thirst_value == 0) {
-    		set @thirst_penalty_str, .@str * 20 / 100;
-    		set @thirst_penalty_agi, .@agi * 20 / 100;
-    		set @thirst_penalty_vit, .@vit * 20 / 100;
-    		set @thirst_penalty_int, .@int * 20 / 100;
-    		set @thirst_penalty_dex, .@dex * 20 / 100;
-    		set @thirst_penalty_luk, .@luk * 20 / 100;
-    	} else {
-    		set @thirst_penalty_str, 0;
-    		set @thirst_penalty_agi, 0;
-    		set @thirst_penalty_vit, 0;
-    		set @thirst_penalty_int, 0;
-    		set @thirst_penalty_dex, 0;
-    		set @thirst_penalty_luk, 0;
-    	}
-
-    	.@penalty$ = "bonus bStr,-" + (@hm_penalty_str + @thirst_penalty_str) + ";";
-    	.@penalty$ += "bonus bAgi,-" + (@hm_penalty_agi + @thirst_penalty_agi) + ";";
-    	.@penalty$ += "bonus bVit,-" + (@hm_penalty_vit + @thirst_penalty_vit) + ";";
-    	.@penalty$ += "bonus bInt,-" + (@hm_penalty_int + @thirst_penalty_int) + ";";
-    	.@penalty$ += "bonus bDex,-" + (@hm_penalty_dex + @thirst_penalty_dex) + ";";
-    	.@penalty$ += "bonus bLuk,-" + (@hm_penalty_luk + @thirst_penalty_luk) + ";";
-    	.@speed_penalty = 0;
-    	if (hm_hunger == 0)
-    		set .@speed_penalty, .@speed_penalty + 20;
-    	if (thirst_value == 0)
-    		set .@speed_penalty, .@speed_penalty + 20;
-    	.@penalty$ += "bonus bSpeedRate,-" + .@speed_penalty + ";";
-    	bonus_script .@penalty$, 5, 1032;
-    } else {
-    	set @hm_penalty_str, 0;
-    	set @hm_penalty_agi, 0;
-    	set @hm_penalty_vit, 0;
-    	set @hm_penalty_int, 0;
-    	set @hm_penalty_dex, 0;
-    	set @hm_penalty_luk, 0;
-    	set @thirst_penalty_str, 0;
-    	set @thirst_penalty_agi, 0;
-    	set @thirst_penalty_vit, 0;
-    	set @thirst_penalty_int, 0;
-    	set @thirst_penalty_dex, 0;
-    	set @thirst_penalty_luk, 0;
+S_HungerName:
+    switch (getarg(0)) {
+    case 0: return "Famelico";
+    case 1: return "Hambriento";
+    case 2: return "Con hambre";
+    case 4: return "Bien alimentado";
     }
+    return "Saciado";
+
+S_ThirstName:
+    switch (getarg(0)) {
+    case 0: return "Deshidratado";
+    case 1: return "Sediento";
+    case 2: return "Con sed";
+    case 4: return "Hidratado";
+    }
+    return "Sin sed";
+
+// S_CapScale() -> percent of its penalty a mod applies under the shared cap.
+// The same formula is in temperature and wounds.
+S_CapScale:
+    .@total = @pr_survival + @pr_temp + @pr_wounds;
+    if (@pr_clima && @pr_clima_map$ == strcharinfo(3))
+        .@total++;
+    if (.@total <= .pr_cap)
+        return 100;
+    return .pr_cap * 100 / .@total;
+
+// One message when a need changes stage, worded for the way it moved: eating
+// can jump several stages up at once, and only the stage reached is reported.
+S_Announce:
+    .@hs = getarg(0);
+    .@ts = getarg(1);
+    if (.@hs != @sv_hstage) {
+        switch (.@hs) {
+        case 4: dispbottom "Estas bien alimentado: recuperas HP mas rapido."; break;
+        case 3:
+            if (@sv_hstage == 4)
+                dispbottom "Ya no estas bien alimentado.";
+            else if (@sv_hstage >= 0)
+                dispbottom "Ya no tienes hambre.";
+            break;
+        case 2:
+            if (@sv_hstage >= 0 && @sv_hstage < 2)
+                dispbottom "Ya no estas hambriento, aunque aun tienes hambre.";
+            else
+                dispbottom "Empiezas a tener hambre.";
+            break;
+        case 1:
+            if (@sv_hstage == 0)
+                dispbottom "Ya no estas famelico, pero sigues hambriento.";
+            else
+                dispbottom "Estas hambriento: ya no recuperas HP de forma natural.";
+            break;
+        case 0: dispbottom "Estas famelico: pierdes HP maximo y fuerza de ataque."; break;
+        }
+    }
+    if (.@ts != @sv_tstage) {
+        switch (.@ts) {
+        case 4: dispbottom "Estas hidratado: recuperas SP mas rapido."; break;
+        case 3:
+            if (@sv_tstage == 4)
+                dispbottom "Ya no estas hidratado.";
+            else if (@sv_tstage >= 0)
+                dispbottom "Ya no tienes sed.";
+            break;
+        case 2:
+            if (@sv_tstage >= 0 && @sv_tstage < 2)
+                dispbottom "Ya no estas sediento, aunque aun tienes sed.";
+            else
+                dispbottom "Empiezas a tener sed.";
+            break;
+        case 1:
+            if (@sv_tstage == 0)
+                dispbottom "Ya no estas deshidratado, pero sigues sediento.";
+            else
+                dispbottom "Estas sediento: ya no recuperas SP de forma natural.";
+            break;
+        case 0: dispbottom "Estas deshidratado: lanzas y atacas mas despacio."; break;
+        }
+    }
+    if (.@hs == 0 && .@ts == 0 && (@sv_hstage != 0 || @sv_tstage != 0))
+        dispbottom "Sin comida ni agua, apenas puedes andar.";
+    @sv_hstage = .@hs;
+    @sv_tstage = .@ts;
+    return;
+
+// The stage effects, in a single bonus_script: rAthena does not stack two
+// bonus_scripts with the same text, and one text per combination keeps the
+// hunger and thirst effects together. Lasts 5 s and is renewed every 4 s.
+// Flag 1032 = replace the identical one + remove on logout. When the text
+// changes (a new stage, a new cap), the old one runs out within 5 s.
+// It is also applied in safe maps: a need already at 0 still weighs there
+// until the player eats or drinks.
+S_Penalty:
+    .@hs = callsub(S_Stage, hm_hunger);
+    .@ts = callsub(S_Stage, thirst_value);
+    callsub S_Announce, .@hs, .@ts;
+
+    // Pressure: the worst stage. 4 and 3 -> 0, 2 -> 1, 1 -> 2, 0 -> 3.
+    .@worst = min(.@hs, .@ts);
+    if (.@worst >= 3)
+        @pr_survival = 0;
+    else
+        @pr_survival = 3 - .@worst;
+
+    .@scale = callsub(S_CapScale);
+    .@fx$ = "";
+    if (.@hs == 4)
+        .@fx$ += "bonus bHPrecovRate," + .regen_bonus + ";";
+    if (.@ts == 4)
+        .@fx$ += "bonus bSPrecovRate," + .regen_bonus + ";";
+    // bNoRegen takes a bit mask: 1 HP, 2 SP.
+    .@block = 0;
+    if (.@hs <= 1)
+        .@block += 1;
+    if (.@ts <= 1)
+        .@block += 2;
+    if (.@block)
+        .@fx$ += "bonus bNoRegen," + .@block + ";";
+    if (.@hs == 0) {
+        .@v = .starve_rate * .@scale / 100;
+        .@fx$ += "bonus bMaxHPrate,-" + .@v + ";bonus bAtkRate,-" + .@v + ";";
+    }
+    if (.@ts == 0) {
+        .@fx$ += "bonus bCastrate," + (.dry_cast * .@scale / 100) + ";";
+        .@fx$ += "bonus bAspdRate,-" + (.dry_aspd * .@scale / 100) + ";";
+    }
+    if (.@hs == 0 && .@ts == 0)
+        .@fx$ += "bonus bSpeedRate,-" + (.both_speed * .@scale / 100) + ";";
+    if (.@fx$ != "")
+        bonus_script "{ " + .@fx$ + " }", 5, 1032;
     return;
 
 // The clock's players, by account id. Population Engine bots never fire

@@ -9,9 +9,15 @@ solo se activa cuando ambos mods están habilitados.
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 1.1.0 (la de `mod.json`): los tres temporizadores por personaje (`OnHungerTick`, `OnThirstTick`, `OnPenaltyTick`) pasan a **un solo reloj del NPC** cada 4 s que entra en cada jugador con `attachrid`. Arregla el error `player's event queue is full`: un diálogo de NPC llenaba la cola de 2 huecos del personaje y la cadena descartada moría para toda la sesión. Hambre y sed siguen bajando de media cada 15 s (contados por hora en `@sv_need_at`); cada punto puede llegar hasta 4 s tarde. Quitado el diagnóstico `[qdebug]`
+- **Versión:** 1.2.0 (la de `mod.json`): rebalanceo de presión
+  ([`BALANCE.md`](../BALANCE.md), D18). El −20 % a los seis atributos y a la
+  velocidad pasa a **escalones por eje** (ver «Escalones»), con dos estados
+  positivos, Bien alimentado e Hidratado; publica `@pr_survival` y respeta el
+  tope de presión común; nuevo comando `@presion`. Los medidores avisan desde
+  30, no solo en 0. La 1.1.0: los tres temporizadores por personaje (`OnHungerTick`, `OnThirstTick`, `OnPenaltyTick`) pasan a **un solo reloj del NPC** cada 4 s que entra en cada jugador con `attachrid`. Arregla el error `player's event queue is full`: un diálogo de NPC llenaba la cola de 2 huecos del personaje y la cadena descartada moría para toda la sesión. Hambre y sed siguen bajando de media cada 15 s (contados por hora en `@sv_need_at`); cada punto puede llegar hasta 4 s tarde. Quitado el diagnóstico `[qdebug]`
 - **Probado en el juego:** con la 1.0.0 se usa en partidas; no hay registro detallado de qué se comprobó. 2026-10-17: el vendedor de cantimploras aparece y vende la cantimplora 3/3 y la vacía
-- **Sin probar:** todo con la 1.1.0, sobre todo que hambre, sed y penalización sigan después de hablar un rato con un NPC; la integración con `clima` tras su paso a biomas; las zonas seguras leídas del atlas
+- **Sin probar:** todo con la 1.2.0: los escalones, sus efectos y mensajes,
+  el tope y `@presion` (guion en «Probarlo en una sesión larga»). Con la 1.1.0: sobre todo que hambre, sed y penalización sigan después de hablar un rato con un NPC; la integración con `clima` tras su paso a biomas; las zonas seguras leídas del atlas
 - **Actualizado:** 2026-10-17
 
 ## Qué incluye
@@ -34,11 +40,39 @@ Actualízala al cambiar el mod o al probarlo.
   501–506 restauran sed, pero no hambre. Las pociones recuperan 5/10/15/20/10/5
   puntos respectivamente (Red, Orange, Yellow, White, Blue y Green).
 - Dos medidores en pantalla: sed debajo de hambre.
-- Cuando una necesidad llega a 0, aplica una penalización del 20% a la
-  velocidad de movimiento y STR, AGI, VIT, INT, DEX y LUK. Si ambas llegan a 0,
-  una penalización combinada reduce esos atributos y la velocidad un 40%.
-  Recuperar una necesidad devuelve la penalización a 20%; recuperarlas ambas la
-  retira.
+- Cada necesidad pasa por escalones con nombre (ver «Escalones»): arriba de
+  70 premia, por debajo de 50 avisa, por debajo de 30 castiga y en 0 castiga
+  más. Hambre y sed castigan **ejes distintos** (aguante y ritmo) para que no
+  se sumen en los mismos atributos.
+
+## Escalones
+
+Valores de prueba, en `OnInit` de `npc/survival.txt` (`.good`, `.warn`,
+`.low` y los efectos).
+
+| Valor | Hambre | Sed | Efecto |
+|---|---|---|---|
+| 71–100 | **Bien alimentado** | **Hidratado** | regeneración natural de HP (hambre) o de SP (sed) **+20 %** |
+| 50–70 | Saciado | Sin sed | nada |
+| 30–49 | Con hambre | Con sed | solo el aviso |
+| 1–29 | Hambriento | Sediento | sin regeneración natural de HP (hambre) o de SP (sed) |
+| 0 | Famélico | Deshidratado | hambre: además HP máx y ATK −10 %. Sed: además tiempo de lanzamiento +10 % y ASPD −10 % |
+| las dos en 0 | | | además, velocidad de movimiento −20 % |
+
+- Cada cambio de escalón da **un** mensaje, distinto al bajar y al subir
+  («Empiezas a tener hambre» frente a «Ya no estás hambriento»). Comer puede
+  saltar varios escalones: solo se anuncia aquel al que llegas.
+- La velocidad solo baja con las dos a 0: perder movilidad impide volver, y
+  volver tiene que ser siempre posible ([`BALANCE.md`](../BALANCE.md#ejes-por-sistema-propuesta)).
+- **Tope de presión.** El peor de los dos escalones se publica en
+  `@pr_survival` (0 de 50 para arriba, 1 aviso, 2 castigo, 3 en 0). Si la
+  suma con `@pr_temp`, `@pr_wounds` y `@pr_clima` pasa de 6, los porcentajes
+  de castigo se reducen en proporción (`castigo × 6 / total`); quitar la
+  regeneración no se reduce, y el bono de Bien alimentado e Hidratado tampoco.
+- `@presion` muestra la presión de cada sistema, el total y si el tope
+  actúa, junto con el escalón de hambre y de sed.
+- Los efectos siguen activos en la ciudad: una necesidad en 0 pesa hasta que
+  el personaje come o bebe (D16 solo pausa el descenso).
 
 ## Estructura
 
@@ -99,13 +133,64 @@ al migrar desde los mods anteriores. `client/` dibuja ambos medidores.
    hambre y las bebidas y pociones ID 501–506 restauran sed, sin recuperar
    hambre. Con `clima` activado, compara el ritmo normal con Calor intenso en
    `prt_fild09` y Frío extremo en `prt_fild10`.
-5. Al llegar una necesidad a 0, prueba su penalización. Si las dos llegan a 0,
-   ambas se acumulan; consume el alimento o bebida correspondiente para retirar
-   solo el efecto recuperado.
+5. Recorre los escalones con el guion de «Probarlo en una sesión larga».
 
 Prueba con un personaje de prueba. Los cambios de `npc/` y `db/` requieren que
 el servidor vuelva a cargar el mod; los cambios de `client/` requieren
 reiniciar la aplicación.
+
+## Probarlo en una sesión larga
+
+Guion para la 1.2.0, pensado para la misma sesión que `temperature`,
+`wounds` y `clima` (el tope se prueba con los cuatro). Personaje `tester`
+(GM). Para no esperar el ritmo de prueba (de 100 a 0 son 25 minutos), pon el
+valor a mano con `@set hm_hunger 25` o `@set thirst_value 0` *(verificar
+que el grupo de `tester` tiene `@set`)*; el medidor se pone al día en el
+siguiente tick, como mucho 15 s después. Hazlo en un campo
+(`prt_fild08`), no en la ciudad.
+
+**1. Carga.** `ragnarok-stack logs map 200`: sin errores de `survival.txt`.
+Al entrar, con hambre y sed en 100: «Estás bien alimentado» y «Estás
+hidratado».
+
+**2. Escalones**, mirando el chat y los medidores en un campo:
+
+| Momento | Debe pasar |
+|---|---|
+| hambre baja de 71 a 70 | «Ya no estás bien alimentado» |
+| baja a 49 | «Empiezas a tener hambre»; `@presion`: necesidades 1 |
+| baja a 29 | «Estás hambriento…»; el medidor se pone naranja con `!`; el HP deja de regenerarse sentado (`/sit`); `@presion`: necesidades 2 |
+| llega a 0 | «Estás famélico…»; HP máx y ATK bajan un 10 % en la ventana de estado (Alt+A); el medidor en rojo y el `!` dice «Famélico» |
+| sed llega a 0 también | «Sin comida ni agua, apenas puedes andar»; caminas más despacio |
+| comes desde 0 | un solo mensaje, el del escalón al que llegas: «Ya no estás famélico, pero sigues hambriento» (1–29), «Ya no estás hambriento…» (30–49), «Ya no tienes hambre» (50–70) o «Estás bien alimentado» (71 o más); desde 30, el HP vuelve a regenerarse |
+
+Repite con la sed: Sediento corta la regeneración de SP; Deshidratado alarga
+el tiempo de lanzamiento (un Mage con Fire Bolt) y baja la ASPD.
+
+**3. Bien alimentado e Hidratado.** Con las dos por encima de 70, sentado,
+compara cuánto HP y SP recuperas por tick con un personaje a 60: debe ser un
+20 % más.
+
+**4. Tope.** Con hambre y sed en 0 (necesidades 3), en `xmas_fild01` sin
+ropa (temperatura 2, Helado) y con dos heridas (`@herida 1`, `@herida 5`):
+`@presion` da 7 y «cada castigo se reduce al 85 %» (8 si hay un evento de
+`clima` sin protección: 75 %). El −10 % de Famélico
+pasa a −8 % y el AGI de Helado y de la herida baja algo menos. Cúrate una
+herida: vuelve a 6 y el tope deja de actuar.
+
+**5. Ciudad.** Con una necesidad en 0, entra en Prontera: no baja más, pero
+el castigo sigue hasta comer o beber. En `prt_in` (interior del atlas), lo
+mismo.
+
+**6. Diálogo largo.** Habla un minuto con un NPC sin cerrar el diálogo:
+hambre y sed siguen bajando después y los mensajes de escalón siguen saliendo.
+
+**Qué apuntar.** Los efectos que no se noten. Tres bonos están sin comprobar
+en el rAthena fijado (no hay copia de `vendor/rathena` en este equipo):
+`bNoRegen` con la máscara 3 (las dos a la vez), `bAtkRate` negativo y
+`bSpeedRate` negativo. Si la velocidad no baja con las dos en 0, prueba
+`bSpeedAddRate` en su lugar; si la máscara no corta las dos regeneraciones,
+dos `bonus bNoRegen` separados.
 
 ## Ajustar la velocidad de prueba
 
@@ -124,8 +209,8 @@ cada tick.
 
 Qué no cambia dentro de una zona segura:
 
-- `OnPenaltyTick` sigue corriendo. Si una necesidad ya está en 0, la
-  penalización continúa hasta que el personaje coma o beba.
+- `S_Penalty` sigue corriendo. Si una necesidad ya está en 0 (o por debajo
+  de 30), su castigo continúa hasta que el personaje coma o beba.
 - Los objetos siguen restaurando hambre y sed.
 - La pérdida extra por exposición de `clima` no aplica allí, porque sus
   eventos ocurren en mapas de campo.
@@ -134,16 +219,17 @@ Un mapa es seguro si se cumple **cualquiera** de estas dos cosas:
 
 1. El mod `world-atlas`, si está cargado, lo marca como `city`
    (`F_Atlas_IsSafe`). Hoy son los mapas exteriores de las siete ciudades
-   principales: `prontera`, `izlude`, `geffen`, `payon`, `morocc`,
-   `alberta` y `aldebaran`.
+   principales (`prontera`, `izlude`, `geffen`, `payon`, `morocc`,
+   `alberta` y `aldebaran`) y, desde `world-atlas` 0.2.0, los interiores
+   de Prontera e Izlude (`kind` `interior`).
 2. Está en la lista `.safe_maps$` de `npc/survival.txt`, con los mismos siete
-   mapas. Es la lista de reserva: sin el atlas, o con el atlas pero para un
-   interior que no es `city`, solo manda esta lista.
+   mapas. Es la lista de reserva: sin el atlas, o para un mapa que el atlas
+   no marca como seguro, solo manda esta lista.
 
 El atlas es una dependencia suave: `survival` no lo exige (no hay
 `requires.mods`) y se comporta igual con o sin él. La decisión vive en
 `F_Survival_IsSafe(map$)`, al inicio de `npc/survival.txt`. Los interiores
-(posadas, tiendas, iglesias) no están incluidos en ninguna de las dos.
+de las demás ciudades todavía no están en ninguna de las dos.
 
 Si añades una ciudad nueva al atlas con `kind` `city`, `survival` la trata
 como segura sin tocar su lista. Para un interior u otro mapa suelto, sigue
@@ -354,14 +440,16 @@ tbl = {
   objetos, en las actualizaciones iniciales y en el contrato que valida cada
   medidor (`client/index.js` y `client/thirst.js`). Si cambia, actualiza todos
   esos puntos; no basta con cambiar solo la barra.
-- **Penalización:** `survival_mgr::OnPenaltyTick` restaura la penalización
-  anterior del sistema, calcula el 20% de cada necesidad agotada y aplica el
-  total en una sola llamada a `bonus_script`. rAthena no apila dos bonus
-  scripts duplicados: la llamada única es necesaria para que hambre y sed
-  acumulen el 20% cada una (40% si ambas llegan a cero) sin que un efecto
-  reemplace al otro. Conserva los acumuladores `@hm_penalty_*` y
-  `@thirst_penalty_*`, los cálculos combinados de atributos y velocidad, y la
-  retirada/actualización de los efectos al recuperarse o cerrar sesión.
+- **Escalones y efectos:** `S_Stage` decide el escalón con `.good`, `.warn`
+  y `.low`; `S_Penalty` arma el efecto de los dos escalones en **una sola**
+  llamada a `bonus_script` (5 s, renovada cada 4 s). Los porcentajes son
+  `.regen_bonus`, `.starve_rate`, `.dry_cast`, `.dry_aspd` y
+  `.both_speed`. Si cambias el umbral de castigo (`.low`), cambia también el
+  30 de `client/index.js` y `client/thirst.js`, que colorean el medidor y
+  muestran el `!`.
+- **Tope de presión:** `.pr_cap` (6) debe valer lo mismo en `survival`,
+  `temperature` y `wounds`; la fórmula (`S_CapScale`) está repetida en los
+  tres a propósito, porque no hay controlador único (D18).
 - **Integración con `clima`:** `survival.txt` lee las variables de exposición
   del mod `clima` y aplica la pérdida extra dentro de los ticks existentes; no
   agregues temporizadores paralelos para esa integración.
@@ -394,21 +482,14 @@ tbl = {
 Sin implementar. Es el mod que más cambia con el rebalanceo; el porqué está en
 [`BALANCE.md`](../BALANCE.md).
 
-- **Escalones por eje en vez de −20 % a todo.** Hambre: Hambriento (< 30) sin
-  regeneración natural de HP; Famélico (0) −10 % HP máx y ATK. Sed: Sediento
-  (< 30) sin regeneración natural de SP; Deshidratado (0) más tiempo de casteo
-  y menos ASPD. La velocidad solo baja con ambas a 0. Hoy el −20 % a los seis
-  atributos y la velocidad (−40 % con ambas) se suma a `temperature` y
-  `wounds` sin tope.
-- **Estados positivos:** Bien alimentado (hambre > 70, +regeneración de HP) e
-  Hidratado (sed > 70, +regeneración de SP). Con Bien abrigado de
-  `temperature`, forman **En forma**, que sube los relatos de `adventure`.
+- **En forma:** Bien alimentado e Hidratado (hechos en 1.2.0), con Bien
+  abrigado de `temperature`, forman **En forma**, que sube los relatos de
+  `adventure`.
 - **Desgaste según el lugar:** más rápido con el Tier del mapa y con la
   temperatura extrema; casi nulo en Tier 1. Así la presión crece donde la
   recompensa también.
 - **Compañía:** en grupo de dos en el mismo mapa, hambre y sed bajan un 25 %
   más lento.
-- **Presión:** publicar `@pr_survival` (0–3) y respetar el tope total.
 - **Rasgo:** leer `adv_trait_forager` (desgaste −20 %).
 - **Ritmo:** el tick de 15 s es de prueba; pasarlo a `settings` en
   `mod.json` junto con los umbrales y castigos.

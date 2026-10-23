@@ -1,8 +1,9 @@
 # `adventure`: expediciones y experiencias
 
-Diseño del mod que es la **columna vertebral** de la partida. Es una
-propuesta: el mod todavía no existe. Cuando exista, su README describirá lo que
-hace y este documento quedará como el porqué. El balance de castigos y
+Diseño del mod que es la **columna vertebral** de la partida. **La 0.1
+existe** (2026-10-17): lo que hace y su estado están en
+[`adventure/README.md`](./adventure/README.md); este documento es el porqué y
+el diseño de las fases siguientes. El balance de castigos y
 recompensas que lo rodea está en [`BALANCE.md`](./BALANCE.md); lo decidido, en
 [`DECISIONS.md`](./DECISIONS.md); el orden de trabajo, en
 [`ROADMAP.md`](./ROADMAP.md).
@@ -95,14 +96,14 @@ descanso, cada uno desde su mod y con dependencia suave:
 
 | Lugar | Mod | Estado |
 |---|---|---|
-| Posadero, al dormir | `wounds` (ya existe; pasaría a la posada interior) | por añadir la llamada |
+| Cronista | `adventure` | hecho en 0.1 (D26) |
+| Posadero, al dormir | `wounds` | **no** en 0.1 (D26); se puede reconsiderar |
 | Tabernero | `tavern-rumors` | planeado |
 | Fogata de un refugio restaurado | `refuges` | planeado |
 
-Como en la versión 0.1 solo existe el Posadero de `wounds`, `adventure` 0.1
-lleva su propio NPC de descanso en la posada de cada ciudad (un Cronista, por
-ejemplo) para no depender de otro mod. Se retira cuando la taberna exista, o
-se queda si suma identidad.
+`adventure` 0.1 lleva su propio NPC, el **Cronista**, junto al tablero de las
+7 ciudades mientras duren las pruebas (D23), y contar es gratis (D26). Se
+retira cuando la taberna exista, o se queda si suma identidad.
 
 El riesgo está en el medio: cuanto más lejos, más relatos llevas encima y más
 pierdes si caes.
@@ -307,19 +308,25 @@ siguen escribiendo en el diario sin cambiar nada.
 
 ## Cómo lo usan los demás mods
 
-Con el jugador adjunto, igual que con `TravelJournal::OnLog`:
+Con el jugador adjunto (hecho en 0.1; detalle en el
+[README del mod](./adventure/README.md#para-otros-mods)):
 
 ```c
-@adv_key$  = "chest:" + .@map$;
-@adv_size  = 1;                       // 1 Menor, 2 Media, 3 Mayor, 4 Hito
-@adv_tier  = callfunc("F_Atlas_Tier", .@map$);
-@adv_text$ = "Abrí el cofre de " + callfunc("F_Atlas_Name", .@map$);
-@adv_party = 1;                       // 1: también a los del grupo en el mismo mapa
-doevent "Adventure::OnExperience";
+if (getnpcid(0, "Adventure"))
+	callfunc "F_Adv_Experience", "chest:" + .@map$, 1,   // 1 Menor, 2 Media, 3 Mayor, 4 Hito
+		callfunc("F_Atlas_Tier", .@map$), "Abri el cofre de " + callfunc("F_Atlas_Name", .@map$);
 ```
 
-- Dependencia suave: si `adventure` no está, `doevent` solo deja una
-  advertencia en el log.
+- **Una función, no solo `doevent`.** El mod store pertenece al mod del NPC
+  que corre el script (`mod_of_npc`, en el fork de rAthena), así que la
+  función no puede escribirlo desde otro mod: deja la experiencia en una cola
+  temporal del personaje y lanza `Adventure::OnQueue`. Si rAthena descarta el
+  evento (D22), la experiencia espera al siguiente cambio de mapa o a contar.
+  La forma con `@adv_key$` … `doevent "Adventure::OnExperience"` sigue
+  funcionando, pero se puede perder.
+- Dependencia suave: `getnpcid` devuelve 0 si `adventure` no está, y la
+  llamada no se hace.
+- `@adv_party` (crédito en grupo) llega en 0.2.
 - `adventure` deduplica por clave (mod store, alcance `char`; una clave ocupa
   unos 30 bytes, el límite es 64 KiB por personaje).
 - **Dos jugadores:** con `@adv_party = 1`, los miembros del grupo conectados en
@@ -368,12 +375,15 @@ cortos sin añadir campos y ciudades menores al atlas
   fogata de un refugio restaurado.
 - La expedición termina al descansar y contar, no al pisar la ciudad.
 
+También decidido el 2026-10-17: se llaman **relatos** (D25); en 0.1 solo
+cuenta el Cronista y es gratis (D26); al ganar un relato solo se anuncia su
+nombre (D27).
+
 Abiertas:
 
 1. **Qué cuesta morir:** idea para pensar; opciones en «Morir y las
    cicatrices». No quitar la recompensa ganada; sí penalizar el descuido.
-2. **Nombre en el juego:** "relatos", "hazañas" o "experiencias".
-3. **Saberes:** qué skills, y si se enseñan solas o con un NPC maestro en una
+2. **Saberes:** qué skills, y si se enseñan solas o con un NPC maestro en una
    ciudad concreta (más trabajo, más identidad de ciudad).
 
 ## Riesgos

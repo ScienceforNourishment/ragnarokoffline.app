@@ -50,13 +50,13 @@ Cada mod tiene un **prefijo** corto para todo lo que otros podrían ver:
 |---|---|---|---|---|
 | `world-atlas` | — | `$@wa_ready` | `F_Atlas_*` | `WorldAtlas` |
 | `survival` | `hm_*`, `thirst_*` (nombres heredados, no cambiar) | `@hm_penalty_*`, `@thirst_penalty_*`, `@sv_*` | `F_Survival_*` | `survival_mgr` |
-| `clima` | — | publica `@clima_*` | — | `Clima#clima` |
+| `clima` | — | publica `@clima_*` | `F_Clima_*` | `Clima#clima`, `Pronosticador#clima_prt` |
 | `temperature` | — | `@tp_*` | `F_Temperature_*` | `temp_mgr` |
 | `wounds` | `wd_*` | — | `F_Wounds_*` | `wounds_mgr` |
 | `expedition-board` | `eb_*` | `$@eb_*` | `F_Expedition_*` | `ExpeditionCtrl`, `ExpeditionData` |
-| `travel-journal` | — | `@tj_*` | — | `TravelJournal` |
+| `travel-journal` (sustituido por `adventure`) | — | `@tj_*` | — | `TravelJournal` |
 | `dungeon-chest` | — | — | `F_DungeonChest_*` | — |
-| `adventure` (planeado) | `adv_*` | `@adv_*` | `F_Adv_*` | `Adventure`, y `TravelJournal` tras la fusión |
+| `adventure` | `adv_*` (aún ninguna) | `@adv_*` (entrada y cola `@adv_q*`) | `F_Adv_*` | `Adventure`, `TravelJournal`, `Cronista#adv_*` |
 
 Un mod nuevo elige un prefijo de 2 a 4 letras, comprueba que nadie lo use
 (`grep -rn "<prefijo>_" my-mods mods registry/mods`) y lo añade a esta tabla.
@@ -69,13 +69,17 @@ El mod store está aislado por mod. Lo que otro mod deba leer va en
 | Variable | La escribe | La leen | Qué es |
 |---|---|---|---|
 | `@clima_exposure_map$`, `@clima_thirst_extra_loss`, `@clima_hunger_extra_loss` | `clima` | `survival`, `temperature` | exposición a un clima sin protección |
-| `@pr_survival`, `@pr_temp`, `@pr_wounds`, `@pr_clima` | cada mod (planeado) | todos | presión, para el tope común ([`BALANCE.md`](./BALANCE.md#tope-de-presión)) |
-| `adv_trait_*` | `adventure` (planeado) | `temperature`, `wounds`, `survival` | rasgos permanentes |
+| `@pr_survival`, `@pr_temp`, `@pr_wounds`, `@pr_clima` | `survival`, `temperature`, `wounds`, `clima` (cada uno la suya) | `survival`, `temperature`, `wounds` | presión, para el tope común ([`BALANCE.md`](./BALANCE.md#tope-de-presión)) |
+| `@pr_clima_map$` | `clima` | quien lee `@pr_clima` | mapa del evento; `@pr_clima` solo cuenta si es el mapa actual |
+| `adv_trait_*` | `adventure` (0.3, planeado) | `temperature`, `wounds`, `survival` | rasgos permanentes |
 | `$@eb_mark[char_id]` | `expedition-board` | `wounds` | GID de la marca viva de ese personaje |
-| `.map$[]`, `.event_active[]`, `.combination[]` de `Clima#clima` | `clima` | `wounds` (con `getvariableofnpc`) | qué evento hay en cada mapa. **No son públicas**: si `clima` cambia su orden o sus nombres, hay que tocar `wounds`. Candidatas a pasar a una función `F_Clima_*` |
+| `.map$[]`, `.event_active[]`, `.combination[]` de `Clima#clima` | `clima` | `wounds` (con `getvariableofnpc`) | qué evento hay en cada mapa. **No son públicas**: si `clima` cambia su orden o sus nombres, hay que tocar `wounds`. Desde `clima` 0.4.0 lo mismo se lee con `F_Clima_Now` (ver abajo); `wounds` aún no se ha pasado a ella |
 
 `@pr_*` es la excepción al prefijo por mod: es un espacio común y cada mod
-escribe solo su propia clave.
+escribe solo su propia clave. Un mod que castiga y respeta el tope lleva su
+propia copia de `S_CapScale` (la de `survival`, `temperature` o `wounds`)
+y un `.pr_cap` de 6 en su `OnInit`: multiplica sus porcentajes y puntos de
+castigo por lo que devuelve y divide entre 100. No hay controlador único (D18).
 
 ## Eventos públicos
 
@@ -85,12 +89,32 @@ log y el llamador sigue.
 
 | Evento | Mod | Entrada | Qué hace |
 |---|---|---|---|
-| `TravelJournal::OnLog` | `travel-journal`, luego `adventure` | `@tj_type$`, `@tj_text$` | escribe una entrada en el diario |
-| `Adventure::OnExperience` | `adventure` (planeado) | `@adv_key$`, `@adv_size`, `@adv_tier`, `@adv_text$`, `@adv_party` | registra una experiencia |
-| `Adventure::OnRest` | `adventure` (planeado) | — | cuenta los relatos y cierra la expedición |
+| `TravelJournal::OnLog` | `adventure` (antes `travel-journal`) | `@tj_type$`, `@tj_text$` | escribe una entrada en el diario |
+| `Adventure::OnExperience` | `adventure` | `@adv_key$`, `@adv_size`, `@adv_tier`, `@adv_text$` | registra una experiencia; mejor `F_Adv_Experience` (abajo) |
+| `Adventure::OnRest` | `adventure` | — | cuenta los relatos y cierra la expedición |
+
+**`F_Adv_Experience(key$, tamaño, tier, texto$)`** es la forma preferida de
+publicar una experiencia: se llama con `callfunc` tras comprobar
+`getnpcid(0, "Adventure")`, y no se pierde si la cola del personaje está llena
+(ver el [README de `adventure`](./adventure/README.md#para-otros-mods)). Las
+demás funciones `F_Adv_*` son internas: usan el mod store, que es del mod del
+NPC que corre el script.
 
 Las funciones `F_Atlas_*` se llaman con `callfunc` y funcionan sin personaje
 adjunto si se les pasa el mapa.
+
+Las funciones `F_Clima_*` (desde `clima` 0.4.0) leen el clima y su
+pronóstico; tampoco necesitan personaje. Los ids de combinación son los de
+`clima` (1 Lluvia tóxica … 10 Frío extremo) y 0 es «ninguno»:
+
+| Función | Devuelve |
+|---|---|
+| `F_Clima_Now(mapa$)` | la combinación activa en el mapa |
+| `F_Clima_EndsIn(mapa$)` | segundos que le quedan, 0 sin evento |
+| `F_Clima_Next(mapa$)` | la combinación del próximo evento, ya sorteada; 0 si aún no se sabe |
+| `F_Clima_NextIn(mapa$)` | segundos hasta que puede empezar el próximo; -1 si el mapa no tiene clima |
+| `F_Clima_Chance(mapa$)` | probabilidad (%) de que una revisión empiece un evento |
+| `F_Clima_Name(id)`, `F_Clima_Gear(id)` | nombre de la combinación y el objeto que protege de ella |
 
 ## Regla común de grupo
 

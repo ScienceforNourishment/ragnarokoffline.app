@@ -1,0 +1,14 @@
+{
+  "name": "adventure",
+  "version": "0.1.0",
+  "author": "Ragnarok Offline",
+  "description": "Expediciones y relatos: lo vivido por primera vez da EXP al contarlo con el Cronista de una ciudad. Incluye el diario del viajero (sustituye a travel-journal; no actives los dos).",
+  "requires": {
+    "app": ">=1.5.2",
+    "era": "any",
+    "mods": ["world-atlas"]
+  },
+  "settings": [
+    { "key": "show_button", "type": "boolean", "default": true, "label": "Mostrar el botón Diario en el juego", "description": "La ventana también se abre con Alt+J y con el comando @diario." }
+  ]
+}

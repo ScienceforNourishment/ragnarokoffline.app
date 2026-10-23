@@ -209,6 +209,10 @@ OnInit:
 		.event_active[.@i] = 0;
 		.event_end[.@i] = 0;
 		.combination[.@i] = 0;
+		// The combination the next event will use, drawn in advance so the
+		// forecast can tell it (F_Clima_Next). 0 until the first check, which
+		// runs after the atlas has filled its table.
+		.next_combo[.@i] = 0;
 		.next_check[.@i] = gettimetick(2) + .first_check_delay;
 		.chance[.@i] = 100;
 		.duration[.@i] = 300;
@@ -250,11 +254,15 @@ OnTimer1000:
 		if (!.event_active[.@i] && .@now >= .next_check[.@i]) {
 			.next_check[.@i] = .@now + .check_interval;
 			if (.chance[.@i] >= 100 || rand(100) < .chance[.@i]) {
-				.@combo = callsub(S_RollCombination, .@i);
+				// Use the combination the forecast announced, then draw the one after it.
+				.@combo = .next_combo[.@i];
+				if (!.@combo)
+					.@combo = callsub(S_RollCombination, .@i);
 				if (!.@combo) {
 					debugmes "[clima] Sin evento en " + .map$[.@i] + ": el atlas no da un bioma con combinaciones para ese mapa.";
 				} else {
 					.combination[.@i] = .@combo;
+					.next_combo[.@i] = callsub(S_RollCombination, .@i);
 					.event_active[.@i] = 1;
 					.event_end[.@i] = .@now + .duration[.@i];
 					.next_effect_refresh[.@i] = .@now + .effect_refresh_interval;
@@ -323,6 +331,8 @@ S_ApplyWeatherStatus:
 		set @clima_hunger_extra_loss, 0;
 		set @clima_thirst_extra_loss, 0;
 		set @clima_exposure_map$, "";
+		set @pr_clima, 0;
+		set @pr_clima_map$, "";
 		detachrid;
 		return;
 	}
@@ -331,6 +341,11 @@ S_ApplyWeatherStatus:
 	set @clima_hunger_extra_loss, 0;
 	set @clima_thirst_extra_loss, 0;
 	set @clima_exposure_map$, "";
+	// Pressure for the shared cap (BALANCE.md): 1 while exposed without
+	// protection. Readers only count it on @pr_clima_map$, because leaving to a
+	// map without loadevent does not reset it.
+	set @pr_clima, !.@protected;
+	set @pr_clima_map$, .map$[.@map_index];
 	if (!.@protected && .@combo_id == 9) {
 		set @clima_thirst_extra_loss, 1;
 		set @clima_exposure_map$, .map$[.@map_index];
@@ -347,6 +362,8 @@ OnPCLoadMapEvent:
 	set @clima_hunger_extra_loss, 0;
 	set @clima_thirst_extra_loss, 0;
 	set @clima_exposure_map$, "";
+	set @pr_clima, 0;
+	set @pr_clima_map$, "";
 	.@map$ = strcharinfo(3);
 	for (.@i = 0; .@i < .map_count; .@i++) {
 		if (.@map$ == .map$[.@i] && .event_active[.@i]) {
@@ -355,6 +372,8 @@ OnPCLoadMapEvent:
 				.@combo_id = .combination[.@i];
 				.@lease = min(.combo_status_duration[.@combo_id] * 1000, .@remaining);
 				.@protected = callsub(S_IsWeatherProtected, .@i);
+				set @pr_clima, !.@protected;
+				set @pr_clima_map$, .@map$;
 				if (.combo_status[.@combo_id] && !.@protected && !getstatus(.combo_status[.@combo_id]))
 					sc_start .combo_status[.@combo_id], .@lease, 0, 10000, SCSTART_NOAVOID;
 				if (.combo_status[.@combo_id])
@@ -374,4 +393,201 @@ OnPCLoadMapEvent:
 		}
 	}
 	end;
+}
+
+// ---------------------------------------------------------------------------
+// Forecast. Public read-only functions over the scheduler above, for the
+// forecaster below and for tavern-rumors later. Combination ids are the
+// .combo_* indices (1 Lluvia tóxica ... 10 Frío extremo); 0 means none.
+// Map names are case-sensitive and must be one of the 20 maps with events.
+
+// F_Clima_Index(map$) -> the scheduler's index for the map, -1 when it has no events.
+function	script	F_Clima_Index	{
+	if (!getnpcid(0, "Clima#clima"))
+		return -1;
+	.@n = getvariableofnpc(.map_count, "Clima#clima");
+	for (.@i = 0; .@i < .@n; .@i++) {
+		if (getvariableofnpc(.map$[.@i], "Clima#clima") == getarg(0))
+			return .@i;
+	}
+	return -1;
+}
+
+// F_Clima_Now(map$) -> the combination active on the map now, 0 when none.
+function	script	F_Clima_Now	{
+	.@i = callfunc("F_Clima_Index", getarg(0));
+	if (.@i < 0 || !getvariableofnpc(.event_active[.@i], "Clima#clima"))
+		return 0;
+	return getvariableofnpc(.combination[.@i], "Clima#clima");
+}
+
+// F_Clima_EndsIn(map$) -> seconds until the active event ends, 0 when none.
+function	script	F_Clima_EndsIn	{
+	.@i = callfunc("F_Clima_Index", getarg(0));
+	if (.@i < 0 || !getvariableofnpc(.event_active[.@i], "Clima#clima"))
+		return 0;
+	return max(0, getvariableofnpc(.event_end[.@i], "Clima#clima") - gettimetick(2));
+}
+
+// F_Clima_Next(map$) -> the combination the next event on the map will use,
+// already drawn; 0 while unknown (before the first check after a restart).
+function	script	F_Clima_Next	{
+	.@i = callfunc("F_Clima_Index", getarg(0));
+	if (.@i < 0)
+		return 0;
+	return getvariableofnpc(.next_combo[.@i], "Clima#clima");
+}
+
+// F_Clima_NextIn(map$) -> seconds until the next event can start, -1 when the
+// map has no events. While one is active, the next check comes one check
+// interval after it ends.
+function	script	F_Clima_NextIn	{
+	.@i = callfunc("F_Clima_Index", getarg(0));
+	if (.@i < 0)
+		return -1;
+	.@now = gettimetick(2);
+	if (getvariableofnpc(.event_active[.@i], "Clima#clima"))
+		return max(0, getvariableofnpc(.event_end[.@i], "Clima#clima") - .@now) + getvariableofnpc(.check_interval, "Clima#clima");
+	return max(0, getvariableofnpc(.next_check[.@i], "Clima#clima") - .@now);
+}
+
+// F_Clima_Chance(map$) -> percent chance that a check starts an event, 0 when the map has no events.
+function	script	F_Clima_Chance	{
+	.@i = callfunc("F_Clima_Index", getarg(0));
+	if (.@i < 0)
+		return 0;
+	return getvariableofnpc(.chance[.@i], "Clima#clima");
+}
+
+// F_Clima_Name(combo) -> the combination's name, "" for 0 or an unknown id.
+function	script	F_Clima_Name	{
+	.@c = getarg(0);
+	if (.@c < 1 || .@c > getvariableofnpc(.combo_count, "Clima#clima"))
+		return "";
+	return getvariableofnpc(.combo_name$[.@c], "Clima#clima");
+}
+
+// F_Clima_Gear(combo) -> the item that protects from the combination, 0 when none.
+function	script	F_Clima_Gear	{
+	.@c = getarg(0);
+	if (.@c < 1 || .@c > getvariableofnpc(.combo_count, "Clima#clima"))
+		return 0;
+	return getvariableofnpc(.combo_protection_item[.@c], "Clima#clima");
+}
+
+// The forecaster in Prontera. Beside the expedition board while testing (D23).
+// Lists the maps anchored to Prontera or Izlude in the atlas first; the rest of
+// the maps with events are under "Otras tierras".
+prontera,168,193,4	script	Pronosticador#clima_prt	4_M_SAGE_A,{
+	mes "[Pronosticador]";
+	mes "El cielo avisa al que sabe leerlo.";
+	mes "¿Qué camino te interesa?";
+	.@n = getvariableofnpc(.map_count, "Clima#clima");
+	if (!getnpcid(0, "Clima#clima") || .@n < 1) {
+		mes "Hoy no sé leer nada en el cielo.";
+		close;
+	}
+	// Split the maps with events into the region and the rest.
+	for (.@i = 0; .@i < .@n; .@i++) {
+		.@m$ = getvariableofnpc(.map$[.@i], "Clima#clima");
+		.@a$ = callfunc("F_Atlas_Anchor", .@m$);
+		if (.@a$ == "prontera" || .@a$ == "izlude")
+			.@near$[getarraysize(.@near$)] = .@m$;
+		else
+			.@far$[getarraysize(.@far$)] = .@m$;
+	}
+	next;
+	while (1) {
+		.@menu$ = "Toda la región";
+		for (.@i = 0; .@i < getarraysize(.@near$); .@i++)
+			.@menu$ += ":" + callsub(S_Label, .@near$[.@i]);
+		.@menu$ += ":Otras tierras:Nada, gracias";
+		.@s = select(.@menu$);
+		.@nn = getarraysize(.@near$);
+		if (.@s == .@nn + 3)
+			break;
+		if (.@s == 1) {
+			mes "[Pronosticador]";
+			for (.@i = 0; .@i < .@nn; .@i++)
+				callsub S_Short, .@near$[.@i];
+			next;
+			continue;
+		}
+		if (.@s == .@nn + 2) {
+			.@menu$ = "";
+			for (.@i = 0; .@i < getarraysize(.@far$); .@i++)
+				.@menu$ += callsub(S_Label, .@far$[.@i]) + ":";
+			.@menu$ += "Volver";
+			.@f = select(.@menu$);
+			if (.@f > getarraysize(.@far$))
+				continue;
+			callsub S_Full, .@far$[.@f - 1];
+			next;
+			continue;
+		}
+		callsub S_Full, .@near$[.@s - 2];
+		next;
+	}
+	mes "[Pronosticador]";
+	mes "Que el cielo te sea leve.";
+	close;
+
+// S_Label(map$) -> the readable name of the map, its code without the atlas.
+S_Label:
+	.@l$ = callfunc("F_Atlas_Name", getarg(0));
+	return (.@l$ == "" ? getarg(0) : .@l$);
+
+// S_Minutes(seconds) -> "unos N minutos", rounded up.
+S_Minutes:
+	.@m = (getarg(0) + 59) / 60;
+	if (.@m <= 1)
+		return "menos de un minuto";
+	return "unos " + .@m + " minutos";
+
+// One line per map, for the whole-region view.
+S_Short:
+	.@m$ = getarg(0);
+	.@now = callfunc("F_Clima_Now", .@m$);
+	.@next = callfunc("F_Clima_Next", .@m$);
+	.@line$ = "^0000CC" + callsub(S_Label, .@m$) + "^000000: ";
+	if (.@now)
+		.@line$ += callfunc("F_Clima_Name", .@now) + " (" + callsub(S_Minutes, callfunc("F_Clima_EndsIn", .@m$)) + ")";
+	else
+		.@line$ += "calma";
+	if (.@next)
+		.@line$ += ", luego " + callfunc("F_Clima_Name", .@next);
+	mes .@line$;
+	return;
+
+// The full forecast of one map: now, next, and what protects from each.
+S_Full:
+	.@m$ = getarg(0);
+	.@now = callfunc("F_Clima_Now", .@m$);
+	.@next = callfunc("F_Clima_Next", .@m$);
+	mes "[Pronosticador]";
+	mes "^0000CC" + callsub(S_Label, .@m$) + "^000000";
+	if (.@now) {
+		mes "Ahora: " + callfunc("F_Clima_Name", .@now) + ", " + callsub(S_Minutes, callfunc("F_Clima_EndsIn", .@m$)) + " más.";
+		callsub S_Gear, .@now;
+	} else {
+		mes "Ahora: el cielo está en calma.";
+	}
+	if (.@next) {
+		.@chance = callfunc("F_Clima_Chance", .@m$);
+		if (.@chance < 100)
+			mes "Después, quizá (" + .@chance + " %): " + callfunc("F_Clima_Name", .@next) + ", dentro de " + callsub(S_Minutes, callfunc("F_Clima_NextIn", .@m$)) + ".";
+		else
+			mes "Después: " + callfunc("F_Clima_Name", .@next) + ", dentro de " + callsub(S_Minutes, callfunc("F_Clima_NextIn", .@m$)) + ".";
+		if (.@next != .@now)
+			callsub S_Gear, .@next;
+	} else {
+		mes "Lo que vendrá después, todavía no lo sé.";
+	}
+	return;
+
+S_Gear:
+	.@g = callfunc("F_Clima_Gear", getarg(0));
+	if (.@g)
+		mes "  Te protege: " + getitemname(.@g) + ".";
+	return;
 }

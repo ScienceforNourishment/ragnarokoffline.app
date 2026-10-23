@@ -16,7 +16,9 @@
 //=
 //= En ciudades (F_Atlas_IsSafe) no hay temperatura. Sin world-atlas tampoco.
 //= Los penalizadores usan su propio bonus_script (texto distinto del de
-//= survival y wounds), asi que conviven con ellos. Un unico reloj del NPC
+//= survival y wounds), asi que conviven con ellos. Presion: publica @pr_temp
+//= (0..3, la distancia a Comodo) y, por encima del tope comun (.pr_cap), reduce
+//= su castigo en proporcion (BALANCE.md, Tope de presion). Un unico reloj del NPC
 //= para todos los personajes (initnpctimer + attachrid), no un addtimer por
 //= personaje: ver CONVENTIONS.md, Temporizadores.
 //=
@@ -97,6 +99,8 @@ OnInit:
 	.g_id[4] = 50842; .g_val[4] = -2;	// Manto de Lino
 	.g_id[5] = 50843; .g_val[5] = -1;	// Tunica Fresca
 
+	// Tope de presion comun; survival y wounds usan el mismo numero.
+	.pr_cap = 6;
 	bindatcmd "temperatura", "temp_mgr::OnStatus", 0, 99;
 	initnpctimer;
 	end;
@@ -146,6 +150,10 @@ OnTimer4000:
 // anterior tarda hasta 5 s en agotarse.
 S_Apply:
 	.@feel = callfunc("F_Temperature_Feel");
+	if (.@feel < 0)
+		@pr_temp = -.@feel;
+	else
+		@pr_temp = .@feel;
 	if (.@feel != @tp_last) {
 		@tp_last = .@feel;
 		switch (.@feel) {
@@ -176,28 +184,40 @@ S_Apply:
 		bonus_script "{ /* temperature: frio */ bonus bMaxHP,0; }", 5, 1032, 0, EFST_COLD;
 	else
 		bonus_script "{ /* temperature: calor */ bonus bMaxHP,0; }", 5, 1032, 0, EFST_OVERHEAT;
-	if (.@feel == -2) {
+	// Bajo el tope de presion, el castigo se reduce en proporcion (minimo 1).
+	.@scale = callsub(S_CapScale);
+	if (.@feel == -2 || .@feel == 2) {
 		.@pts = 1 + BaseLevel / 20;
 		if (.@pts > 6)
 			.@pts = 6;
-		bonus_script "{ bonus bAgi,-" + .@pts + "; }", 5, 1032;
-	} else if (.@feel == 2) {
-		.@pts = 1 + BaseLevel / 20;
-		if (.@pts > 6)
-			.@pts = 6;
-		bonus_script "{ bonus bInt,-" + .@pts + "; }", 5, 1032;
-	} else if (.@feel == -3) {
-		.@pts = 2 + BaseLevel / 12;
-		if (.@pts > 10)
-			.@pts = 10;
-		bonus_script "{ bonus bAgi,-" + .@pts + "; bonus bDex,-" + .@pts + "; bonus bMaxHPrate,-5; }", 5, 1032;
 	} else {
 		.@pts = 2 + BaseLevel / 12;
 		if (.@pts > 10)
 			.@pts = 10;
-		bonus_script "{ bonus bInt,-" + .@pts + "; bonus bVit,-" + .@pts + "; bonus bMaxSPrate,-5; }", 5, 1032;
 	}
+	.@pts = .@pts * .@scale / 100;
+	if (.@pts < 1)
+		.@pts = 1;
+	.@rate = 5 * .@scale / 100;
+	if (.@feel == -2)
+		bonus_script "{ bonus bAgi,-" + .@pts + "; }", 5, 1032;
+	else if (.@feel == 2)
+		bonus_script "{ bonus bInt,-" + .@pts + "; }", 5, 1032;
+	else if (.@feel == -3)
+		bonus_script "{ bonus bAgi,-" + .@pts + "; bonus bDex,-" + .@pts + "; bonus bMaxHPrate,-" + .@rate + "; }", 5, 1032;
+	else
+		bonus_script "{ bonus bInt,-" + .@pts + "; bonus bVit,-" + .@pts + "; bonus bMaxSPrate,-" + .@rate + "; }", 5, 1032;
 	return;
+
+// S_CapScale() -> % del castigo que se aplica bajo el tope de presion comun.
+// La misma formula esta en survival y wounds.
+S_CapScale:
+	.@total = @pr_survival + @pr_temp + @pr_wounds;
+	if (@pr_clima && @pr_clima_map$ == strcharinfo(3))
+		.@total++;
+	if (.@total <= .pr_cap)
+		return 100;
+	return .pr_cap * 100 / .@total;
 
 // Jugadores del reloj, por account id. Los bots del Population Engine no
 // disparan OnPCLoginEvent y nunca entran.

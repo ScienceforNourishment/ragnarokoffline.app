@@ -14,6 +14,8 @@
 //= survival), asi que conviven con el. Se renueva cada 4 s con un unico reloj
 //= del NPC para todos los personajes (initnpctimer + attachrid), que solo hace
 //= algo con quien tiene alguna herida. Ver CONVENTIONS.md, Temporizadores.
+//= Presion: publica @pr_wounds (heridas activas) y, por encima del tope comun
+//= (.pr_cap), reduce su castigo en proporcion (BALANCE.md, Tope de presion).
 //=
 //= Dependencias suaves (el mod funciona sin ellas):
 //=   world-atlas     bioma del mapa donde se muere (elige la herida) y ciudades
@@ -126,6 +128,8 @@ function	script	F_Wounds_Log	{
 OnInit:
 	// Cuantas heridas puede tener a la vez, y que muerte las provoca.
 	.max = 3;
+	// Tope de presion comun; survival y temperature usan el mismo numero.
+	.pr_cap = 6;
 	.chance = 100;		// % por muerte fuera de ciudad. Valor de prueba.
 	.safe_maps$ = "|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|";
 
@@ -222,6 +226,8 @@ OnTimer4000:
 		}
 		if (wd_list$ != "")
 			callsub S_Apply;
+		else
+			@pr_wounds = 0;
 		detachrid;
 	}
 	end;
@@ -232,16 +238,23 @@ OnTimer4000:
 S_Apply:
 	explode(.@a$, wd_list$, "|");
 	.@n = getarraysize(.@a$);
+	@pr_wounds = .@n;
+	// Bajo el tope de presion, el castigo se reduce en proporcion (minimo 1).
+	.@scale = callsub(S_CapScale);
 	.@pts = 2 + BaseLevel / 10;
 	if (.@pts > 14)
 		.@pts = 14;
+	.@pts = .@pts * .@scale / 100;
+	if (.@pts < 1)
+		.@pts = 1;
+	.@pct = 10 * .@scale / 100;
 	.@fx$ = "";
 	for (.@i = 0; .@i < .@n; .@i++) {
 		.@id = atoi(.@a$[.@i]);
 		if (.@id < 1 || .@id > .count)
 			continue;
 		if (.rate[.@id])
-			.@v = 10;
+			.@v = .@pct;
 		else
 			.@v = .@pts;
 		.@fx$ += replacestr(.fx$[.@id], "@n", "" + .@v);
@@ -249,6 +262,16 @@ S_Apply:
 	if (.@fx$ != "")
 		bonus_script .@fx$, 5, 1032;
 	return;
+
+// S_CapScale() -> % del castigo que se aplica bajo el tope de presion comun.
+// La misma formula esta en survival y temperature.
+S_CapScale:
+	.@total = @pr_survival + @pr_temp + @pr_wounds;
+	if (@pr_clima && @pr_clima_map$ == strcharinfo(3))
+		.@total++;
+	if (.@total <= .pr_cap)
+		return 100;
+	return .pr_cap * 100 / .@total;
 
 OnPCDieEvent:
 	// Sin heridas en ciudad. La lista del atlas manda si esta; si no, la propia.
@@ -321,6 +344,14 @@ OnPCDieEvent:
 	if (!callfunc("F_Wounds_Add", .@pick))
 		end;
 	dispbottom "Has quedado marcado: " + callfunc("F_Wounds_Name", .@pick) + ". Hay quien puede curarlo en una posada o en el templo.";
+	// La primera vez con cada herida es un relato de adventure (Media), si
+	// esta. adventure no la repite: deduplica por clave.
+	if (getnpcid(0, "Adventure")) {
+		.@tier = 0;
+		if ($@wa_ready)
+			.@tier = callfunc("F_Atlas_Tier", strcharinfo(3));
+		callfunc "F_Adv_Experience", "wound:" + .@pick, 2, .@tier, "Primera vez con " + callfunc("F_Wounds_Name", .@pick);
+	}
 	if (.@forced)
 		callfunc "F_Wounds_Log", "Mi presa me marco: " + callfunc("F_Wounds_Name", .@pick);
 	else if (.@kname$ != "")

@@ -289,11 +289,11 @@ world-atlas ──► clima ──► temperature ─┐
      ├──► survival ────────────────────┤
      ├──► wounds ──────────────────────┘
      │
-     ├──► adventure ◄── doevent "Adventure::OnExperience" ── dungeon-chest,
+     ├──► adventure ◄── callfunc "F_Adv_Experience" ── dungeon-chest,
      │       │                expedition-board, clima, temperature, wounds,
      │       │                nemesis, refuges, remnants
-     │       │        ◄── doevent "Adventure::OnRest" ── wounds (posada),
-     │       │                tavern-rumors, refuges
+     │       │        ◄── doevent "Adventure::OnRest" ── tavern-rumors,
+     │       │                refuges (en 0.1, solo su Cronista: D26)
      │       ├──► diario (antes travel-journal): entradas, resúmenes, relatos
      │       │       ◄── doevent "TravelJournal::OnLog" ── expedition-board, wounds
      │       └──► rasgos adv_trait_* ──► temperature, wounds, survival

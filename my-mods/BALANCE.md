@@ -5,11 +5,17 @@ Cómo deben convivir hambre, sed, temperatura, clima y heridas para que
 su README lo que hace hoy. Lo que mueve al jugador a afrontar esa presión, la
 EXP por experiencias, está en [`ADVENTURE.md`](./ADVENTURE.md).
 
-## El problema de hoy
+## El problema de partida
 
-Todos los sistemas castigan y casi ninguno premia, y sus castigos se suman sin
-tope. Con los valores actuales, un personaje que vuelve de una mala expedición
-puede llevar a la vez:
+**Estado (2026-10-17):** hechos los escalones por eje de `survival` (1.2.0),
+Bien alimentado e Hidratado, `@pr_*` en los cuatro mods, el tope y
+`@presion`. Sin probar en el juego; el guion está en el README de
+[`survival`](./survival/README.md#probarlo-en-una-sesión-larga). Falta lo
+demás de «Lo positivo» y que la presión crezca con el Tier.
+
+Todos los sistemas castigaban y casi ninguno premiaba, y sus castigos se
+sumaban sin tope. Con los valores de antes de `survival` 1.2.0, un personaje
+que volvía de una mala expedición podía llevar a la vez:
 
 | Fuente | Castigo actual |
 |---|---|
@@ -60,7 +66,7 @@ Deshidratado a la vez): perder movilidad impide volver, y volver tiene que ser
 siempre posible.
 
 `temperature` y `wounds` ya castigan ejes propios. El cambio grande es en
-`survival`: dejar el −20 % a los seis atributos y pasar a escalones por eje.
+`survival`: dejar el −20 % a los seis atributos y pasar a escalones por eje (hecho en `survival` 1.2.0).
 
 ## Tope de presión
 

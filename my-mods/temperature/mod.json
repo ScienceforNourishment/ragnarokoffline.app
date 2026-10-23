@@ -1,6 +1,6 @@
 {
   "name": "temperature",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "author": "Alejandro",
   "description": "Temperatura del viajero: el frio o el calor del mapa, el clima y la ropa que llevas dan estados con nombre (Helado, Fresco, Comodo, Acalorado...). Ropa de abrigo y ropa fresca como objetos propios.",
   "requires": {

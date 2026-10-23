@@ -7,10 +7,11 @@ Requiere `world-atlas`. Prototipo en `my-mods/`.
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.2.1 (la de `mod.json`): el icono va en su propio `bonus_script`, de texto fijo por icono, separado de la penalización. Antes iba dentro de la penalización, y cada `bonus_script` con icono lo apaga al vencer aunque otro con el mismo icono siga activo. Al pasar de Helado a Congelado, o al subir de nivel, el texto cambiaba, el viejo vencía y apagaba el icono del nuevo: la penalización seguía, pero sin icono. La 0.2.0 pasó el `addtimer` por personaje a un solo reloj del NPC (error `event queue is full`)
+- **Versión:** 0.3.0 (la de `mod.json`): presión ([`BALANCE.md`](../BALANCE.md#tope-de-presión), D18). Publica `@pr_temp` (0–3, la distancia a Cómodo; 0 en ciudades e interiores) y, si la presión total de todos los mods pasa de 6, reduce sus castigos en proporción (`× 6 / total`, mínimo 1 punto); el bono de Bien abrigado no se reduce. Detalle en «Convivencia con otros mods», abajo. La 0.2.1: el icono va en su propio `bonus_script`, de texto fijo por icono, separado de la penalización. Antes iba dentro de la penalización, y cada `bonus_script` con icono lo apaga al vencer aunque otro con el mismo icono siga activo. Al pasar de Helado a Congelado, o al subir de nivel, el texto cambiaba, el viejo vencía y apagaba el icono del nuevo: la penalización seguía, pero sin icono. La 0.2.0 pasó el `addtimer` por personaje a un solo reloj del NPC (error `event queue is full`)
 - **Probado en el juego (0.2.0, 2026-10-17):** el Sastre aparece y vende las cuatro prendas; `@temperatura` da lugar, clima y ropa acordes al mapa y al equipo; los avisos de cambio de estado salen bien; en Prontera dice «a gusto» con o sin ropa. El icono de calor (Overheat) salió con ropa de abrigo en `moc_fild11`, que es lo esperado. El icono de frío falló: una vez se quedó puesto y otra no apareció (arreglado en 0.2.1)
 - **Sin probar:** los iconos con la 0.2.1: que el de frío salga en `xmas_fild01` sin ropa, siga al pasar de Helado a Congelado y se apague unos 5 s después de volver a la ciudad
 - **Ojo, iconos prestados:** el de frío es `EFST_COLD`, el mismo de Cristalización (`SC_CRYSTALIZE`), y el cliente lo nombra «Crystallization»; el de calor es `EFST_OVERHEAT`, el sobrecalentamiento del Mado Gear del Mechanic, y el cliente enseña esa descripción. Si el estado real llega a la vez (un monstruo que cristaliza, un Mechanic con Mado Gear), los dos comparten icono y el primero que termine lo apaga. Pendiente en [`ROADMAP.md`](../ROADMAP.md#otros-pendientes-de-los-mods-existentes)
+- **Sin probar (0.3.0):** el tope; lo cubre el paso 4 de «Probarlo en una sesión larga» de [`survival`](../survival/README.md#probarlo-en-una-sesión-larga)
 - **Actualizado:** 2026-10-17
 
 No es una barra que baje: cada 4 segundos se calcula una **sensación** y se
@@ -63,6 +64,12 @@ el único punto de venta. La tabla de abrigo está en `OnInit` de `temp_mgr`.
 - `survival` y `wounds`: cada uno tiene su propio `bonus_script` (texto
   distinto), así que se suman. Al cambiar de estado, el penalizador anterior
   tarda hasta 5 s en agotarse.
+- **Tope de presión:** lee `@pr_survival`, `@pr_wounds` y `@pr_clima` (este
+  solo si `@pr_clima_map$` es el mapa actual) y publica `@pr_temp`. Con más
+  de 6 en total, los puntos de atributo y el −5 % de HP o SP máximos se
+  multiplican por `6 / total` (mínimo 1 punto). `.pr_cap` en `OnInit` debe
+  valer lo mismo que en `survival` y `wounds`. `@presion` (de `survival`)
+  muestra el desglose.
 - Un único reloj del NPC para todos (`OnTimer4000` de `temp_mgr`, con
   `initnpctimer`), que entra en cada jugador con `attachrid`. No usa `addtimer`
   por personaje: esas cadenas morían durante los diálogos (error «event queue
@@ -101,8 +108,6 @@ Sin implementar. El porqué está en [`BALANCE.md`](../BALANCE.md) y
   Payon, túnicas frescas en Morocc, lana en Aldebaran. Hoy el Sastre de
   Prontera es el único punto de venta.
 - **Fogata:** junto al fuego de `campfire` la sensación vuelve a Cómodo.
-- **Presión:** publicar `@pr_temp` (0–3, distancia a Cómodo) y reducir el
-  castigo propio si la presión total supera el tope.
 - **Rasgos:** leer `adv_trait_cold` y `adv_trait_heat` (la sensación cuenta 1
   menos en ese extremo).
 - **Estado En forma:** Cómodo en un mapa extremo cuenta para el bono de

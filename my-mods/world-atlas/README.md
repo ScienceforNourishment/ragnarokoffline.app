@@ -85,8 +85,7 @@ La fuente de verdad es
 ## Cambiar o añadir un mapa
 
 Ahora el atlas cubre 230 mapas; hay unos 274 más con spawns normales (campos,
-ciudades menores, dungeons que `dungeon-chest` no incluye). Añadirlos es
-editar el CSV, no tocar scripts.
+ciudades menores, dungeons). Añadirlos es editar el CSV, no tocar scripts.
 
 1. **Encuentra candidatos.** `node registry/tools/world-atlas/tier_of.cjs --unlisted`
    lista los mapas con spawns que aún no están en el CSV, con su Tier
@@ -102,10 +101,11 @@ editar el CSV, no tocar scripts.
 4. Reemplaza la carpeta del mod en la instalación (no copies encima) y
    recarga los mods. Comprueba `ragnarok-stack logs map 100`.
 
-Añadir un mapa al atlas **no** le pone un cofre ni un contrato: eso lo decide
-cada mod. Para un cofre nuevo sigue la guía de `dungeon-chest`; si el Tier del
-atlas y el del cofre difieren, manda el del atlas cuando está cargado (el
-nombre del NPC, `Cofre T4`, conserva el escrito en el script).
+Añadir un mapa al atlas no le pone un contrato: eso lo decide cada mod. **Una
+fila `kind=dungeon` sí recibe un cofre** de `dungeon-chest` al regenerarlo con
+`node registry/tools/dungeon-chest/build_chests.cjs` (ver su guía); córrelo
+también al cambiar el Tier de una mazmorra, para que el nombre del cofre y su
+recompensa de reserva sigan al atlas.
 
 ### Cómo categorizar
 
@@ -159,8 +159,9 @@ coordenadas del índice de NPC, no comprobadas en el juego.
 
 ## Qué es provisional
 
-- **Tier:** 179 de los 183 de dungeon son los de `dungeon-chest`, verificados
-  contra sus cofres. Los 25 campos usan el mismo criterio (promedio ponderado de
+- **Tier:** 179 de los 183 de dungeon venían de `dungeon-chest`, verificados
+  contra sus cofres; los 4 retos, de `tier_of.cjs`. Hoy los cofres se generan
+  desde aquí. Los 25 campos usan el mismo criterio (promedio ponderado de
   niveles de spawn Renewal) y salen casi todos en Tier 1.
 - **Biomas, temperatura, ancla y agua** son una primera asignación por el
   nombre del mapa, sin revisar mapa por mapa. `ruinas` (101) y `cueva` (42)
@@ -190,9 +191,10 @@ coordenadas del índice de NPC, no comprobadas en el juego.
 
 - `expedition-board`: el Tier del mapa de cada contrato.
 
-- `dungeon-chest`: `F_DungeonChest_Open` toma el Tier (y con él la comida) del
-  atlas y usa el escrito en el cofre como reserva. Los 179 coinciden, así que no
-  hay cambio visible.
+- `dungeon-chest`: sus cofres **se generan** desde las filas `kind=dungeon`
+  (`registry/tools/dungeon-chest/build_chests.cjs`, desde 0.3.0). En el juego,
+  `F_DungeonChest_Open` además toma el Tier (y con él la comida) del atlas y
+  usa el escrito en el cofre como reserva.
 
 - `clima`: el bioma de cada mapa (`F_Atlas_Biome`) decide qué combinaciones
   climáticas pueden ocurrir allí. Es una dependencia obligatoria
@@ -204,10 +206,59 @@ coordenadas del índice de NPC, no comprobadas en el juego.
 
 ## Probarlo
 
-No está probado en el juego. Tras cargar, revisa que no haya errores en
-`ragnarok-stack logs map 100` y, con un personaje de prueba, consulta por
-ejemplo `callfunc("F_Atlas_Tier", "ice_dun02")` (debe dar 4) y
-`F_Atlas_Tier("desconocido")` (debe dar 0) desde un NPC de prueba.
+No está probado en el juego. Guion para una sesión larga; cabe en la misma
+sesión que las pruebas de `survival`, `temperature` y `wounds`, porque los
+interiores cambian lo que hacen los tres.
+
+**Preparación.** Activa `world-atlas` y `world-atlas-test` (un NPC,
+`AtlasTest`, en `prontera 150,180`, que muestra lo que devuelve el atlas
+para un mapa: al preguntarle, deja el campo vacío para el mapa actual).
+Reemplaza la carpeta del mod instalada en vez de copiar encima. Con
+`survival`, `temperature` y `wounds` activos se prueba también el efecto de
+los interiores. Usa un personaje con GM (`tester`) para `@warp`.
+
+**1. Carga.** Tras recargar los mods, `ragnarok-stack logs map 200` no debe
+dar errores de `world-atlas.txt`. Pregunta a `AtlasTest` por `prontera`:
+`has=1 safe=1 kind=city`.
+
+**2. Datos, desde `AtlasTest`** (escribe el mapa sin moverte):
+
+| Mapa | Debe dar |
+|---|---|
+| `prt_in` | `kind=interior safe=1 tier=0 biome=ciudad`, nombre «Interiores de Prontera» |
+| `iz_int` | `kind=interior safe=1 tier=0 anchor=izlude` |
+| `prt_fild00` | `kind=field safe=0 tier=1 biome=pradera` |
+| `izlu2dun` | `kind=field tier=1 biome=costa water=1 anchor=izlude` |
+| `prt_maze01` | `biome=bosque` (antes `cueva`) |
+| `prt_mz03_i` | `kind=dungeon tier=6` |
+| `izlude_a` | `has=0 safe=0` (copia de canal, fuera a propósito) |
+| `ice_dun02` | `tier=4` (fila antigua, sin cambios) |
+
+**3. Interiores seguros, en el juego.** Entra en `prt_in` (cualquier puerta
+de Prontera, o `@warp prt_in 244 135`, la posada) y espera 1 minuto:
+
+- Los medidores de hambre y sed **no bajan** (`survival`).
+- `@temperatura` dice «en la ciudad estás a gusto» (`temperature`). Prueba
+  con el Abrigo Polar puesto: no debe aparecer ningún estado de frío.
+- Repite en `prt_church`, `izlude_in` e `iz_ac01`. En `iz_ac01` hay 4
+  monstruos de práctica: morir ahí **no** debe dejar herida (`@heridas`).
+
+**4. Campos nuevos, no seguros.** `@warp prt_fild00`, `@warp prt_monk` y
+`@warp izlu2dun`: hambre y sed vuelven a bajar y `@temperatura` da un estado
+(Cómodo sin ropa). En `izlu2dun`, la cantimplora vacía cerca de la orilla
+comprueba si `water=1` es cierto (si no llena, corrige la fila).
+
+**5. Coordenadas de servicios.** Comprueba que el Inn Employee de `prt_in`
+está en 244,135 y 61,141, el Bartender en 180,20 y el Master Tailor de
+`izlude_in` en 123,175 (`/where` junto a ellos). Corrige la columna
+`note` si no.
+
+**6. Diario.** Con `travel-journal`, la primera visita a `prt_fild00` debe
+escribir «Campo de Prontera 00», no el código del mapa.
+
+**Al acabar:** anota el resultado en «Estado», arriba, desactiva
+`world-atlas-test` y revisa `ragnarok-stack logs map 2000` en busca de
+errores de `F_Atlas_*`.
 
 ## Próximos cambios propuestos (revisión 2026-10-17)
 
@@ -225,4 +276,3 @@ Sin implementar.
 - **Columnas candidatas:** la mazmorra a la que pertenece un piso y su
   profundidad (para la experiencia del piso más hondo); los servicios de cada
   ciudad (identidad de ciudad).
-- **Origen de los cofres:** `dungeon-chest` generado desde este CSV.

@@ -42,7 +42,7 @@ Todos los de `my-mods/` salvo los de referencia. El estado de cada uno, en la
 sección «Estado» de su README.
 
 `world-atlas`, `survival`, `clima`, `temperature`, `wounds`,
-`travel-journal` (hasta la fusión con `adventure`), `expedition-board`,
+`adventure` (sustituye a `travel-journal`: nunca los dos a la vez), `expedition-board`,
 `dungeon-chest`. **No se activan:** `affix-forge` y `arpg-equipments`
 (referencia), `world-atlas-test` (solo pruebas).
 

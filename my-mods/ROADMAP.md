@@ -59,6 +59,15 @@ Que lo que ya existe funcione y no se rompa.
 **Terminado cuando:** el log del map-server sale limpio tras una sesión de una
 hora con todos los mods del modpack, y cada README dice qué se probó.
 
+**Próxima sesión larga:** el guion completo, paso a paso y con tabla de
+resultados, está en [`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md). Cubre
+`world-atlas` 0.2.0 (región de Prontera e Izlude, interiores seguros) y el
+rebalanceo de presión (`survival` 1.2.0, `temperature` 0.3.0, `wounds`
+0.4.0, `clima` 0.3.0), el pronóstico del clima (`clima` 0.4.0) y los cofres
+generados desde el atlas (`dungeon-chest` 0.3.0) y, en su Parte 3, `adventure` 0.1 con
+el relato de herida de `wounds` 0.4.1. Si sobra tiempo, lo pendiente de antes: los iconos de
+`temperature` (ver arriba).
+
 ### H1. Porción vertical: Prontera e Izlude, Tier 1 y 2
 
 **Por qué ahí:** ya tiene el tablero probado, el Sastre, el vendedor de
@@ -71,15 +80,24 @@ Contenido:
       seguros. Lista y exclusiones en
       [su README](./world-atlas/README.md#región-de-prontera-e-izlude). Falta
       probarlo en el juego.
-- [ ] Rebalanceo de presión ([`BALANCE.md`](./BALANCE.md)): tope `@pr_*`,
-      escalones por eje en `survival`, Bien alimentado e Hidratado.
-- [ ] Pronóstico del clima, aunque sea un NPC simple en Prontera.
-- [ ] `adventure` 0.1, con el diario integrado y su NPC de descanso en la
-      posada.
+- [x] Rebalanceo de presión ([`BALANCE.md`](./BALANCE.md)): tope `@pr_*`,
+      escalones por eje en `survival`, Bien alimentado e Hidratado. Hecho
+      el 2026-10-17 (`survival` 1.2.0, `temperature` 0.3.0, `wounds` 0.4.0,
+      `clima` 0.3.0); falta probarlo con el guion de
+      [`survival`](./survival/README.md#probarlo-en-una-sesión-larga).
+- [x] Pronóstico del clima, aunque sea un NPC simple en Prontera. Hecho el
+      2026-10-17 (`clima` 0.4.0): el Pronosticador junto al tablero y las
+      funciones `F_Clima_*`. Falta probarlo en el juego.
+- [x] `adventure` 0.1, con el diario integrado y su Cronista (D25–D27).
+      Escrito el 2026-10-17; **falta probarlo en el juego** con
+      [«Probarlo»](./adventure/README.md#probarlo).
 - [ ] Servicios en interiores reales: Posadero y Sacerdote de `wounds`.
       **Se quedan junto al tablero mientras duren las pruebas** (D23): así
       se llega a ellos rápido. Se mueven al cerrar la porción vertical.
-- [ ] `dungeon-chest` generado desde el atlas.
+- [x] `dungeon-chest` generado desde el atlas. Hecho el 2026-10-17
+      (`dungeon-chest` 0.3.0, `registry/tools/dungeon-chest/build_chests.cjs`):
+      183 cofres, los 179 de antes iguales y 4 retos nuevos. Falta probar
+      los nuevos en el juego.
 
 **Terminado cuando:** un personaje nuevo juega unas 3 horas en la región, hace
 al menos 5 expediciones, el diario cuenta una historia que se entiende al
@@ -146,14 +164,15 @@ Qué hace cada mod, su versión y qué se probó están **solo** en la sección
 |---|---|---|
 | `world-atlas` | [README](./world-atlas/README.md#estado) | H0; ampliar en H1 |
 | `survival` | [README](./survival/README.md#estado) | H0; rebalanceo en H1 |
-| `clima` | [README](./clima/README.md#estado) | H0; pronóstico en H1 |
+| `clima` | [README](./clima/README.md#estado) | H0; probar el pronóstico |
 | `temperature` | [README](./temperature/README.md#estado) | H0 |
 | `wounds` | [README](./wounds/README.md#estado) | H0; interiores en H1 |
-| `travel-journal` | [README](./travel-journal/README.md#estado) | H0; fusión con `adventure` en H1 |
+| `travel-journal` | [README](./travel-journal/README.md#estado) | sustituido por `adventure`; se retira cuando este funcione en el juego |
+| `adventure` | [README](./adventure/README.md#estado) | probar la 0.1; 0.2 en H2 |
 | `expedition-board` | [README](./expedition-board/README.md#estado) | H0 |
-| `dungeon-chest` | [README](./dungeon-chest/README.md#estado) | generar desde el atlas en H1 |
+| `dungeon-chest` | [README](./dungeon-chest/README.md#estado) | probar los 4 cofres nuevos; botín por bioma en H2 |
 | `affix-forge`, `arpg-equipments` | referencia externa, no se activan | extraer datos para botín |
-| `adventure`, `nemesis`, `campfire`, `refuges`, `tavern-rumors`, `remnants` | diseño, sin código | H1 y H2 |
+| `nemesis`, `campfire`, `refuges`, `tavern-rumors`, `remnants` | diseño, sin código | H2 |
 
 ## Frentes abiertos
 

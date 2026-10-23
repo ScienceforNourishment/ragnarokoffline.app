@@ -1,0 +1,445 @@
+//===== Ragnarok Offline: adventure ========================================
+//= Expeditions and experiences ("relatos"), and the traveller's journal that
+//= used to be the travel-journal mod. Design: my-mods/ADVENTURE.md.
+//=
+//= An experience is something a character lives once: a new map, a new biome,
+//= a first step into a Tier. It is not paid on the spot: it is kept as an untold
+//= relato and paid as EXP when the character rests and tells it (the Cronista
+//= in each city, or Adventure::OnRest from another mod). Telling closes the
+//= expedition, which started on leaving a safe map.
+//=
+//= No timers. Map changes come from OnPCLoadMapEvent, which rAthena only fires
+//= on maps with the loadevent mapflag; adventure-maps.txt (generated from the
+//= atlas) sets it on every atlas map. Time outside is summed from gettimetick(2)
+//= at each change.
+//=
+//= Mod store, scope "char" (everything the window reads is under "client"):
+//=   x.<kind>.<id>     1 once that experience was had (x.map.<map> is also
+//=                     "visited", for safe maps as well)
+//=   client.n          how many journal entries were ever written
+//=   client.e.<n>      "<unix>|<type>|<text>", the last 300 are kept
+//=   client.p.<n>      untold relato: "<base>|<job>|<per mille>|<tier>|<text>"
+//=   client.x.*        the expedition: on, no, start, out, since, deaths, top,
+//=                     from, deep, pn (relatos written so far)
+//=
+//= Other mods publish an experience with the player attached:
+//=   if (getnpcid(0, "Adventure"))
+//=       callfunc "F_Adv_Experience", "chest:" + .@map$, 1, .@tier, "Abri el cofre de ...";
+//= The store is per mod and belongs to the NPC that runs the script, so
+//= F_Adv_Experience cannot write it from another mod: it queues the experience
+//= in temporary character variables and fires Adventure::OnQueue. If that event
+//= is dropped (a player's event queue has 2 slots), the experience waits and is
+//= taken at the next map change or rest. Nothing is lost.
+//=
+//= The journal entry point of travel-journal still exists: TravelJournal::OnLog
+//= with @tj_type$ and @tj_text$. Never run this mod and travel-journal together.
+//===========================================================================
+
+// F_Adv_Experience(key$, size, tier, text$) -> 1 when queued. PUBLIC.
+// key$: "map:prt_fild08", "wound:3"...; letters, digits, _ and one : or .
+// size: 1 minor, 2 medium, 3 major, 4 milestone. tier: the atlas Tier of
+// where it happened (0 = the character's own band). text$: a short sentence.
+function	script	F_Adv_Experience	{
+	.@key$ = getarg(0);
+	if (.@key$ == "" || getarg(3) == "")
+		return 0;
+	.@n = getarraysize(@adv_qk$);
+	if (.@n >= 32)
+		return 0;
+	@adv_qk$[.@n] = .@key$;
+	@adv_qs[.@n] = getarg(1);
+	@adv_qt[.@n] = getarg(2);
+	@adv_qx$[.@n] = getarg(3);
+	doevent "Adventure::OnQueue";
+	return 1;
+}
+
+// The functions below use the mod store, which belongs to the mod of the NPC
+// running the script: call them only from this mod's NPCs.
+
+// F_Adv_Write(type$, text$): appends one journal entry.
+function	script	F_Adv_Write	{
+	.@type$ = replacestr(getarg(0), "|", "/");
+	.@text$ = replacestr(getarg(1), "|", "/");
+	if (.@type$ == "" || .@text$ == "")
+		return;
+	.@n = modstore_inc("char", "client.n", 1);
+	modstore_set "char", "client.e." + .@n, gettimetick(2) + "|" + .@type$ + "|" + .@text$;
+	if (.@n > 300)
+		modstore_delete "char", "client.e." + (.@n - 300);
+	dispbottom "@@event journal new";
+	return;
+}
+
+// F_Adv_Place(map$) -> the atlas name of a map, or its code.
+function	script	F_Adv_Place	{
+	.@code$ = getarg(0);
+	if ($@wa_ready) {
+		.@name$ = callfunc("F_Atlas_Name", .@code$);
+		if (.@name$ != "")
+			return .@name$;
+	}
+	return .@code$;
+}
+
+// F_Adv_Exp(next, size, tier) -> EXP of one relato for the attached character,
+// from NextBaseExp or NextJobExp (ADVENTURE.md, "Cuanta EXP da una experiencia").
+function	script	F_Adv_Exp	{
+	.@next = getarg(0);
+	.@size = getarg(1);
+	.@tier = getarg(2);
+	if (.@next <= 0)
+		return 0;
+	// % of a level by size: minor, medium, major, milestone. Starting values.
+	setarray .@pct[1], 4, 10, 25, 50;
+	if (.@size < 1)
+		.@size = 1;
+	if (.@size > 4)
+		.@size = 4;
+	// The character's band, from the dungeon-chest table.
+	.@band = 1;
+	if (BaseLevel >= 150) .@band = 6;
+	else if (BaseLevel >= 120) .@band = 5;
+	else if (BaseLevel >= 90) .@band = 4;
+	else if (BaseLevel >= 60) .@band = 3;
+	else if (BaseLevel >= 40) .@band = 2;
+	// Tier factor x10: what is below you stops paying, above you pays double.
+	.@f = 10;
+	if (.@tier > 0) {
+		.@d = .@tier - .@band;
+		if (.@d <= -2) .@f = 1;
+		else if (.@d == -1) .@f = 4;
+		else if (.@d == 1) .@f = 15;
+		else if (.@d >= 2) .@f = 20;
+	}
+	.@e = .@next * .@pct[.@size] * .@f / 1000;
+	// One relato never pays more than 60 % of a level.
+	.@cap = .@next * 60 / 100;
+	if (.@e > .@cap)
+		.@e = .@cap;
+	if (.@e < 1)
+		.@e = 1;
+	return .@e;
+}
+
+// F_Adv_Gain(key$, size, tier, text$) -> 1 when it is a new experience; it is
+// then kept as an untold relato, with its EXP worked out now.
+function	script	F_Adv_Gain	{
+	.@k$ = "x." + strtolower(replacestr(getarg(0), ":", "."));
+	if (modstore_get("char", .@k$, 0))
+		return 0;
+	modstore_set "char", .@k$, 1;
+	// A key the store refuses (bad characters, too deep) is not written.
+	if (modstore_get("char", .@k$, 0) != 1) {
+		debugmes "adventure: experience key refused: " + .@k$;
+		return 0;
+	}
+	.@size = getarg(1);
+	.@tier = getarg(2);
+	.@text$ = replacestr(getarg(3), "|", "/");
+	.@base = callfunc("F_Adv_Exp", NextBaseExp, .@size, .@tier);
+	.@job = callfunc("F_Adv_Exp", NextJobExp, .@size, .@tier);
+	.@pm = 0;
+	if (NextBaseExp > 0)
+		.@pm = .@base * 1000 / NextBaseExp;
+	.@n = modstore_inc("char", "client.x.pn", 1);
+	modstore_set "char", "client.p." + .@n, .@base + "|" + .@job + "|" + .@pm + "|" + .@tier + "|" + .@text$;
+	callfunc "F_Adv_Write", "exp", .@text$;
+	dispbottom "Nuevo relato: " + .@text$ + ".";
+	return 1;
+}
+
+// F_Adv_Drain: takes the experiences other mods queued with F_Adv_Experience.
+function	script	F_Adv_Drain	{
+	.@n = getarraysize(@adv_qk$);
+	if (.@n == 0)
+		return;
+	// Copied first: F_Adv_Gain could run another script that queues more.
+	copyarray .@k$[0], @adv_qk$[0], .@n;
+	copyarray .@s[0], @adv_qs[0], .@n;
+	copyarray .@t[0], @adv_qt[0], .@n;
+	copyarray .@x$[0], @adv_qx$[0], .@n;
+	deletearray @adv_qk$;
+	deletearray @adv_qs;
+	deletearray @adv_qt;
+	deletearray @adv_qx$;
+	for (.@i = 0; .@i < .@n; .@i++)
+		callfunc "F_Adv_Gain", .@k$[.@i], .@s[.@i], .@t[.@i], .@x$[.@i];
+	return;
+}
+
+// F_Adv_CloseSegment: adds the time since the character left a safe map.
+function	script	F_Adv_CloseSegment	{
+	.@since = modstore_get("char", "client.x.since", 0);
+	if (.@since <= 0)
+		return;
+	.@d = gettimetick(2) - .@since;
+	if (.@d > 0)
+		modstore_inc "char", "client.x.out", .@d;
+	modstore_set "char", "client.x.since", 0;
+	return;
+}
+
+// F_Adv_Duration(seconds) -> "1 h 42 min", "17 min".
+function	script	F_Adv_Duration	{
+	.@m = getarg(0) / 60;
+	if (.@m < 60)
+		return .@m + " min";
+	return (.@m / 60) + " h " + (.@m % 60) + " min";
+}
+
+// F_Adv_Rest -> how many relatos were told; -1 when there was nothing to tell
+// and no expedition to close. Pays them one by one, in order, writes the
+// expedition summary and ends the expedition.
+function	script	F_Adv_Rest	{
+	callfunc "F_Adv_Drain";
+	callfunc "F_Adv_CloseSegment";
+	.@on = modstore_get("char", "client.x.on", 0);
+	.@pn = modstore_get("char", "client.x.pn", 0);
+	if (!.@on && .@pn == 0)
+		return -1;
+	.@told = 0;
+	.@pm = 0;
+	for (.@i = 1; .@i <= .@pn; .@i++) {
+		.@r$ = modstore_get("char", "client.p." + .@i, "");
+		if (.@r$ == "")
+			continue;
+		explode(.@f$, .@r$, "|");
+		.@b = atoi(.@f$[0]);
+		.@j = atoi(.@f$[1]);
+		// getexp refuses 0 and 0 (a character at the top level of both).
+		if (.@b > 0 || .@j > 0)
+			getexp .@b, .@j;
+		.@pm += atoi(.@f$[2]);
+		.@told++;
+	}
+	modstore_delete "char", "client.p";
+	modstore_set "char", "client.x.pn", 0;
+	if (.@on) {
+		.@no = modstore_get("char", "client.x.no", 0);
+		.@out = modstore_get("char", "client.x.out", 0);
+		.@from$ = modstore_get("char", "client.x.from", "");
+		.@deep$ = modstore_get("char", "client.x.deep", "");
+		.@deaths = modstore_get("char", "client.x.deaths", 0);
+		.@s$ = "Expedición " + .@no + " · " + callfunc("F_Adv_Duration", .@out) + " fuera · " + .@from$;
+		if (.@deep$ != "" && .@deep$ != .@from$)
+			.@s$ += " → " + .@deep$;
+		if (.@told == 1)
+			.@s$ += " · 1 relato";
+		else
+			.@s$ += " · " + .@told + " relatos";
+		if (.@told)
+			.@s$ += " (+" + (.@pm / 10) + " % de nivel)";
+		if (.@deaths == 1)
+			.@s$ += " · 1 caída";
+		else if (.@deaths > 1)
+			.@s$ += " · " + .@deaths + " caídas";
+		callfunc "F_Adv_Write", "expedition", .@s$;
+		modstore_set "char", "client.x.on", 0;
+		modstore_set "char", "client.x.out", 0;
+		modstore_set "char", "client.x.deaths", 0;
+	}
+	return .@told;
+}
+
+// F_Adv_BiomeName(biome$) -> "la nieve", "las ruinas"...
+function	script	F_Adv_BiomeName	{
+	.@b$ = getarg(0);
+	if (.@b$ == "bosque") return "el bosque";
+	if (.@b$ == "costa") return "la costa";
+	if (.@b$ == "cueva") return "las cuevas";
+	if (.@b$ == "desierto") return "el desierto";
+	if (.@b$ == "montana") return "la montaña";
+	if (.@b$ == "nieve") return "la nieve";
+	if (.@b$ == "pantano") return "el pantano";
+	if (.@b$ == "pradera") return "la pradera";
+	if (.@b$ == "ruinas") return "las ruinas";
+	if (.@b$ == "selva") return "la selva";
+	if (.@b$ == "volcan") return "tierra volcánica";
+	return .@b$;
+}
+
+-	script	Adventure	-1,{
+	end;
+
+OnInit:
+	bindatcmd "diario", strnpcinfo(3) + "::OnCommand", 0, 99;
+	bindatcmd "relatos", strnpcinfo(3) + "::OnTales", 0, 99;
+	end;
+
+OnCommand:
+	dispbottom "@@event journal open";
+	end;
+
+// @relatos: the expedition and its untold relatos, in the chat.
+OnTales:
+	callfunc "F_Adv_Drain";
+	.@pn = modstore_get("char", "client.x.pn", 0);
+	if (modstore_get("char", "client.x.on", 0)) {
+		.@out = modstore_get("char", "client.x.out", 0);
+		.@since = modstore_get("char", "client.x.since", 0);
+		if (.@since > 0)
+			.@out += gettimetick(2) - .@since;
+		.@deaths = modstore_get("char", "client.x.deaths", 0);
+		dispbottom "Expedicion " + modstore_get("char", "client.x.no", 0) + ": " + callfunc("F_Adv_Duration", .@out) + " fuera, " + .@deaths + " caida" + (.@deaths == 1 ? "" : "s") + ".";
+	} else {
+		dispbottom "No estas de expedicion.";
+	}
+	for (.@i = 1; .@i <= .@pn; .@i++) {
+		.@r$ = modstore_get("char", "client.p." + .@i, "");
+		if (.@r$ == "")
+			continue;
+		explode(.@f$, .@r$, "|");
+		dispbottom "- " + .@f$[4];
+	}
+	dispbottom .@pn + " relato" + (.@pn == 1 ? "" : "s") + " sin contar. Se cuentan al Cronista.";
+	end;
+
+// A segment left open by a crash (no logout event) is not time outside: the
+// map load that follows the login opens a new one.
+OnPCLoginEvent:
+	@adv_map$ = "";
+	if (modstore_get("char", "client.x.since", 0) > 0)
+		modstore_set "char", "client.x.since", 0;
+	end;
+
+OnPCLogoutEvent:
+	callfunc "F_Adv_CloseSegment";
+	end;
+
+OnPCLoadMapEvent:
+	callfunc "F_Adv_Drain";
+	.@map$ = strcharinfo(3);
+	if (.@map$ == @adv_map$)
+		end;
+	@adv_map$ = .@map$;
+	// A map outside the atlas changes nothing: no experiences, and the time
+	// keeps counting as it was.
+	if (!$@wa_ready)
+		end;
+	if (!callfunc("F_Atlas_Has", .@map$))
+		end;
+	if (callfunc("F_Atlas_IsSafe", .@map$)) {
+		callfunc "F_Adv_CloseSegment";
+		if (modstore_get("char", "x.map." + .@map$, 0) == 0) {
+			modstore_set "char", "x.map." + .@map$, 1;
+			if (modstore_get("char", "x.map." + .@map$, 0) == 1)
+				callfunc "F_Adv_Write", "map", callfunc("F_Adv_Place", .@map$);
+		}
+		end;
+	}
+	.@now = gettimetick(2);
+	.@name$ = callfunc("F_Adv_Place", .@map$);
+	.@tier = callfunc("F_Atlas_Tier", .@map$);
+	.@biome$ = callfunc("F_Atlas_Biome", .@map$);
+	if (!modstore_get("char", "client.x.on", 0)) {
+		.@no = modstore_inc("char", "client.x.no", 1);
+		modstore_set "char", "client.x.on", 1;
+		modstore_set "char", "client.x.start", .@now;
+		modstore_set "char", "client.x.out", 0;
+		modstore_set "char", "client.x.deaths", 0;
+		modstore_set "char", "client.x.top", 0;
+		modstore_set "char", "client.x.from", .@name$;
+		modstore_set "char", "client.x.deep", .@name$;
+		dispbottom "Empieza la expedicion " + .@no + ".";
+	}
+	if (modstore_get("char", "client.x.since", 0) == 0)
+		modstore_set "char", "client.x.since", .@now;
+	if (.@tier > modstore_get("char", "client.x.top", 0)) {
+		modstore_set "char", "client.x.top", .@tier;
+		modstore_set "char", "client.x.deep", .@name$;
+	}
+	callfunc "F_Adv_Gain", "map." + .@map$, 1, .@tier, "Primera vez en " + .@name$;
+	if (.@biome$ != "")
+		callfunc "F_Adv_Gain", "biome." + .@biome$, 2, .@tier, "Primera vez en " + callfunc("F_Adv_BiomeName", .@biome$);
+	if (.@tier > 0)
+		callfunc "F_Adv_Gain", "tier." + .@tier, 4, .@tier, "Primer paso en tierras de Tier " + .@tier;
+	end;
+
+OnPCDieEvent:
+	callfunc "F_Adv_Write", "death", callfunc("F_Adv_Place", strcharinfo(3));
+	if (modstore_get("char", "client.x.on", 0))
+		modstore_inc "char", "client.x.deaths", 1;
+	end;
+
+// Fired by F_Adv_Experience.
+OnQueue:
+	callfunc "F_Adv_Drain";
+	end;
+
+// PUBLIC, the form ADVENTURE.md first described: @adv_key$, @adv_size,
+// @adv_tier, @adv_text$ (@adv_party is for 0.2). Prefer F_Adv_Experience: if
+// this event is dropped, these variables are overwritten by the next caller.
+OnExperience:
+	if (@adv_key$ != "" && @adv_text$ != "") {
+		.@n = getarraysize(@adv_qk$);
+		@adv_qk$[.@n] = @adv_key$;
+		@adv_qs[.@n] = @adv_size;
+		@adv_qt[.@n] = @adv_tier;
+		@adv_qx$[.@n] = @adv_text$;
+	}
+	@adv_key$ = "";
+	@adv_size = 0;
+	@adv_tier = 0;
+	@adv_text$ = "";
+	@adv_party = 0;
+	callfunc "F_Adv_Drain";
+	end;
+
+// PUBLIC: tells the attached character's relatos and closes the expedition.
+// For resting places in other mods (a tavern, a restored refuge).
+OnRest:
+	.@told = callfunc("F_Adv_Rest");
+	if (.@told > 0)
+		dispbottom "Cuentas " + .@told + " relato" + (.@told > 1 ? "s" : "") + ".";
+	end;
+}
+
+// The journal entry point other mods already use (see travel-journal's README).
+-	script	TravelJournal	-1,{
+	end;
+
+OnLog:
+	if (@tj_type$ != "" && @tj_text$ != "")
+		callfunc "F_Adv_Write", @tj_type$, @tj_text$;
+	@tj_type$ = "";
+	@tj_text$ = "";
+	end;
+}
+
+//--- Cronista: where relatos are told, beside the board while testing (D23) ---
+prontera,158,193,4	script	Cronista#adv_prt	1_M_BARD,{
+	callfunc "F_Adv_Drain";
+	.@on = modstore_get("char", "client.x.on", 0);
+	.@pn = modstore_get("char", "client.x.pn", 0);
+	mes "[Cronista]";
+	if (!.@on && .@pn == 0) {
+		mes "Escribo lo que cuentan los viajeros. Vuelve cuando hayas vivido algo que merezca contarse.";
+		close;
+	}
+	if (.@pn == 0)
+		mes "Vienes de fuera, pero sin nada nuevo que contar. Aun asi, sientate: tambien eso es un viaje.";
+	else if (.@pn == 1)
+		mes "Traes una historia en la cara. Sientate y cuentamela.";
+	else
+		mes "Traes " + .@pn + " historias en la cara. Sientate y cuentamelas.";
+	next;
+	if (select("Contar lo vivido:Ahora no") == 2) {
+		mes "[Cronista]";
+		mes "Las historias no se van. Aqui estare.";
+		close;
+	}
+	.@told = callfunc("F_Adv_Rest");
+	mes "[Cronista]";
+	if (.@told > 0)
+		mes "Lo apunto todo. Quien sabe contar lo que vivio, aprende de ello.";
+	else
+		mes "Apuntado: volviste. No es poca cosa.";
+	close;
+}
+izlude,126,121,4	duplicate(Cronista#adv_prt)	Cronista#adv_izl	1_M_BARD
+geffen,117,37,4	duplicate(Cronista#adv_prt)	Cronista#adv_gef	1_M_BARD
+payon,186,110,4	duplicate(Cronista#adv_prt)	Cronista#adv_pay	1_M_BARD
+morocc,158,85,4	duplicate(Cronista#adv_prt)	Cronista#adv_moc	1_M_BARD
+alberta,188,144,4	duplicate(Cronista#adv_prt)	Cronista#adv_alb	1_M_BARD
+aldebaran,137,125,4	duplicate(Cronista#adv_prt)	Cronista#adv_alde	1_M_BARD

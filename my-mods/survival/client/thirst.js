@@ -86,9 +86,11 @@ export function initThirstMeter(api) {
     const warning = document.createElement('span');
     warning.className = 'thirst-mod-meter__warning';
     warning.textContent = '!';
-    const warningDescription = 'Agotamiento por sed: velocidad de movimiento y las seis estadisticas reducidas un 20%.';
+    // Same stages and thresholds as S_Stage in npc/survival.txt (low < 30).
+    const lowDescription = 'Sediento: no recuperas SP de forma natural.';
+    const emptyDescription = 'Deshidratado: sin regeneración natural de SP, lanzas y atacas más despacio.';
     warning.setAttribute('role', 'img');
-    warning.setAttribute('aria-label', warningDescription);
+    warning.setAttribute('aria-label', lowDescription);
     warning.setAttribute('aria-describedby', 'thirst-mod-tooltip');
     warning.hidden = true;
     const value = document.createElement('output');
@@ -110,7 +112,7 @@ export function initThirstMeter(api) {
     const tooltip = document.createElement('div');
     tooltip.id = 'thirst-mod-tooltip';
     tooltip.className = 'thirst-mod-tooltip';
-    tooltip.textContent = warningDescription;
+    tooltip.textContent = lowDescription;
     tooltip.setAttribute('role', 'tooltip');
     tooltip.hidden = true;
     document.body.append(tooltip);
@@ -150,8 +152,11 @@ export function initThirstMeter(api) {
         value.textContent = `${thirst} / 100`;
         track.setAttribute('aria-valuenow', String(thirst));
         fill.style.width = `${thirst}%`;
-        fill.style.backgroundColor = thirst === 0 ? '#b84438' : thirst <= 20 ? '#d58c3e' : '#58a9c8';
-        warning.hidden = thirst !== 0;
+        fill.style.backgroundColor = thirst === 0 ? '#b84438' : thirst < 30 ? '#d58c3e' : '#58a9c8';
+        const description = thirst === 0 ? emptyDescription : lowDescription;
+        warning.setAttribute('aria-label', description);
+        tooltip.textContent = description;
+        warning.hidden = thirst >= 30;
         meter.hidden = false;
         updateTooltip();
     });

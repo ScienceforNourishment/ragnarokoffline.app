@@ -85,9 +85,11 @@ export default function init(parameters, api) {
     const warning = document.createElement('span');
     warning.className = 'hunger-mod-meter__warning';
     warning.textContent = '!';
-    const warningDescription = 'Agotamiento: velocidad de movimiento y las seis estadísticas reducidas un 20%.';
+    // Same stages and thresholds as S_Stage in npc/survival.txt (low < 30).
+    const lowDescription = 'Hambriento: no recuperas HP de forma natural.';
+    const emptyDescription = 'Famélico: sin regeneración natural de HP, menos HP máximo y menos ataque.';
     warning.setAttribute('role', 'img');
-    warning.setAttribute('aria-label', warningDescription);
+    warning.setAttribute('aria-label', lowDescription);
     warning.setAttribute('aria-describedby', 'hunger-mod-tooltip');
     warning.hidden = true;
     const value = document.createElement('output');
@@ -109,7 +111,7 @@ export default function init(parameters, api) {
     const tooltip = document.createElement('div');
     tooltip.id = 'hunger-mod-tooltip';
     tooltip.className = 'hunger-mod-tooltip';
-    tooltip.textContent = warningDescription;
+    tooltip.textContent = lowDescription;
     tooltip.setAttribute('role', 'tooltip');
     tooltip.hidden = true;
     document.body.append(tooltip);
@@ -149,8 +151,11 @@ export default function init(parameters, api) {
         value.textContent = `${hunger} / 100`;
         track.setAttribute('aria-valuenow', String(hunger));
         fill.style.width = `${hunger}%`;
-        fill.style.backgroundColor = hunger === 0 ? '#b84438' : hunger <= 20 ? '#d58c3e' : '#77aa52';
-        warning.hidden = hunger !== 0;
+        fill.style.backgroundColor = hunger === 0 ? '#b84438' : hunger < 30 ? '#d58c3e' : '#77aa52';
+        const description = hunger === 0 ? emptyDescription : lowDescription;
+        warning.setAttribute('aria-label', description);
+        tooltip.textContent = description;
+        warning.hidden = hunger >= 30;
         meter.hidden = false;
         updateTooltip();
     });

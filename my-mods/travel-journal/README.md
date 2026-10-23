@@ -1,8 +1,9 @@
 # travel-journal
 
-> **Se integrará en `adventure`** (decidido el 2026-10-17). Este mod sigue
-> funcionando tal cual hasta entonces; después queda como referencia y se
-> retira. Se conservan Alt+J, `@diario`, los tipos de entrada y el evento
+> **Sustituido por [`adventure`](../adventure/README.md) 0.1** (D12, 2026-10-17), que
+> trae este diario con una pestaña de relatos. No actives los dos. Este mod
+> queda como referencia hasta que `adventure` funcione en el juego, y
+> entonces se retira. Se conservan Alt+J, `@diario`, los tipos de entrada y el evento
 > `TravelJournal::OnLog`. Detalle y migración en
 > [`ADVENTURE.md`](../ADVENTURE.md#el-diario-dentro-de-adventure).
 

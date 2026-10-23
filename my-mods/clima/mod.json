@@ -1,6 +1,6 @@
 {
   "name": "clima",
-  "version": "0.2.1",
+  "version": "0.4.0",
   "author": "Ragnarok Offline",
   "description": "Eventos climáticos por bioma (según world-atlas) con efecto de estado y equipo de protección.",
   "renewalFolder": "renewal",

@@ -30,6 +30,9 @@ orden), [`PLAN.md`](./PLAN.md) (catálogo de diseño),
 | D10 | 2026-10-17 | **Los relatos se cuentan al descansar**: en la posada o la taberna de una ciudad, o junto a la fogata de un refugio restaurado (`refuges`). Una fogata en el campo no sirve. | Da a las ciudades y a los refugios una razón concreta. |
 | D11 | 2026-10-17 | **La expedición termina al descansar y contar**, no al pisar la ciudad. Pasar por la ciudad sin descansar sigue siendo la misma expedición. | Pisar la ciudad va de la mano, pero no basta. |
 | D12 | 2026-10-17 | **`adventure` absorbe a `travel-journal`.** Se conserva `TravelJournal::OnLog`. | Una sola lista de mapas visitados, una sola ventana y un temporizador menos. [`ADVENTURE.md`](./ADVENTURE.md#el-diario-dentro-de-adventure). |
+| D25 | 2026-10-17 | **En el juego se llaman «relatos»**: lo vivido fuera queda como relato sin contar hasta contarlo. | Encaja con «contar los relatos» al descansar y es el término de todos los documentos. |
+| D26 | 2026-10-17 | **En `adventure` 0.1 solo cuenta el Cronista**, un NPC propio junto al tablero de las 7 ciudades (D23), y **contar es gratis**. El Posadero de `wounds` no llama a `Adventure::OnRest`. | Un solo sitio claro para cerrar la expedición mientras se prueba; lo que cuesta es volver, no contar. La taberna y los refugios llamarán a `OnRest` cuando existan. |
+| D27 | 2026-10-17 | **Al ganar un relato solo se anuncia su nombre**; cuánto vale se ve en la pestaña Relatos del diario. | Que contar tenga algo de sorpresa, sin esconder el dato a quien lo busque. |
 
 ## Sistemas
 
@@ -65,8 +68,9 @@ Sin decidir; cada una enlaza a donde se discute.
   7 para el nivel 175 en adelante (Renewal llega a 200, y a 275 en algunas
   clases). Pendiente de datos ([`ROADMAP.md`](./ROADMAP.md#frentes-abiertos)).
 - **Composición del modpack** ([`MODPACK.md`](./MODPACK.md)).
-- **Nombre en el juego** de los relatos y **qué skills** enseñan los saberes
-  ([`ADVENTURE.md`](./ADVENTURE.md#decisiones-abiertas)).
+- **Qué skills** enseñan los saberes
+  ([`ADVENTURE.md`](./ADVENTURE.md#decisiones-abiertas)). El nombre ya está
+  decidido: relatos (D25).
 - **Renacimiento (rebirth)** y clases expandidas: si entran en el alcance.
 - **Clima eventual:** vía A (arreglo en el fork de roBrowser), B (solo
   plugin) o C (las dos; recomendada)
