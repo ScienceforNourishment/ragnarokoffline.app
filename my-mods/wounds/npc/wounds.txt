@@ -109,8 +109,10 @@ function	script	F_Wounds_Add	{
 	return 1;
 }
 
-// F_Wounds_Remove(id) -> 1 si la quito, 0 si no la tenia. Sin ella el
-// bonus_script ya aplicado se agota solo en unos 5 s.
+// F_Wounds_Remove(id{, curada}) -> 1 si la quito, 0 si no la tenia. Sin ella el
+// bonus_script ya aplicado se agota solo en unos 5 s. curada (1 si se omite)
+// dice que fue una cura de verdad: cuenta para el rasgo Curtido por las heridas
+// de adventure (F_Adv_Cured). El comando de GM pasa 0.
 function	script	F_Wounds_Remove	{
 	if (!callfunc("F_Wounds_Has", getarg(0)))
 		return 0;
@@ -153,6 +155,8 @@ function	script	F_Wounds_Remove	{
 				wd_src$ = wd_src$ + "|" + .@s$[.@i];
 		}
 	}
+	if (getarg(1, 1) && getnpcid(0, "Adventure"))
+		callfunc "F_Adv_Cured", getarg(0);
 	return 1;
 }
 
@@ -175,6 +179,7 @@ function	script	F_Wounds_CureFrom	{
 }
 
 // F_Wounds_ClearKind(kind) -> cuantas quito. kind 0 = todas, 1 = solo heridas.
+// kind 0 solo lo usa el comando de GM: no cuenta como curadas.
 function	script	F_Wounds_ClearKind	{
 	if (wd_list$ == "")
 		return 0;
@@ -184,16 +189,17 @@ function	script	F_Wounds_ClearKind	{
 	for (.@i = 0; .@i < .@n; .@i++) {
 		.@id = atoi(.@a$[.@i]);
 		if (getarg(0) == 0 || callfunc("F_Wounds_Kind", .@id) == getarg(0))
-			.@removed += callfunc("F_Wounds_Remove", .@id);
+			.@removed += callfunc("F_Wounds_Remove", .@id, getarg(0) != 0);
 	}
 	return .@removed;
 }
 
 // F_Wounds_Log(texto$) -> anota una linea en el diario del viajero, si esta.
+// F_Adv_Note (adventure 0.3) no la pierde aunque el personaje este en un
+// dialogo, como pasaba con doevent "TravelJournal::OnLog".
 function	script	F_Wounds_Log	{
-	@tj_type$ = "note";
-	@tj_text$ = getarg(0);
-	doevent "TravelJournal::OnLog";
+	if (getnpcid(0, "Adventure"))
+		callfunc "F_Adv_Note", "note", getarg(0);
 	return;
 }
 
@@ -337,6 +343,9 @@ S_Apply:
 		// Vendada (campfire): la mitad, minimo 1.
 		if (callfunc("F_Wounds_IsEased", .@id))
 			.@v = max(.@v / 2, 1);
+		// Rasgo de adventure Curtido por las heridas: un punto menos, minimo 1.
+		if (adv_trait_tough)
+			.@v = max(.@v - 1, 1);
 		.@fx$ += replacestr(.fx$[.@id], "@n", "" + .@v);
 	}
 	if (.@fx$ != "")

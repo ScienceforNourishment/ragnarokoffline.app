@@ -154,7 +154,8 @@ se recalculan cuando la curva esté hecha.
 
 **Racha:** +10 % por cada experiencia distinta en la misma expedición, hasta
 +50 %. Vuelve a 0 al terminar la expedición. Qué le pasa al morir está por
-decidir (ver «Morir y las cicatrices»).
+decidir (ver «Morir y las cicatrices»); en 0.2 morir no la toca. El tope del
+60 % se aplica con la racha incluida.
 
 **Topes:** un solo relato no da más del 60 % de un nivel. Los relatos se cobran
 uno a uno, en orden, así que se puede subir varios niveles al descansar, pero
@@ -174,7 +175,7 @@ experiencias**.
 | `tier:<n>` | primer mapa de un Tier | Hito | `adventure` |
 | `long:<min>` | una expedición de 30, 60 y 120 minutos | Media | `adventure` (al cambiar de mapa) |
 | `close:return` | volver con menos del 20 % de HP o con una necesidad a 0 ("por los pelos") | Media | `adventure` |
-| `mvp:<mob>` | primer MVP de cada especie | Mayor | `adventure` (`OnNPCKillEvent`) *(verificar cómo distinguir un MVP)* |
+| `mvp:<mob>` | primer MVP de cada especie | Mayor | `adventure` (`OnNPCKillEvent`, con `MOB_MODE & MD_MVP` como `nemesis`) |
 | `chest:<mapa>` | primer cofre abierto en ese mapa | Menor | `dungeon-chest` |
 | `chesttier:<n>` | primer cofre de un Tier | Mayor | `dungeon-chest` |
 | `mark:<contrato>` | primera vez que abates esa marca | Media | `expedition-board` |
@@ -249,6 +250,11 @@ la anula: es maestría, no inmunidad.
 | `adv_trait_heat` | 30 min acumulados en desierto o volcán | `temperature` | la de calor, 1 menos |
 | `adv_trait_tough` | curar 3 heridas distintas | `wounds` | las heridas restan 1 punto menos |
 | `adv_trait_forager` | 5 biomas distintos | `survival` | hambre y sed bajan un 20 % más lento |
+
+Hecho en 0.3 con estos valores, que son ajustes del mod. «Curar 3 heridas
+distintas» cuenta también las maldiciones, y el frío o el calor solo se
+rebajan desde Helado o Acalorado, para que un rasgo no dé nunca Cómodo ni su
+bono. Detalle en el [README del mod](./adventure/README.md#qué-hace).
 
 Opcional *(verificar)*: un Hito puede dar además **un punto de habilidad**
 (`SkillPoint += 1`).
@@ -326,7 +332,8 @@ if (getnpcid(0, "Adventure"))
   funcionando, pero se puede perder.
 - Dependencia suave: `getnpcid` devuelve 0 si `adventure` no está, y la
   llamada no se hace.
-- `@adv_party` (crédito en grupo) llega en 0.2.
+- Crédito en grupo (0.2): un quinto argumento `1` en `F_Adv_Experience`,
+  o `@adv_party = 1` en la forma con `doevent`.
 - `adventure` deduplica por clave (mod store, alcance `char`; una clave ocupa
   unos 30 bytes, el límite es 64 KiB por personaje).
 - **Dos jugadores:** con `@adv_party = 1`, los miembros del grupo conectados en
@@ -362,8 +369,13 @@ cortos sin añadir campos y ciudades menores al atlas
    trasladan el script y el plugin de cliente de `travel-journal`, con
    `TravelJournal::OnLog` y las pestañas Diario y Relatos. Sin temporizadores. Morir solo cuesta lo que ya cuesta hoy hasta decidir.
 2. **0.2:** integración con `dungeon-chest`, `expedition-board`, `clima` y
-   `temperature`; racha; crédito en grupo.
-3. **0.3:** saberes (skills) y rasgos, con sus pestañas en el diario.
+   `temperature`; racha; crédito en grupo. **Escrita el 2026-10-23**, sin
+   probar en el juego, con la pestaña Expediciones del diario; ver el
+   [README del mod](./adventure/README.md#estado).
+3. **0.3:** saberes (skills) y rasgos, con sus pestañas en el diario. **Los
+   rasgos están escritos** (2026-10-23, `adventure` 0.3.0, sin probar en el
+   juego), con su pestaña; los **saberes** esperan a decidir qué skills
+   («Decisiones abiertas»).
 4. **0.4:** hitos del CSV; `nemesis`, `refuges` y `remnants` cuando existan.
 
 ## Decisiones abiertas

@@ -36,9 +36,14 @@ function	script	F_Refuge_Find	{
 }
 
 // F_Refuge_Self() -> indice del refugio de la copia que corre el script (su
-// nombre oculto es rf_<id> o rf_<id>_<letra>), o -1.
+// nombre oculto es rf_<id> o rf_<id>_<letra>), o -1. Se lee del nombre unico
+// (strnpcinfo(3)): setnpcdisplay cambia el nombre visible entero, con lo que
+// strnpcinfo(2) se queda sin la parte de despues de #.
 function	script	F_Refuge_Self	{
-	explode(.@h$, strnpcinfo(2), "_");
+	explode(.@u$, strnpcinfo(3), "#");
+	if (getarraysize(.@u$) < 2)
+		return -1;
+	explode(.@h$, .@u$[1], "_");
 	if (getarraysize(.@h$) < 2)
 		return -1;
 	return callfunc("F_Refuge_Find", .@h$[1]);
@@ -294,23 +299,8 @@ S_Done:
 	.@tier = 0;
 	if ($@wa_ready)
 		.@tier = callfunc("F_Atlas_Tier", .@map$);
-	callfunc "F_Adv_Experience", "refuge:" + .@id$, 3, .@tier, "Restauré el " + .@name$;
-	.@pid = getcharid(1);
-	if (!.@pid)
-		return;
-	.@self = getcharid(3);
-	getpartymember .@pid, 2;
-	.@n = $@partymembercount;
-	copyarray .@aid[0], $@partymemberaid[0], .@n;
-	for (.@i = 0; .@i < .@n; .@i++) {
-		if (.@aid[.@i] == .@self)
-			continue;
-		if (!attachrid(.@aid[.@i]))
-			continue;
-		if (strcharinfo(3) == .@map$)
-			callfunc "F_Adv_Experience", "refuge:" + .@id$, 3, .@tier, "Restauré el " + .@name$;
-	}
-	attachrid(.@self);
+	// El ultimo 1: adventure (0.2) lo comparte con el grupo en este mapa.
+	callfunc "F_Adv_Experience", "refuge:" + .@id$, 3, .@tier, "Restauré el " + .@name$, 1;
 	return;
 }
 

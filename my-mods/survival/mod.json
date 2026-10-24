@@ -1,6 +1,19 @@
 {
   "name": "survival",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "author": "Tu nombre",
-  "description": "Añade sistemas de hambre y sed con medidores, agotamiento y consumibles."
+  "description": "Añade sistemas de hambre y sed con medidores, agotamiento y consumibles.",
+  "requires": {
+    "app": ">=1.5.2",
+    "era": "any"
+  },
+  "settings": [
+    { "key": "need_seconds", "type": "number", "default": 15, "min": 1, "max": 3600, "label": "Segundos por punto de hambre y sed", "description": "Valor de prueba: de 100 a 0 en 25 minutos. 60 es un punto por minuto. El reloj pasa cada 4 s." },
+    { "key": "regen_bonus", "type": "number", "default": 20, "min": 0, "max": 200, "label": "Bien alimentado / Hidratado: regeneración (%)", "description": "Valor de prueba. Regeneración natural de HP (hambre) o SP (sed)." },
+    { "key": "starve_rate", "type": "number", "default": 10, "min": 0, "max": 90, "label": "Famélico: HP máx y ATK (−%)", "description": "Valor de prueba. Se reduce bajo el tope de presión." },
+    { "key": "dry_cast", "type": "number", "default": 10, "min": 0, "max": 90, "label": "Deshidratado: tiempo de lanzamiento (+%)", "description": "Valor de prueba. Se reduce bajo el tope de presión." },
+    { "key": "dry_aspd", "type": "number", "default": 10, "min": 0, "max": 90, "label": "Deshidratado: ASPD (−%)", "description": "Valor de prueba. Se reduce bajo el tope de presión." },
+    { "key": "both_speed", "type": "number", "default": 20, "min": 0, "max": 90, "label": "Las dos en 0: velocidad (−%)", "description": "Valor de prueba. Se reduce bajo el tope de presión." },
+    { "key": "forager_pct", "type": "number", "default": 20, "min": 0, "max": 80, "label": "Rasgo Buscavidas: más lento (%)", "description": "Cuánto más despacio bajan hambre y sed con el rasgo Buscavidas de adventure." }
+  ]
 }

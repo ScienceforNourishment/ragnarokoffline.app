@@ -248,8 +248,13 @@ las ideas para futuras iteraciones:
   expediciones y **relatos**. Lo vivido por primera vez (mapa, bioma, Tier,
   herida) queda como relato sin contar y se cobra en EXP al contarlo con el
   **Cronista** de una ciudad, lo que cierra la expedición. Trae el diario de
-  `travel-journal` con una pestaña Relatos. Requiere `world-atlas`; `wounds`
-  le publica la primera vez de cada herida. Los demás mods publican
+  `travel-journal` con las pestañas Relatos y Expediciones. Requiere
+  `world-atlas`. Desde la 0.2, la racha premia seguir fuera y los relatos
+  pueden ser de grupo; se los publican `dungeon-chest` (cofres),
+  `expedition-board` (marcas y cacerías), `clima`, `temperature`, `wounds`,
+  `nemesis`, `refuges` y `campfire`. Desde la 0.3 da **rasgos**
+  (`adv_trait_*`), maestrías que suavizan el frío, el calor, las heridas y
+  el hambre; los leen `temperature`, `wounds` y `survival`. Los demás mods publican
   experiencias con `callfunc "F_Adv_Experience"` tras comprobar
   `getnpcid(0, "Adventure")`. Ver [`adventure/README.md`](./adventure/README.md).
 

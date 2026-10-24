@@ -14,7 +14,7 @@ partida está en «Mods nuevos propuestos» de [`PLAN.md`](../PLAN.md).
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.1.0 (la de `mod.json`), la primera
+- **Versión:** 0.2.0 (la de `mod.json`): las notas del diario van con `F_Adv_Note` de `adventure` 0.3 (no se pierden en la cola; con un `adventure` anterior darían error, así que actualiza los dos juntos). El rango máximo y el refuerzo por rango pasan a **Settings** (`max_rank`, `rank_hp`, `rank_atk`; ver «Ajustes»), con los mismos valores por defecto. Sin probar en el juego. La 0.1.0 fue la primera
 - **Probado:** solo comprobaciones estáticas: llaves equilibradas, cabeceras
   con tabuladores, subrutinas definidas, IDs sin duplicar (51200–51209 libres
   en `my-mods/`, `mods/` y el registro). Los comandos de script se comprobaron
@@ -39,6 +39,17 @@ Actualízala al cambiar el mod o al probarlo.
   "TravelJournal::OnLog"`, que pasa por la cola de 2 huecos (igual que
   `wounds`)
 - **Actualizado:** 2026-10-23
+
+## Ajustes
+
+En Settings → Mods → `nemesis`; cambian al pulsar **Apply** (reinicia el
+servidor). Los marcados «de prueba» son los valores de las sesiones de prueba.
+
+| Ajuste | Por defecto | Qué cambia |
+|---|---:|---|
+| `max_rank` | 3 | de prueba: hasta qué rango sube |
+| `rank_hp` | 50 | de prueba: % de HP extra por rango sobre el 1 |
+| `rank_atk` | 20 | de prueba: % de ATK extra por rango sobre el 1 |
 
 ## Instalar
 

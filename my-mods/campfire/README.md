@@ -35,11 +35,32 @@ Actualízala al cambiar el mod o al probarlo.
   `DelayConsume` no se gastan solos, un diálogo abierto desde un objeto se
   corta al terminar su script, `getnpctimer(1)` dice si el reloj corre, y
   existen `distance`, `min`, `max`, `hideonnpc`, `SC_STRFOOD`…`SC_LUKFOOD`
-- **Sin probar en el juego:** todo. Lo que más dudas tiene: que el sprite
-  `4_BONFIRE` se vea en roBrowser, que la fogata aparezca y desaparezca bien
-  (oculta al apagarse, descargada un minuto después), y la posición del
-  Proveedor (`prontera 151,187`)
-- **Actualizado:** 2026-10-23
+- **Probado en el juego (0.2.0, 2026-10-24),** todo «Probarlo» salvo lo de
+  dos jugadores:
+  - **Proveedor y objetos:** el Proveedor está en `prontera 151,187` y vende
+    Leña (300), Kit (900) y Venda (400); los objetos y los platos tienen
+    icono y descripción en español; la Leña en Prontera dice «Aquí no hace
+    falta una fogata» y no se gasta.
+  - **Encender y apagarse** (`prt_fild08`): la fogata se ve (`4_BONFIRE`
+    existe en el cliente), gasta una Leña y da el relato «Encendí mi primera
+    fogata»; otra Leña a 1–2 celdas no se gasta; `@fogata` dice los minutos;
+    encender otra con el Kit hace desaparecer la primera; «Apagar la fogata»
+    la quita.
+  - **Cocinar:** «(listo)» solo en lo que se puede hacer y los ingredientes
+    que faltan en lo demás; la Brocheta gasta las 3 patas y da el relato
+    «Cociné junto al fuego por primera vez»; Brocheta FUE +2 y hambre +25,
+    Carne Asada VIT +2 y hambre +60.
+  - **Vendar:** sin Venda pide una; con ella la Cicatriz del lobo sale
+    «(vendada)» y resta la mitad de AGI; no se vuelve a ofrecer, ni una
+    maldición; curada y vuelta a recibir, sale sin vendar.
+  - **Temperatura** (`xmas_fild01`): junto a la fogata, Cómodo, «Estas
+    junto a una fogata», presión de temperatura 0 y sin icono de frío; a 4
+    celdas o más vuelve el frío en 4 s o menos.
+  - **Descansado:** 20 minutos; la primera muerte en el campo sale sin
+    herida y la segunda sí la deja.
+- **Sin probar:** la fogata compartida (Cómodo, descansar y cocinar en la
+  del compañero), que necesita dos jugadores; los ajustes de Settings
+- **Actualizado:** 2026-10-24
 
 ## Instalar
 

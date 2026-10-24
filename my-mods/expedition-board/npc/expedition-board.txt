@@ -55,14 +55,15 @@ function	script	F_Expedition_Tier	{
 	return callfunc("F_Atlas_Tier", getvariableofnpc(.map$[.@id], "ExpeditionData"));
 }
 
-// F_Expedition_Zeny(id) -> zeny que paga el contrato: el del CSV, +25% por cada
-// Tier por encima del 1. Sin Tier (0) o en Tier 1 paga lo del CSV.
+// F_Expedition_Zeny(id) -> zeny que paga el contrato: el del CSV por
+// zeny_pct (100), +zeny_tier_pct (25 %) por cada Tier por encima del 1. Sin
+// Tier (0) o en Tier 1 no hay suplemento. Los dos son ajustes de mod.json.
 function	script	F_Expedition_Zeny	{
 	.@id = getarg(0);
-	.@zeny = getvariableofnpc(.zeny[.@id], "ExpeditionData");
+	.@zeny = getvariableofnpc(.zeny[.@id], "ExpeditionData") * callfunc("F_ModSetting", "expedition-board", "zeny_pct", 100) / 100;
 	.@tier = callfunc("F_Expedition_Tier", .@id);
 	if (.@tier > 1)
-		.@zeny = .@zeny * (100 + 25 * (.@tier - 1)) / 100;
+		.@zeny = .@zeny * (100 + callfunc("F_ModSetting", "expedition-board", "zeny_tier_pct", 25) * (.@tier - 1)) / 100;
 	return .@zeny;
 }
 
@@ -122,6 +123,15 @@ function	script	F_Expedition_Pay	{
 	getitem .@item, .@amt;
 	mes "Contrato cerrado. " + .@zeny + " zeny y " + .@amt + " " + getitemname(.@item) + ".";
 	return 1;
+}
+
+// F_Expedition_Log(texto$): una nota en el diario del viajero de adventure, si
+// esta. F_Adv_Note (adventure 0.3) no la pierde aunque el personaje este en un
+// dialogo, como pasaba con doevent "TravelJournal::OnLog".
+function	script	F_Expedition_Log	{
+	if (getnpcid(0, "Adventure"))
+		callfunc "F_Adv_Note", "note", getarg(0);
+	return;
 }
 
 // F_Expedition_PartyAid(party id, char id) -> account id de ese miembro del grupo
@@ -281,11 +291,12 @@ OnMarkDead:
 	$@eb_mark[getcharid(0)] = 0;
 	eb_state = 2;
 	dispbottom "Expedicion: objetivo abatido. Entrega con el Intendente de " + getvariableofnpc(.cityname$[eb_qid], "ExpeditionData") + ", junto al tablero.";
-	// Entrada en el diario del viajero. Si adventure (su diario) no esta activo, doevent
-	// solo deja una advertencia en el log del servidor.
-	@tj_type$ = "note";
-	@tj_text$ = "Marca abatida: " + getvariableofnpc(.name$[eb_qid], "ExpeditionData") + " (" + getvariableofnpc(.place$[eb_qid], "ExpeditionData") + ").";
-	doevent "TravelJournal::OnLog";
+	// Entrada en el diario del viajero (F_Expedition_Log), si adventure esta activo.
+	callfunc "F_Expedition_Log", "Marca abatida: " + getvariableofnpc(.name$[eb_qid], "ExpeditionData") + " (" + getvariableofnpc(.place$[eb_qid], "ExpeditionData") + ").";
+	// La primera vez con cada marca es un relato de adventure (Media), para el
+	// dueno y su grupo en este mapa. adventure no la repite.
+	if (getnpcid(0, "Adventure"))
+		callfunc "F_Adv_Experience", "mark:" + eb_qid, 2, callfunc("F_Expedition_Tier", eb_qid), "Abatí la marca: " + getvariableofnpc(.name$[eb_qid], "ExpeditionData"), 1;
 	end;
 
 // Corre con CADA monstruo que mata un jugador, en todo el servidor, bots del
@@ -344,9 +355,11 @@ S_Hunt:
 	eb_state = 2;
 	callfunc "F_Expedition_HuntEnd";
 	dispbottom "Caceria completada: " + .@need + " " + .@name$ + ". Vuelve al tablero de " + getvariableofnpc(.cityname$[eb_qid], "ExpeditionData") + " a entregar.";
-	@tj_type$ = "note";
-	@tj_text$ = "Caceria completada: " + .@need + " " + .@name$ + " (" + getvariableofnpc(.place$[eb_qid], "ExpeditionData") + ").";
-	doevent "TravelJournal::OnLog";
+	callfunc "F_Expedition_Log", "Caceria completada: " + .@need + " " + .@name$ + " (" + getvariableofnpc(.place$[eb_qid], "ExpeditionData") + ").";
+	// Relato de adventure (Menor), la primera vez con cada caceria. Solo el
+	// suyo: cada companero completa su propia caceria.
+	if (getnpcid(0, "Adventure"))
+		callfunc "F_Adv_Experience", "hunt:" + eb_qid, 1, callfunc("F_Expedition_Tier", eb_qid), "Completé la cacería: " + getvariableofnpc(.name$[eb_qid], "ExpeditionData");
 	return;
 }
 
@@ -550,13 +563,12 @@ prontera,160,193,4	script	Expedicion#eb_prt	4_BOARD3,{
 			eb_hunt_map$ = getvariableofnpc(.map$[.@id], "ExpeditionData");
 			$@eb_hunters++;
 		}
-		// Diario del viajero (ver OnMarkDead): si adventure no esta, solo hay un aviso en el log.
-		@tj_type$ = "note";
+		// Diario del viajero (F_Expedition_Log), si adventure esta activo.
 		if (.@type == 2)
-			@tj_text$ = "Acepte en " + getvariableofnpc(.cityname$[.@id], "ExpeditionData") + " cazar " + getvariableofnpc(.count[.@id], "ExpeditionData") + " " + getmonsterinfo(getvariableofnpc(.mob[.@id], "ExpeditionData"), MOB_NAME) + " en " + getvariableofnpc(.place$[.@id], "ExpeditionData") + ".";
+			.@note$ = "Acepte en " + getvariableofnpc(.cityname$[.@id], "ExpeditionData") + " cazar " + getvariableofnpc(.count[.@id], "ExpeditionData") + " " + getmonsterinfo(getvariableofnpc(.mob[.@id], "ExpeditionData"), MOB_NAME) + " en " + getvariableofnpc(.place$[.@id], "ExpeditionData") + ".";
 		else
-			@tj_text$ = "Acepte en " + getvariableofnpc(.cityname$[.@id], "ExpeditionData") + " el contrato: " + getvariableofnpc(.name$[.@id], "ExpeditionData") + " (" + getvariableofnpc(.place$[.@id], "ExpeditionData") + ").";
-		doevent "TravelJournal::OnLog";
+			.@note$ = "Acepte en " + getvariableofnpc(.cityname$[.@id], "ExpeditionData") + " el contrato: " + getvariableofnpc(.name$[.@id], "ExpeditionData") + " (" + getvariableofnpc(.place$[.@id], "ExpeditionData") + ").";
+		callfunc "F_Expedition_Log", .@note$;
 		if (.@type == 1) {
 			mes "Contrato aceptado. Busca a ^0000FFMarca de expedicion^000000.";
 			close2;

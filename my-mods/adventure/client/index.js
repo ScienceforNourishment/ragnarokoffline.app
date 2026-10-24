@@ -1,7 +1,9 @@
-// Traveller's journal window, with two tabs: Diario (the entries, as in
-// travel-journal) and Relatos (the expedition under way and what is still
-// untold). Reads the character's store, written by npc/adventure.txt, and
-// redraws when the server says something new arrived.
+// Traveller's journal window, with four tabs: Diario (the entries, as in
+// travel-journal), Relatos (the expedition under way and what is still
+// untold), Expediciones (only the finished ones, the character's story) and
+// Rasgos (the masteries, gained or on the way).
+// Reads the character's store, written by npc/adventure.txt, and redraws when
+// the server says something new arrived.
 
 const REGIONS = [
     ['prontera', 'Prontera'], ['izlude', 'Izlude'], ['geffen', 'Geffen'], ['payon', 'Payon'],
@@ -25,6 +27,7 @@ const STYLE = `
 .entry.death { background: #fbeeee; }
 .entry.exp { background: #f6f3e6; }
 .entry.expedition { background: #eaf2ea; }
+.entry.trait { background: #eef0fb; }
 .empty { color: #889; padding: 12px; }
 .hint { color: #889; padding: 8px; font-size: 11px; }
 .launcher { position: fixed; right: 145px; top: 92px; width: 43px; height: 22px; z-index: 8999; font: bold 11px Tahoma, sans-serif; padding: 0;
@@ -57,6 +60,29 @@ export function parseTale(line) {
     return { perMille: Number(match[3]), tier: Number(match[4]), text: match[5] };
 }
 
+/** The % the racha adds to the next relato: +step per relato had, up to max. */
+export function streakBonus(expedition, step = 10, max = 50) {
+    return Math.min(Math.max(Number(expedition?.streak) || 0, 0) * step, max);
+}
+
+/**
+ * The four rasgos from the store's client.t copy, with their progress. The
+ * thresholds are the mod's settings, the same the server reads.
+ */
+export function traitRows(stored, { minutes = 30, biomes = 5, cures = 3 } = {}) {
+    const t = stored && typeof stored === 'object' ? stored : {};
+    const n = key => Math.max(Number(t[key]) || 0, 0);
+    const rows = [
+        ['cold', 'Hecho al frío', 'El frío cuenta un grado menos.', Math.floor(n('cold_s') / 60), minutes, 'min en la nieve'],
+        ['heat', 'Hecho al calor', 'El calor cuenta un grado menos.', Math.floor(n('heat_s') / 60), minutes, 'min en desierto o volcán'],
+        ['forager', 'Buscavidas', 'El hambre y la sed bajan un 20 % más lento.', n('biomes'), biomes, 'biomas'],
+        ['tough', 'Curtido por las heridas', 'Las heridas restan un punto menos.', n('cures'), cures, 'heridas distintas curadas'],
+    ];
+    return rows.map(([key, name, effect, have, need, unit]) => ({
+        key, name, effect, gained: n(key) > 0, progress: `${Math.min(have, need)}/${need} ${unit}`,
+    }));
+}
+
 /** Seconds as "1 h 42 min" or "17 min", like the server's summary. */
 export function duration(seconds) {
     const minutes = Math.max(0, Math.floor(Number(seconds) / 60) || 0);
@@ -75,6 +101,7 @@ export function describe(entry) {
     if (entry.type === 'death') return { glyph: '💀', text: `Caíste en ${placeName(entry.text)}.` };
     if (entry.type === 'exp') return { glyph: '✨', text: `${entry.text}.` };
     if (entry.type === 'expedition') return { glyph: '🏕️', text: entry.text };
+    if (entry.type === 'trait') return { glyph: '🎖️', text: `${entry.text}.` };
     return { glyph: '📝', text: entry.text };
 }
 
@@ -82,12 +109,20 @@ export default function init(parameters, api) {
     if (api?.version !== 1) throw new Error('adventure requires client API 1');
     const win = api.ui.window({ id: 'adventure-journal', title: 'Diario del viajero', width: 360, height: 440 });
     win.body.innerHTML = `<style>${STYLE}</style>
-<div class="tabs"><button data-tab="journal" class="on">Diario</button><button data-tab="tales">Relatos</button></div>
+<div class="tabs"><button data-tab="journal" class="on">Diario</button><button data-tab="tales">Relatos</button><button data-tab="trips">Expediciones</button><button data-tab="traits">Rasgos</button></div>
 <div class="pane" data-pane="journal"><div class="top"><span class="name"></span><span class="count"></span></div><div class="list journal"></div></div>
-<div class="pane" data-pane="tales" hidden><div class="top"><span class="trip"></span><span class="clock"></span></div><div class="list tales"></div></div>`;
+<div class="pane" data-pane="tales" hidden><div class="top"><span class="trip"></span><span class="clock"></span></div><div class="list tales"></div></div>
+<div class="pane" data-pane="trips" hidden><div class="top"><span class="trips-count"></span></div><div class="list trips"></div></div>
+<div class="pane" data-pane="traits" hidden><div class="list traits"></div></div>`;
     const $ = selector => win.body.querySelector(selector);
     const journal = $('.list.journal');
     const tales = $('.list.tales');
+    const trips = $('.list.trips');
+    const traits = $('.list.traits');
+    const num = (value, fallback) => (Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : fallback);
+    const step = num(parameters?.streak_step, 10);
+    const max = num(parameters?.streak_max, 50);
+    const limits = { minutes: num(parameters?.trait_minutes, 30), biomes: num(parameters?.forager_biomes, 5), cures: num(parameters?.tough_cures, 3) };
     $('.name').textContent = api.snapshot()?.player?.name || '';
 
     let tab = 'journal';
@@ -103,16 +138,17 @@ export default function init(parameters, api) {
     let loading = 0;
     async function refresh() {
         const ticket = ++loading;
-        let entries, trip, untold;
+        let entries, trip, untold, mastery;
         try {
             // Read apart: one answer over about 36 KB is refused.
-            [entries, trip, untold] = await Promise.all([
+            [entries, trip, untold, mastery] = await Promise.all([
                 api.store.get('char', 'client.e'),
                 api.store.get('char', 'client.x'),
                 api.store.get('char', 'client.p'),
+                api.store.get('char', 'client.t'),
             ]);
         } catch (error) {
-            if (ticket === loading) journal.innerHTML = tales.innerHTML = '<div class="empty">No se pudo leer el diario.</div>';
+            if (ticket === loading) journal.innerHTML = tales.innerHTML = trips.innerHTML = traits.innerHTML = '<div class="empty">No se pudo leer el diario.</div>';
             return;
         }
         if (ticket !== loading) return;
@@ -127,6 +163,17 @@ export default function init(parameters, api) {
             return `<div class="entry ${escape(entry.type)}"><span class="glyph">${glyph}</span><span>${escape(text)}</span><small>${escape(new Date(entry.time).toLocaleString())}</small></div>`;
         }).join('') : '<div class="empty">Aún no hay nada escrito.</div>';
 
+        // The summaries are journal entries, so only the last 300 entries' worth.
+        const finished = list.filter(entry => entry.type === 'expedition');
+        $('.trips-count').textContent = finished.length === 1 ? '1 expedición contada' : `${finished.length} expediciones contadas`;
+        trips.innerHTML = finished.length ? finished.map(entry =>
+            `<div class="entry expedition"><span class="glyph">🏕️</span><span>${escape(entry.text)}</span><small>${escape(new Date(entry.time).toLocaleString())}</small></div>`
+        ).join('') : '<div class="empty">Ninguna expedición contada todavía.</div>';
+
+        traits.innerHTML = traitRows(mastery, limits).map(row =>
+            `<div class="entry${row.gained ? ' trait' : ''}"><span class="glyph">${row.gained ? '🎖️' : '·'}</span><span><b>${escape(row.name)}</b> · ${escape(row.effect)}</span><small>${row.gained ? 'Ganado' : escape(row.progress)}</small></div>`
+        ).join('') + '<div class="hint">Un rasgo suaviza un castigo, nunca lo quita. El tiempo cuenta al salir de cada mapa.</div>';
+
         expedition = trip && typeof trip === 'object' ? trip : null;
         const pending = Object.entries(untold || {})
             .map(([n, line]) => ({ n: Number(n), ...parseTale(line) }))
@@ -134,13 +181,14 @@ export default function init(parameters, api) {
             .sort((a, b) => a.n - b.n);
         const total = pending.reduce((sum, tale) => sum + tale.perMille, 0);
         const deaths = Number(expedition?.deaths) || 0;
+        const streak = streakBonus(expedition, step, max);
         $('.trip').textContent = expedition?.on
-            ? `Expedición ${expedition.no}${deaths ? ` · ${deaths} caída${deaths > 1 ? 's' : ''}` : ''}`
+            ? `Expedición ${expedition.no}${streak ? ` · racha +${streak} %` : ''}${deaths ? ` · ${deaths} caída${deaths > 1 ? 's' : ''}` : ''}`
             : 'No estás de expedición';
         showClock();
         tales.innerHTML = (pending.length
             ? pending.map(tale => `<div class="entry exp"><span class="glyph">✨</span><span>${escape(tale.text)}.</span><small>Tier ${tale.tier}</small></div>`).join('')
-              + `<div class="hint">${pending.length} relato${pending.length > 1 ? 's' : ''} sin contar, unos +${Math.floor(total / 10)} % de nivel. Se cuentan al Cronista, junto al tablero de cada ciudad.</div>`
+              + `<div class="hint">${pending.length} relato${pending.length > 1 ? 's' : ''} sin contar, unos +${Math.floor(total / 10)} % de nivel. Se cuentan al Cronista (junto al tablero de cada ciudad), en la taberna o junto a la fogata de un refugio restaurado.</div>`
             : '<div class="empty">Nada sin contar.</div>');
     }
 

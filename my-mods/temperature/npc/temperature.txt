@@ -81,6 +81,12 @@ function	script	F_Temperature_Feel	{
 		.@feel = 3;
 	if (.@feel < -3)
 		.@feel = -3;
+	// Rasgos de adventure (adv_trait_cold, adv_trait_heat): el frio o el calor
+	// que castiga (2 o mas) cuenta un grado menos. Nunca da Comodo ni su bono.
+	if (.@feel <= -2 && adv_trait_cold)
+		.@feel++;
+	else if (.@feel >= 2 && adv_trait_heat)
+		.@feel--;
 	return .@feel;
 }
 
@@ -113,6 +119,10 @@ OnInit:
 
 	// Tope de presion comun; survival y wounds usan el mismo numero.
 	.pr_cap = 6;
+	// Ajustes (mod.json). penalty_pct escala los castigos (100 = los de la
+	// tabla del README); warm_bonus es el HP/SP maximo de Bien abrigado.
+	.penalty_pct = callfunc("F_ModSetting", "temperature", "penalty_pct", 100);
+	.warm_bonus = callfunc("F_ModSetting", "temperature", "warm_bonus", 3);
 	bindatcmd "temperatura", "temp_mgr::OnStatus", 0, 99;
 	initnpctimer;
 	end;
@@ -141,6 +151,12 @@ OnPCLoginEvent:
 
 OnPCLogoutEvent:
 	callsub S_Leave;
+	end;
+
+// El cliente termino de cargar el mapa (solo en mapas con loadevent): ya puede
+// recibir el icono. Ver S_Apply.
+OnPCLoadMapEvent:
+	@tp_loaded$ = strcharinfo(3);
 	end;
 
 // Cada 4 s, para cada jugador de la lista. attachrid no pasa por la cola de
@@ -186,7 +202,14 @@ S_Apply:
 	if (.@feel == 0) {
 		// Bien preparado: el lugar es extremo y tu ropa lo compensa.
 		if (@tp_env + @tp_clima != 0 && !@tp_fire)
-			bonus_script "{ bonus bMaxHPrate,3; bonus bMaxSPrate,3; }", 5, 1032;
+			bonus_script "{ bonus bMaxHPrate," + .warm_bonus + "; bonus bMaxSPrate," + .warm_bonus + "; }", 5, 1032;
+		// Comodo gracias a la ropa en un mapa de temperatura +-2: relato de
+		// adventure (Media), una vez. @tp_told evita llamarlo en cada tick.
+		if (!@tp_told && (@tp_env == 2 || @tp_env == -2) && !@tp_fire) {
+			@tp_told = 1;
+			if (getnpcid(0, "Adventure"))
+				callfunc "F_Adv_Experience", "temp:extreme", 2, callfunc("F_Atlas_Tier", strcharinfo(3)), "Comodo en " + (@tp_env < 0 ? "pleno frio" : "pleno calor") + " gracias a mi ropa";
+		}
 		return;
 	}
 	if (.@feel == 1 || .@feel == -1)
@@ -202,15 +225,19 @@ S_Apply:
 	// ese paquete llegaba mientras el cliente cargaba, y roBrowser lo tira porque
 	// su personaje aun no existe. Por eso el primer tick en un mapa no crea el
 	// icono: la entrada del mapa anterior (renovada hace 4 s, dura 5) vence y lo
-	// apaga, y el tick siguiente crea una nueva con el cliente ya listo.
-	if (!.@arrived) {
+	// apaga. Despues se espera ademas a que el cliente termine de cargar el mapa
+	// (OnPCLoadMapEvent apunta @tp_loaded$): un mapa lento de cargar tardaba mas
+	// de 8 s y el icono se perdia igual. OnPCLoadMapEvent solo llega en mapas con
+	// loadevent (adventure lo pone en los del atlas); sin el, se espera un tick.
+	.@ready = (@tp_loaded$ == @tp_map$ || !getmapflag(@tp_map$, MF_LOADEVENT));
+	if (!.@arrived && .@ready) {
 		if (.@feel < 0)
 			bonus_script "{ /* temperature: frio */ bonus bMaxHP,0; }", 5, 1032, 0, EFST_COLD;
 		else
 			bonus_script "{ /* temperature: calor */ bonus bMaxHP,0; }", 5, 1032, 0, EFST_OVERHEAT;
 	}
 	// Bajo el tope de presion, el castigo se reduce en proporcion (minimo 1).
-	.@scale = callsub(S_CapScale);
+	.@scale = callsub(S_CapScale) * .penalty_pct / 100;
 	if (.@feel == -2 || .@feel == 2) {
 		.@pts = 1 + BaseLevel / 20;
 		if (.@pts > 6)

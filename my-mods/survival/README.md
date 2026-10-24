@@ -9,7 +9,11 @@ solo se activa cuando ambos mods están habilitados.
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 1.2.0 (la de `mod.json`): rebalanceo de presión
+- **Versión:** 1.3.0 (la de `mod.json`): el ritmo y los castigos pasan a
+  **Settings** (ver «Ajustes»), con los mismos valores por defecto; pide la
+  app 1.5.2 o posterior (`F_ModSetting`). Lee el rasgo **Buscavidas** de
+  `adventure` 0.3 (`adv_trait_forager`): hambre y sed bajan un 20 % más
+  despacio (`forager_pct`). Sin probar en el juego. La 1.2.0: rebalanceo de presión
   ([`BALANCE.md`](../BALANCE.md), D18). El −20 % a los seis atributos y a la
   velocidad pasa a **escalones por eje** (ver «Escalones»), con dos estados
   positivos, Bien alimentado e Hidratado; publica `@pr_survival` y respeta el
@@ -32,9 +36,13 @@ Actualízala al cambiar el mod o al probarlo.
   en `prt_fild00 267,240` y no en `izlu2dun`. Solo llena junto a agua que se
   pisa (`cell_chkwater`): el agua honda, no caminable, no cuenta. Ver «Ojo
   con `water`» en [`world-atlas`](../world-atlas/README.md#estado)
-- **Sin probar:** el hambre doble con Frío extremo en `mjolnir_12` (en esa
-  prueba no se apuntó)
-- **Actualizado:** 2026-10-23
+- **Probado en el juego (1.3.0, 2026-10-24):** el hambre baja el doble con
+  Frío extremo en `mjolnir_12` sin Abrigo Polar y vuelve a lo normal al salir
+  del mapa o acabar el evento. La Brocheta de Saltamontes y la Carne Asada de
+  `campfire` suben el hambre +25 y +60
+- **Sin probar (1.3.0):** Buscavidas y los ajustes de Settings (parte de `adventure` en
+  [`SESION-DE-PRUEBA.md`](../SESION-DE-PRUEBA.md))
+- **Actualizado:** 2026-10-24
 
 ## Qué incluye
 
@@ -208,9 +216,28 @@ en el rAthena fijado (no hay copia de `vendor/rathena` en este equipo):
 `bSpeedAddRate` en su lugar; si la máscara no corta las dos regeneraciones,
 dos `bonus bNoRegen` separados.
 
+## Ajustes
+
+En Settings → Mods → `survival`; cambian al pulsar **Apply** (reinicia el
+servidor). Los marcados «de prueba» son los valores de las sesiones de prueba.
+
+| Ajuste | Por defecto | Qué cambia |
+|---|---:|---|
+| `need_seconds` | 15 | de prueba: segundos por punto perdido de hambre y de sed (de 100 a 0 en 25 min) |
+| `regen_bonus` | 20 | de prueba: % de regeneración de Bien alimentado e Hidratado |
+| `starve_rate` | 10 | de prueba: −% de HP máx y ATK de Famélico |
+| `dry_cast` | 10 | de prueba: +% de tiempo de lanzamiento de Deshidratado |
+| `dry_aspd` | 10 | de prueba: −% de ASPD de Deshidratado |
+| `both_speed` | 20 | de prueba: −% de velocidad con las dos en 0 |
+| `forager_pct` | 20 | cuánto más despacio bajan con el rasgo Buscavidas de `adventure` |
+
+Los umbrales (`.good`, `.warn`, `.low`) y el tope de presión (`.pr_cap`)
+siguen en el script: el umbral de castigo está repetido en el cliente y el
+tope debe valer lo mismo en tres mods.
+
 ## Ajustar la velocidad de prueba
 
-En `OnInit` de `npc/survival.txt`, cambia `.need_every` (segundos entre cada
+Con el ajuste `need_seconds` (segundos entre cada
 punto perdido; hambre y sed comparten el ritmo). Por ejemplo, `60` equivale a
 un punto por minuto. Como el reloj pasa cada 4 s, cada punto llega con hasta
 4 s de retraso, pero el ritmo medio se mantiene. No cambies el `OnTimer4000`
@@ -449,8 +476,7 @@ tbl = {
 
 ## Cambiar ritmos, límites y penalizaciones
 
-- **Ritmo de descenso:** cambia `.need_every` en `OnInit` de
-  `npc/survival.txt` (ver «Ajustar la velocidad de prueba»). Si `clima` está activo, revisa también su pérdida extra por
+- **Ritmo de descenso:** el ajuste `need_seconds` (ver «Ajustes»). Si `clima` está activo, revisa también su pérdida extra por
   exposición para mantener los ritmos integrados.
 - **Máximo de hambre/sed:** el máximo actual es 100 y aparece en los clamps de
   objetos, en las actualizaciones iniciales y en el contrato que valida cada
@@ -459,8 +485,7 @@ tbl = {
 - **Escalones y efectos:** `S_Stage` decide el escalón con `.good`, `.warn`
   y `.low`; `S_Penalty` arma el efecto de los dos escalones en **una sola**
   llamada a `bonus_script` (5 s, renovada cada 4 s). Los porcentajes son
-  `.regen_bonus`, `.starve_rate`, `.dry_cast`, `.dry_aspd` y
-  `.both_speed`. Si cambias el umbral de castigo (`.low`), cambia también el
+  ajustes (ver «Ajustes»). Si cambias el umbral de castigo (`.low`), cambia también el
   30 de `client/index.js` y `client/thirst.js`, que colorean el medidor y
   muestran el `!`.
 - **Tope de presión:** `.pr_cap` (6) debe valer lo mismo en `survival`,
@@ -506,8 +531,8 @@ Sin implementar. Es el mod que más cambia con el rebalanceo; el porqué está e
   recompensa también.
 - **Compañía:** en grupo de dos en el mismo mapa, hambre y sed bajan un 25 %
   más lento.
-- **Rasgo:** leer `adv_trait_forager` (desgaste −20 %).
-- **Ritmo:** el tick de 15 s es de prueba; pasarlo a `settings` en
-  `mod.json` junto con los umbrales y castigos.
+- **Rasgo:** hecho en 1.3.0 (`adv_trait_forager`, `forager_pct`).
+- **Ritmo:** hecho en 1.3.0: el ritmo y los castigos son ajustes; los
+  umbrales siguen en el script.
 - **Zonas seguras:** usar solo `F_Atlas_IsSafe` cuando el atlas esté, y añadir
   posadas e interiores al atlas en vez de a `.safe_maps$`.

@@ -59,7 +59,7 @@ Cada mod tiene un **prefijo** corto para todo lo que otros podrían ver:
 | `tavern-rumors` | — | `@tr_l$[]` | `F_Tavern_*` | `Tabernero#tr_*`, `tavern_data` |
 | `campfire` | — | `@cf_*`; `$@cf_*` (las fogatas) | `F_Campfire_*` | `campfire_mgr`, `campfire_recipes`, `Fogata#cf` (plantilla; sus copias se llaman `Fogata`), `Proveedor de Campamento#cf` |
 | `refuges` | — | — (estado en el mod store global, `r.<id>.*`) | `F_Refuge_*` | `refuges_mgr`, `refuges_data`, plantillas `Refugio#rf`, `Caravanero#rf`, `Caravana#rf` (copias `#rf_<id>`, `#rf_<id>_c`, `#rf_<ciudad>`), `Intendente del Refugio#rf_<id>_s` |
-| `adventure` | `adv_*` (aún ninguna) | `@adv_*` (entrada y cola `@adv_q*`); `@tj_*` (entrada del diario, heredada de `travel-journal`) | `F_Adv_*` | `Adventure`, `TravelJournal`, `Cronista#adv_*` |
+| `adventure` | `adv_trait_*`, `adv_t_*`, `adv_cured` (rasgos) | `@adv_*` (entrada, colas `@adv_q*` y `@adv_n*`, con `@adv_qm$` para el grupo); `@tj_*` (entrada del diario, heredada de `travel-journal`) | `F_Adv_*` | `Adventure`, `TravelJournal`, `Cronista#adv_*` |
 
 Un mod nuevo elige un prefijo de 2 a 4 letras, comprueba que nadie lo use
 (`grep -rn "<prefijo>_" my-mods mods registry/mods`) y lo añade a esta tabla.
@@ -74,7 +74,7 @@ El mod store está aislado por mod. Lo que otro mod deba leer va en
 | `@clima_exposure_map$`, `@clima_thirst_extra_loss`, `@clima_hunger_extra_loss` | `clima` | `survival`, `temperature` | exposición a un clima sin protección |
 | `@pr_survival`, `@pr_temp`, `@pr_wounds`, `@pr_clima` | `survival`, `temperature`, `wounds`, `clima` (cada uno la suya) | `survival`, `temperature`, `wounds` | presión, para el tope común ([`BALANCE.md`](./BALANCE.md#tope-de-presión)) |
 | `@pr_clima_map$` | `clima` | quien lee `@pr_clima` | mapa del evento; `@pr_clima` solo cuenta si es el mapa actual |
-| `adv_trait_*` | `adventure` (0.3, planeado) | `temperature`, `wounds`, `survival` | rasgos permanentes |
+| `adv_trait_*` | `adventure` (desde 0.3) | `temperature` (`cold`, `heat`), `wounds` (`tough`), `survival` (`forager`) | rasgos permanentes; 1 si el personaje lo tiene |
 | `$@eb_mark[char_id]` | `expedition-board` | `wounds` | GID de la marca viva de ese personaje |
 | `$@eb_markowner[gid]` | `expedition-board` | `nemesis` | dueño de esa marca; su marca no se vuelve némesis |
 | `@cf_rest_until`, `@cf_ward` | `campfire` | `wounds` (gasta `@cf_ward`) | Descansado: hasta cuándo dura y si la próxima muerte fuera de una ciudad no deja herida |
@@ -95,16 +95,28 @@ log y el llamador sigue.
 
 | Evento | Mod | Entrada | Qué hace |
 |---|---|---|---|
-| `TravelJournal::OnLog` | `adventure` (antes `travel-journal`) | `@tj_type$`, `@tj_text$` | escribe una entrada en el diario |
-| `Adventure::OnExperience` | `adventure` | `@adv_key$`, `@adv_size`, `@adv_tier`, `@adv_text$` | registra una experiencia; mejor `F_Adv_Experience` (abajo) |
+| `TravelJournal::OnLog` | `adventure` (antes `travel-journal`) | `@tj_type$`, `@tj_text$` | escribe una entrada en el diario; mejor `F_Adv_Note` (abajo), que no se pierde en la cola |
+| `Adventure::OnExperience` | `adventure` | `@adv_key$`, `@adv_size`, `@adv_tier`, `@adv_text$`, `@adv_party` (0.2) | registra una experiencia; mejor `F_Adv_Experience` (abajo) |
 | `Adventure::OnRest` | `adventure` | — | cuenta los relatos y cierra la expedición |
 
-**`F_Adv_Experience(key$, tamaño, tier, texto$)`** es la forma preferida de
+**`F_Adv_Experience(key$, tamaño, tier, texto${, grupo})`** es la forma preferida de
 publicar una experiencia: se llama con `callfunc` tras comprobar
-`getnpcid(0, "Adventure")`, y no se pierde si la cola del personaje está llena
+`getnpcid(0, "Adventure")`, y no se pierde si la cola del personaje está llena.
+Con `grupo` a 1 (desde `adventure` 0.2) la ganan también los del grupo en el
+mismo mapa; desde un diálogo, llamarla tras `close2`
 (ver el [README de `adventure`](./adventure/README.md#para-otros-mods)). Las
 demás funciones `F_Adv_*` son internas: usan el mod store, que es del mod del
 NPC que corre el script.
+
+**`F_Adv_Note(tipo$, texto$)`** (desde `adventure` 0.3.0), con el personaje
+adjunto: una entrada en el diario. Se encola como `F_Adv_Experience` y no se
+pierde si la cola de 2 huecos está llena. Comprobar antes
+`getnpcid(0, "Adventure")`. La usan `wounds`, `nemesis` y `expedition-board`.
+
+**`F_Adv_Cured(id)`** (desde `adventure` 0.3.0), con el personaje adjunto:
+cuenta una cura de esa herida para el rasgo Curtido por las heridas. Solo
+escribe variables de personaje, así que sirve desde cualquier mod y en un
+diálogo. Comprobar antes `getnpcid(0, "Adventure")`. La usa `wounds`.
 
 **`F_Wounds_CureFrom(clase)`** (desde `wounds` 0.5.0), con el personaje
 adjunto: quita las heridas y maldiciones que dejó un monstruo de esa clase y

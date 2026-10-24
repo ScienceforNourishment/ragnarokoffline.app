@@ -1,6 +1,6 @@
 {
   "name": "refuges",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "author": "Alejandro",
   "description": "Refugios en ruinas en los campos que se restauran en tres etapas con drops y zeny, para todo el mundo: una fogata donde descansar y contar los relatos, una despensa y una caravana a la ciudad.",
   "requires": {

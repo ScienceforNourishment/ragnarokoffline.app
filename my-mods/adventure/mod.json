@@ -1,6 +1,6 @@
 {
   "name": "adventure",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "author": "Ragnarok Offline",
   "description": "Expediciones y relatos: lo vivido por primera vez da EXP al contarlo con el Cronista de una ciudad. Incluye el diario del viajero (sustituye a travel-journal; no actives los dos).",
   "requires": {
@@ -9,6 +9,16 @@
     "mods": ["world-atlas"]
   },
   "settings": [
-    { "key": "show_button", "type": "boolean", "default": true, "label": "Mostrar el botón Diario en el juego", "description": "La ventana también se abre con Alt+J y con el comando @diario." }
+    { "key": "show_button", "type": "boolean", "default": true, "label": "Mostrar el botón Diario en el juego", "description": "La ventana también se abre con Alt+J y con el comando @diario." },
+    { "key": "pct_minor", "type": "number", "default": 4, "min": 1, "max": 100, "label": "Relato Menor (% de nivel)", "description": "Valor inicial de ADVENTURE.md: mapa nuevo, primer cofre de un mapa, una cacería." },
+    { "key": "pct_medium", "type": "number", "default": 10, "min": 1, "max": 100, "label": "Relato Medio (% de nivel)", "description": "Valor inicial: bioma nuevo, una marca, una herida, un clima." },
+    { "key": "pct_major", "type": "number", "default": 25, "min": 1, "max": 100, "label": "Relato Mayor (% de nivel)", "description": "Valor inicial: primer cofre de un Tier, un némesis, un refugio." },
+    { "key": "pct_milestone", "type": "number", "default": 50, "min": 1, "max": 100, "label": "Hito (% de nivel)", "description": "Valor inicial: pisar por primera vez un Tier nuevo." },
+    { "key": "relato_cap", "type": "number", "default": 60, "min": 1, "max": 100, "label": "Tope por relato (% de nivel)", "description": "Ningún relato paga más, con la racha incluida." },
+    { "key": "streak_step", "type": "number", "default": 10, "min": 0, "max": 100, "label": "Racha: % por relato", "description": "Lo que suma cada relato ya ganado en la expedición a los siguientes. 0 apaga la racha." },
+    { "key": "streak_max", "type": "number", "default": 50, "min": 0, "max": 200, "label": "Racha: máximo (%)", "description": "Valor inicial de ADVENTURE.md." },
+    { "key": "trait_minutes", "type": "number", "default": 30, "min": 1, "max": 600, "label": "Rasgos de frío y calor: minutos", "description": "Minutos acumulados en la nieve (Hecho al frío) o en desierto y volcán (Hecho al calor)." },
+    { "key": "forager_biomes", "type": "number", "default": 5, "min": 1, "max": 11, "label": "Buscavidas: biomas", "description": "Biomas distintos con su relato para ganar Buscavidas." },
+    { "key": "tough_cures", "type": "number", "default": 3, "min": 1, "max": 10, "label": "Curtido por las heridas: curas", "description": "Heridas o maldiciones distintas curadas para ganar el rasgo." }
   ]
 }

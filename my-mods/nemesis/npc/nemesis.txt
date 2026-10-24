@@ -28,7 +28,7 @@
 //=   world-atlas  ciudades, nombre del lugar y Tier (refuerzo y relato)
 //=   wounds       F_Wounds_CureFrom: cura las heridas que dejo esa clase
 //=   adventure    relato "nemesis:<clase>" al vencerlo
-//=   adventure    notas en el diario (TravelJournal::OnLog)
+//=   adventure    notas en el diario (F_Adv_Note, adventure 0.3)
 //===========================================================================
 
 // F_Nemesis_Name(clase, rango) -> nombre del nemesis, 23 caracteres como
@@ -64,10 +64,10 @@ function	script	F_Nemesis_Place	{
 }
 
 // F_Nemesis_Log(texto$) -> anota una linea en el diario del viajero, si esta.
+// F_Adv_Note (adventure 0.3) no la pierde aunque el personaje este en un dialogo.
 function	script	F_Nemesis_Log	{
-	@tj_type$ = "note";
-	@tj_text$ = getarg(0);
-	doevent "TravelJournal::OnLog";
+	if (getnpcid(0, "Adventure"))
+		callfunc "F_Adv_Note", "note", getarg(0);
 	return;
 }
 
@@ -89,7 +89,10 @@ function	script	F_Nemesis_Retire	{
 	end;
 
 OnInit:
-	.max_rank = 3;
+	// Ajustes (mod.json): el rango maximo y cuanto refuerza cada rango.
+	.max_rank = callfunc("F_ModSetting", "nemesis", "max_rank", 3);
+	.rank_hp = callfunc("F_ModSetting", "nemesis", "rank_hp", 50);
+	.rank_atk = callfunc("F_ModSetting", "nemesis", "rank_atk", 20);
 	// Sin atlas, estas son las ciudades (la misma lista que wounds).
 	.safe_maps$ = "|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|";
 	bindatcmd "nemesis", "nemesis_mgr::OnShow", 0, 99;
@@ -210,8 +213,9 @@ S_Spawn:
 
 // Refuerzo con el Tier del mapa (como las marcas de expedition-board) y el
 // rango. Tier T (1 sin atlas), rango R:
-//   HP  = (150% + 50% por Tier sobre el 1) x (100% + 50% por rango sobre el 1)
-//   ATK = (100% + 15% por Tier sobre el 1) x (100% + 20% por rango sobre el 1)
+//   HP  = (150% + 50% por Tier sobre el 1) x (100% + .rank_hp% por rango sobre el 1)
+//   ATK = (100% + 15% por Tier sobre el 1) x (100% + .rank_atk% por rango sobre el 1)
+// (.rank_hp 50 y .rank_atk 20 por defecto; ajustes de mod.json.)
 // T1 R1: HP x1,5, ATK x1. T1 R3: HP x3, ATK x1,4. T6 R3: HP x8, ATK x2,45.
 S_Strengthen:
 	.@gid = getarg(0);
@@ -223,8 +227,8 @@ S_Strengthen:
 		.@tier = callfunc("F_Atlas_Tier", nm_map$);
 	if (.@tier < 1)
 		.@tier = 1;
-	.@hp_pct = (150 + 50 * (.@tier - 1)) * (100 + 50 * (nm_rank - 1)) / 100;
-	.@atk_pct = (100 + 15 * (.@tier - 1)) * (100 + 20 * (nm_rank - 1)) / 100;
+	.@hp_pct = (150 + 50 * (.@tier - 1)) * (100 + .rank_hp * (nm_rank - 1)) / 100;
+	.@atk_pct = (100 + 15 * (.@tier - 1)) * (100 + .rank_atk * (nm_rank - 1)) / 100;
 	getunitdata .@gid, .@u;
 	.@maxhp = .@u[UMOB_MAXHP] * .@hp_pct / 100;
 	setunitdata .@gid, UMOB_MAXHP, .@maxhp;

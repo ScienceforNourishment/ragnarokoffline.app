@@ -1,10 +1,15 @@
 {
   "name": "nemesis",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Alejandro",
   "description": "Némesis: el monstruo que te mató fuera de una ciudad te espera con nombre donde caíste, más fuerte cada vez que vuelve a matarte. Vencerlo da un trofeo con tu nombre, un relato y cura sus heridas.",
   "requires": {
     "app": ">=1.5.2",
     "era": "any"
-  }
+  },
+  "settings": [
+    { "key": "max_rank", "type": "number", "default": 3, "min": 1, "max": 10, "label": "Rango máximo del némesis", "description": "Valor de prueba. Cada vez que vuelve a matarte sube un rango, hasta este." },
+    { "key": "rank_hp", "type": "number", "default": 50, "min": 0, "max": 500, "label": "HP extra por rango (%)", "description": "Valor de prueba. Se multiplica con el refuerzo por Tier." },
+    { "key": "rank_atk", "type": "number", "default": 20, "min": 0, "max": 200, "label": "ATK extra por rango (%)", "description": "Valor de prueba. Se multiplica con el refuerzo por Tier." }
+  ]
 }

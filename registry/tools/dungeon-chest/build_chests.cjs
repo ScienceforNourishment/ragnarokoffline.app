@@ -32,6 +32,9 @@ function chest(map, tier) {
 \tif (.@opened) {
 \t\tstopnpctimer;
 \t\tinitnpctimer;
+\t\tclose2;
+\t\tcallfunc "F_DungeonChest_Tale", .@opened;
+\t\tend;
 \t}
 \tclose;
 
@@ -89,6 +92,26 @@ ${itemCases}
 \treturn 0;
 }
 
+// F_DungeonChest_Tale(tier): the adventure relatos of the chest just opened on
+// this map, shared with the party there. Call it after close2: sharing attaches
+// the other players. Without adventure it does nothing.
+function\tscript\tF_DungeonChest_Tale\t{
+\tif (!getnpcid(0, "Adventure"))
+\t\treturn;
+\t.@tier = getarg(0);
+\t.@map$ = strnpcinfo(4);
+\t.@name$ = "";
+\tif ($@wa_ready)
+\t\t.@name$ = callfunc("F_Atlas_Name", .@map$);
+\tif (.@name$ == "")
+\t\t.@name$ = .@map$;
+\tcallfunc "F_Adv_Experience", "chest:" + .@map$, 1, .@tier, "Abrí el cofre de " + .@name$, 1;
+\tcallfunc "F_Adv_Experience", "chesttier:" + .@tier, 3, .@tier, "Mi primer cofre de Tier " + .@tier, 1;
+\treturn;
+}
+
+// F_DungeonChest_Open(npc$, tier, item) -> the Tier when the chest was opened
+// (always 1 or more), 0 when not.
 function\tscript\tF_DungeonChest_Open\t{
 \t.@npc$ = getarg(0);
 \t.@tier = getarg(1);
@@ -140,7 +163,7 @@ function\tscript\tF_DungeonChest_Open\t{
 \t\tmes "[Cofre de Tier " + .@tier + "]";
 \t\tmes "Entre telas viejas encuentras una prenda vistosa, sin identificar.";
 \t\tmes "Una Lupa dirá qué es.";
-\t\treturn 1;
+\t\treturn .@tier;
 \t}
 \t.@gear = 0;
 \tif ($@dc_ready && rand(100) < $@dc_gear[.@tier])
@@ -162,7 +185,7 @@ function\tscript\tF_DungeonChest_Open\t{
 \t\telse
 \t\t\tmes "Encuentras una pieza de armadura sin identificar.";
 \t\tmes "Una Lupa dirá qué es y qué guarda.";
-\t\treturn 1;
+\t\treturn .@tier;
 \t}
 
 \tif (!checkweight(.@item, 1)) {
@@ -175,7 +198,7 @@ function\tscript\tF_DungeonChest_Open\t{
 \tgetitem .@item, 1;
 \tmes "[Cofre de Tier " + .@tier + "]";
 \tmes "Encuentras " + getitemname(.@item) + ".";
-\treturn 1;
+\treturn .@tier;
 }
 
 function\tscript\tF_DungeonChest_Tick\t{

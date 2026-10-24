@@ -1,10 +1,17 @@
 {
   "name": "expedition-board",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "author": "Alejandro",
   "description": "Tableros de contratos en las ciudades principales: expediciones a una marca y cacerías por zona; entrega en el tablero que lo publicó.",
   "requires": {
-    "app": ">=1.4.0",
+    "app": ">=1.5.2",
     "era": "any"
-  }
+  },
+  "settings": [
+    { "key": "zeny_pct", "type": "number", "default": 100, "min": 0, "max": 1000, "label": "Zeny de los contratos (%)", "description": "Valor de prueba. Escala el zeny del CSV; el objeto de recompensa no cambia." },
+    { "key": "zeny_tier_pct", "type": "number", "default": 25, "min": 0, "max": 200, "label": "Zeny extra por Tier (%)", "description": "Valor de prueba. Por cada Tier del mapa por encima del 1." },
+    { "key": "mark_strength", "type": "boolean", "default": true, "label": "Reforzar las marcas según el Tier", "description": "Más HP y ATK cuanto más alto es el Tier del mapa del contrato." },
+    { "key": "mark_hp_tier", "type": "number", "default": 50, "min": 0, "max": 500, "label": "Marca: HP extra por Tier (%)", "description": "Valor de prueba. Sobre una base de +50 % en Tier 1." },
+    { "key": "mark_atk_tier", "type": "number", "default": 15, "min": 0, "max": 200, "label": "Marca: ATK extra por Tier (%)", "description": "Valor de prueba. Sin extra en Tier 1." }
+  ]
 }

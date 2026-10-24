@@ -1,6 +1,6 @@
 {
   "name": "wounds",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "author": "Alejandro",
   "description": "Heridas y maldiciones con nombre: morir fuera de una ciudad deja una secuela que debilita al personaje hasta curarla en una posada (zeny) o en el templo (donación).",
   "requires": {

@@ -1,206 +1,89 @@
 # Sesión de prueba
 
 Guion de lo que **queda por probar en el juego**, sacado de la sección «Estado»
-de cada README (revisado el 2026-10-23, tras la segunda parte de la sesión de
-ese día). Lo ya probado no está aquí: está en el «Estado» de cada mod, y los
-guiones anteriores siguen en el historial de git.
+de cada README (revisado el 2026-10-24). Lo ya probado no está aquí: está en el
+«Estado» de cada mod, y los guiones anteriores siguen en el historial de git.
 
-Calcula unos 90 minutos. `campfire` va antes que `refuges` porque los dos dan
-Descansado, que evita la herida de la siguiente muerte. Si este guion y un
-README no coinciden, manda el README. Apunta lo que no coincida en la tabla
-del final y, al terminar, pasa los resultados a «Estado» y borra los pasos
-hechos.
+Si este guion y un README no coinciden, manda el README. Marca cada caso al
+hacerlo, apunta lo que no coincida en la tabla del final y, al terminar, pasa
+los resultados a «Estado» y borra los pasos hechos.
 
 ## Antes de entrar
 
-La instalación ya está limpia (2026-10-23): `travel-journal` y
-`world-atlas-test` desinstalados, `affix-forge` y `arpg-equipments` apagados,
-y `campfire` 0.2.0, `refuges` 0.1.0 y `dungeon-chest` 0.4.1 instalados. La
-carga de las 21:38 de ese día no tiene errores de ningún mod de `my-mods/`
-(el único error, `Companion Recruiter`, es del Population Engine).
+Instalado el 2026-10-24: las versiones nuevas de `adventure` 0.3.0,
+`dungeon-chest` 0.5.0, `expedition-board` 0.7.0, `clima` 0.5.0,
+`survival` 1.3.0, `wounds` 0.7.0, `nemesis` 0.2.0 y `campfire` 0.2.0.
+Faltan dos arreglos de hoy:
 
-- [ ] Si cambiaste algún mod desde entonces, reemplaza su carpeta entera,
-      recarga los mods y mira `ragnarok-stack logs map 200`: sin errores de
-      nuestros mods ni `Duplicate unique name`.
+| Mod | Versión | Qué arregla |
+|---|---|---|
+| `temperature` | 0.5.1 | el icono de calor que no salía en `moc_fild11` |
+| `refuges` | 0.1.2 | el refugio que no abría diálogo |
+
+- [ ] Reemplaza la carpeta entera de esos dos mods (copiar encima no quita
+      archivos viejos), recarga los mods y mira `ragnarok-stack logs map 200`:
+      sin errores de nuestros mods ni `Duplicate unique name`. El único error
+      esperado es `Companion Recruiter`, del Population Engine.
 
 **Rates (D8):** `quest_exp_rate` ya está a 1x, pero `base_exp_rate`,
 `job_exp_rate` y los drops siguen a **50x** en Settings. Para estas pruebas da
 igual; para medir el balance de H1 tienen que estar a 1x.
 
 **Personaje:** `tester` / `tester123`, con comandos de GM. No uses la cuenta
-`ragnarok`.
+`ragnarok`: el cliente la dibuja siempre como GM.
 
-**Lo que vas a necesitar:**
-
-| Objeto | ID | Para qué |
-|---|---:|---|
-| Leña, Kit de Acampada, Venda | 51100, 51101, 51102 | `campfire` (también se compran en el Proveedor) |
-| Grasshopper's Leg ×3, Meat ×2 | 940, 517 | cocinar la Brocheta y la Carne Asada |
-| Stem ×20, Animal Skin ×10, Fluff ×20 y 3000 zeny | 905, 919, 914 | la etapa 1 del Refugio de la Abadía |
+**Lo que vas a necesitar:** Stem ×20, Animal Skin ×10, Fluff ×20 (905, 919,
+914) y 3000 zeny para la etapa 1 del Refugio de la Abadía.
 
 | Comando | Qué hace |
 |---|---|
-| `@cofre [mapa]` | te lleva junto al cofre del mapa (GM); `aqui`, `cerrar`, `mover` |
-| `@presion` | presión de cada sistema, total y si actúa el tope |
 | `@temperatura` | estado de temperatura y su desglose |
-| `@heridas` | heridas actuales |
+| `@presion` | presión de cada sistema, total y si actúa el tope |
 | `@relatos` | expedición en curso y relatos sin contar |
 | `@fogata` | Descansado que te queda y si estás junto a una fogata |
 | `@refugios` | cada refugio y hasta qué etapa está restaurado |
 | `@refugio <id> <0-3>` | pone un refugio en esa etapa (GM); `monk` o `f11` |
-| `@zeny <n>` | da zeny (GM) |
+| `@cofre [mapa]` | te lleva junto al cofre del mapa (GM); `aqui`, `cerrar`, `mover` |
+| `@heridas` | heridas actuales |
 | `@herida <id>` | da una herida (GM); `@herida 0` las quita |
-| `@item <id> <n>` | da objetos (GM) |
+| `@zeny <n>`, `@item <id> <n>` | dan zeny y objetos (GM) |
 
-## 1. `@cofre` y los cofres de Izlude (`dungeon-chest` 0.4.1)
+## 1. Icono de calor (`temperature` 0.5.1)
 
-- [ ] `@cofre prt_sewb1`: te deja en una celda libre al sur del cofre y dice
-      sus coordenadas y si está abierto.
-- [ ] `@cofre aqui`: el cofre aparece delante de ti. `@cofre cerrar` tras
-      abrirlo deja abrirlo otra vez; `@cofre mover` lo manda lejos.
-- [ ] `@cofre prontera`: «no tiene cofre».
+Con la 0.5.0, el icono de frío salía bien y el de calor no salió en
+`moc_fild11`: el cliente perdía el paquete del icono mientras cargaba el mapa.
+Ahora el icono espera a que el cliente avise que terminó de cargar
+(`OnPCLoadMapEvent`). Ese aviso solo llega en los mapas del atlas, porque
+`adventure` les pone `loadevent`, así que `adventure` tiene que estar activo.
+Sin ropa de abrigo ni fresca:
 
-Los dos retos de Izlude son mapas muy grandes: no los busques, usa `@cofre`
-(o `@cofre aqui` si un muro lo tapa) y ábrelo.
+- [ ] En Prontera, `@warp moc_fild11`: `@temperatura` dice Acalorado (2) o
+      Sofocado (3), y el icono de calor sale entre 4 y 8 s después de que el
+      mapa se vea. Si sigue sin salir, apunta `@temperatura` y cuánto tardó
+      en cargar el mapa.
+- [ ] Vuelve a Prontera y luego a `xmas_fild01`: el icono de frío sale igual
+      que antes, y se apaga unos 5 s después de volver a Prontera.
+- [ ] De `xmas_fild01` a `moc_fild11` sin pasar por una ciudad: el de frío se
+      apaga y el de calor sale en 8 s o menos tras cargar el mapa.
 
-| Mapa | Cofre | Debe dar | ✓ |
-|---|---|---|---|
-| `iz_d04_i` | `Cofre T5` | equipo o Lutie Lady's Pancake | |
-| `iz_d05_i` | `Cofre T6` | equipo o Shiny Marinade Beef | |
+## 2. Refugios (`refuges` 0.1.2, `campfire`, `adventure`)
 
-Si `@warp` no entra a un mapa de instancia (`*_i`), apúntalo y sigue.
-
-## 2. Frío extremo y los iconos (`clima`, `survival`, `temperature`)
-
-Pregunta antes al Pronosticador (`prontera 168,193`, «Otras tierras») cuándo
-llega Frío extremo a `mjolnir_12`.
-
-- [ ] **Frío extremo en `mjolnir_12`** sin Abrigo Polar: el hambre baja
-      **2** puntos cada 15 s en vez de 1, y vuelve a 1 al salir del mapa o
-      acabar el evento.
-
-**Iconos** (`temperature` **0.4.1**: reemplaza la carpeta entera y recarga
-los mods). Sin ropa de abrigo ni fresca:
-
-- [ ] `@warp xmas_fild01`: el icono de frío sale entre 4 y 8 s después de
-      llegar (no antes, a propósito) y sigue puesto mientras estés allí.
-      Vuelve a Prontera: se apaga unos 5 s después.
-- [ ] `@warp moc_fild11`: lo mismo con el icono de calor (Overheat).
-- [ ] De `xmas_fild01` ve con `@warp` a otro mapa frío (`mjolnir_12` con
-      Frío extremo): el icono puede apagarse un momento y vuelve en 8 s o
-      menos.
-- [ ] Sal del juego en `xmas_fild01` y vuelve a entrar: el icono sale en
-      8 s o menos.
-
-## 3. Variantes en las cacerías (`expedition-board` 0.6.2)
-
-Reemplaza la carpeta entera y recarga los mods.
-
-- [ ] En Prontera, acepta «Goblins del camino este» y caza en `prt_fild11`:
-      **todos** los «Goblin» suman, lleven el arma que lleven, y el aviso
-      dice «Caceria: N/12 Goblin».
-- [ ] Un Goblin Archer (si sale) **no** suma.
-- [ ] `ragnarok-stack logs map 200` tras un rato cazando: sin errores de
-      `expedition-board.txt`.
-
-## 4. Fogatas (`campfire` 0.2.0, `temperature` 0.4.1, `wounds` 0.6.1)
-
-Todo sin probar. El detalle de cada caso está en «Probarlo» de
-[`campfire/README.md`](./campfire/README.md#probarlo). Ten a mano
-`ragnarok-stack logs map 200` por si una fogata no aparece.
-
-**Proveedor y objetos**
-
-- [ ] En Prontera `151,187` está el **Proveedor de Campamento** y vende
-      Leña (300), Kit de Acampada (900) y Venda (400). Si cae en una celda
-      bloqueada o no se ve, apunta `/where` de un sitio libre al lado.
-- [ ] Los tres objetos y los platos tienen icono y descripción en español
-      (pasa el ratón por encima en el inventario).
-- [ ] Usar la Leña **en Prontera**: «Aquí no hace falta una fogata», y la
-      Leña sigue en el inventario.
-
-**Encender y apagarse** (`prt_fild08`)
-
-- [ ] Usa la Leña: aparece una **fogata visible** (sprite `4_BONFIRE`) en tu
-      celda, se gasta una Leña y sale «Enciendes una fogata. Arderá unos 10
-      minutos.». Si la fogata **no se ve** pero se le puede hablar, el sprite
-      no existe en el cliente: apúntalo.
-- [ ] Si `tester` no la tenía, el relato «Encendí mi primera fogata»
-      (`@relatos`).
-- [ ] Usa otra Leña a 1–2 celdas: «Ya arde una fogata aquí al lado», sin
-      gastarla.
-- [ ] `@fogata` junto a ella: «Estás junto a una fogata: le quedan … min».
-- [ ] Muévete 3 celdas y enciende otra con el Kit: la primera **desaparece**
-      en 5 s o menos (una fogata por personaje).
-- [ ] Habla con la del Kit → «Apagar la fogata»: desaparece en 5 s o menos.
-      Si llegas a hablar con ella justo después, «Solo quedan brasas».
-
-**Cocinar** (con una fogata encendida)
-
-- [ ] `@item 940 3`: en «Cocinar», la Brocheta de Saltamontes sale con
-      «(listo)» y las demás sin él. Al elegir una que no puedes hacer, dice
-      qué ingredientes faltan y vuelve a la lista.
-- [ ] Cocina la Brocheta: gasta las 3 patas, da el plato y, la primera vez,
-      el relato «Cociné junto al fuego por primera vez».
-- [ ] Cómela: icono de comida, FUE +2 en la ventana de estado y «Hambre: …»
-      con +25. `@item 517 2`, cocina y come la Carne Asada: VIT +2 y hambre
-      +60.
-
-**Vendar**
-
-- [ ] `@herida 1` (Cicatriz del lobo). Mira cuánta AGI te resta.
-- [ ] Sin Venda, «Vendar una herida» dice que hace falta una. Con una Venda,
-      elige la Cicatriz: se gasta la Venda, `@heridas` dice «(vendada)» y la
-      AGI que resta baja a la mitad (en 4 s o menos).
-- [ ] Vuelve a «Vendar»: ya no ofrece la Cicatriz. `@herida 6` (maldición):
-      tampoco la ofrece.
-- [ ] Cúrala en el Posadero y vuelve a `@herida 1`: sale **sin** «(vendada)».
-      Quítalas con `@herida 0`.
-
-**Temperatura** (`xmas_fild01`, sin Abrigo Polar ni ropa de abrigo)
-
-- [ ] `@temperatura`: Helado (la Ventisca no lo baja a Congelado). El icono
-      de frío sale en 8 s o menos (paso 2).
-- [ ] Enciende una fogata y quédate al lado: «Junto al fuego entras en
-      calor», `@temperatura` dice Comodo y «Estas junto a una fogata», y
-      `@presion` cuenta temperatura 0 (y el icono de frío se apaga, si salía).
-- [ ] Aléjate 4 celdas o más: vuelve el frío en 4 s o menos.
-
-**Descansado** (déjalo para el final de este paso)
-
-- [ ] Habla con la fogata → «Descansar junto al fuego»: «Descansado durante
-      20 minutos». `@fogata` lo dice, con «la próxima muerte fuera de una
-      ciudad no dejará herida».
-- [ ] `@die` en el campo: «Ibas descansado: esta vez sales sin herida» y
-      `@heridas` vacío.
-- [ ] Vuelve al campo y `@die` otra vez (Descansado aún activo): ahora **sí**
-      deja herida.
-
-## 5. Refugios (`refuges` 0.1.0, `campfire` 0.2.0, `adventure`)
-
-Todo sin probar. El detalle está en «Probarlo» de
-[`refuges/README.md`](./refuges/README.md#probarlo). Si algo no aparece,
+Lo de «En ruinas» ya está probado. El detalle de cada caso está en «Probarlo»
+de [`refuges/README.md`](./refuges/README.md#probarlo). Si algo no aparece,
 `ragnarok-stack logs map 200`.
 
-**En ruinas**
+**Restaurar la etapa 1** (en `prt_monk 90,238`; entra por `prt_fild03`)
 
-- [ ] `@refugios`: los dos «en ruinas».
-- [ ] En `prt_monk 90,238` (entra por `prt_fild03`) hay un **montón de
-      leña** llamado «Refugio en ruinas», y nadie a sus lados. Si no se ve
-      pero se le puede hablar, el sprite `4_WOODPILE` no existe en el
-      cliente: apúntalo.
-- [ ] En Prontera `153,187`, la **Caravana de los Refugios** cuenta las
-      ruinas de la Abadía y del campo 11 y que ningún refugio tiene
-      cobertizo.
-
-**Restaurar la etapa 1** (en la Abadía)
-
+- [ ] Habla con el Refugio en ruinas: sale «Muros caídos, un hogar frío…» y,
+      tras «siguiente», el menú con «Siguiente etapa (Techo y fogata)»,
+      «Entregar materiales» y «Nada».
 - [ ] `@item 905 10` y «Entregar materiales»: entrega 10 Stem.
       «Siguiente etapa» dice 10 / 20 y lo que llevas.
 - [ ] `@item 905 10`, `@item 919 10`, `@item 914 20`, `@zeny 3000` y
       entregar: pide los 3000 zeny, se pagan y sale «Techo y fogata
       terminado» en el mapa. Las ruinas pasan a ser una **hoguera** llamada
-      «Refugio de la Abadía» sin salir del mapa.
+      «Refugio de la Abadía» sin salir del mapa. Si no se ve pero se le puede
+      hablar, apúntalo.
 - [ ] `@relatos`: el relato «Restauré el Refugio de la Abadía».
 
 **Descansar y contar**
@@ -221,28 +104,109 @@ Todo sin probar. El detalle está en «Probarlo» de
       hoguera, el Intendente y el Caravanero.
 - [ ] Deja los dos como estaban: `@refugio monk 0` y `@refugio f11 0`.
 
-## 6. Opcional: `nemesis` fuera del atlas
+## 3. Opcional: `nemesis` fuera del atlas
 
 Si en la prueba de `nemesis` no hiciste su paso 8: en un mapa que no esté en el
-atlas, `@nemesisgm <clase de un monstruo que te gane>` y déjate matar; sale y
+atlas, `@nemesisgm <clase de un monstruo que te gane>` y déjate matar; sal y
 vuelve a entrar en ese mapa: el némesis debe reaparecer.
+
+## 4. `adventure` 0.3 y sus enganches
+
+Todo sin probar. El detalle de cada caso está en «Probar la 0.2» y «Probar la
+0.3» del [README de `adventure`](./adventure/README.md#probar-la-02); si no
+coincide con esto, manda el README.
+
+- [ ] Settings → Mods: `adventure`, `survival`, `clima`, `temperature`,
+      `expedition-board` y `nemesis` muestran sus ajustes nuevos. **Sin
+      tocarlos, todo se comporta como antes**, salvo la racha (abajo).
+- [ ] Para no esperar media hora a los rasgos de frío y calor, pon
+      `adventure` → `trait_minutes` a 1 y pulsa Apply. Devuélvelo a 30 al
+      terminar.
+
+Usa un **personaje nuevo**: los relatos y los rasgos son de una sola vez.
+
+**Racha y pestañas**
+
+- [ ] Primera salida a `prt_fild08`: los tres relatos de siempre. La pestaña
+      Relatos dice «racha +30 %» en la cabecera y un total de unos **+75 %**
+      (con la 0.1 eran ~64 %).
+- [ ] Cuenta con el Cronista: la racha desaparece. Tras contar dos
+      expediciones, la pestaña **Expediciones** tiene los dos resúmenes 🏕️, el
+      más reciente arriba.
+- [ ] La pestaña **Rasgos** lista los cuatro, con «0/1 min en la nieve»,
+      «0/5 biomas», etc.
+
+**Relatos de otros mods**
+
+- [ ] **Cofre:** `@cofre` en una mazmorra y ábrelo. Al cerrar el diálogo,
+      «Nuevo relato: Abrí el cofre de …» y «Mi primer cofre de Tier …». Un
+      cofre del mismo Tier en otro mapa: solo el primero.
+- [ ] **Marca:** abate la marca de un contrato: «Abatí la marca: …».
+- [ ] **Cacería:** complétala: «Completé la cacería: …». Repetir el mismo
+      contrato no da relato.
+- [ ] **Clima, protegido:** con la protección puesta durante un evento,
+      «Mi equipo me protegió del clima: …» (hasta 10 s después).
+- [ ] **Clima, sin protección:** quédate en el mapa sin protección desde al
+      menos 2 minutos antes del final del evento: al terminar, «Aguanté el
+      clima sin protección: …» (puede salir al cambiar de mapa).
+- [ ] **Temperatura:** en `xmas_fild01` con Capa de Piel y Chaleco de Lana
+      (`@temperatura` en 0): «Comodo en pleno frio gracias a mi ropa» (puede
+      salir al cambiar de mapa). Hazlo **antes** de ganar Hecho al frío.
+
+**Relatos propios de `adventure`**
+
+- [ ] **Expedición larga:** más de 30 minutos fuera en total (no hace falta
+      en un solo mapa): al cambiar de mapa, «Más de media hora fuera de las
+      ciudades». Se puede juntar con el resto de esta parte.
+- [ ] **Por los pelos:** vuelve a Prontera con menos del 20 % de HP: «Volví
+      por los pelos». Morir y reaparecer en la ciudad **no** lo da.
+- [ ] **MVP:** `@monster` un MVP y abátelo: «Abatí a …». Otro de la misma
+      especie: nada.
+
+**Notas del diario** (ya no se pierden en un diálogo)
+
+- [ ] Acepta un contrato, déjate matar en un campo y cura la herida: las
+      notas («Acepte…», la herida, la cura) salen en la pestaña Diario, como
+      mucho tras el siguiente cambio de mapa.
+
+**Rasgos** (con `trait_minutes` a 1)
+
+- [ ] **Hecho al frío:** algo más de un minuto en `xmas_fild01` sin ropa y
+      vuelve a Prontera: «Nuevo rasgo: Hecho al frío…», 🎖️ en el diario y
+      «Ganado» en la pestaña. De vuelta en `xmas_fild01` sin ropa,
+      `@temperatura` da **Fresco** (−1) en vez de Helado (−2), sin icono de
+      frío.
+- [ ] **Hecho al calor:** lo mismo en `moc_fild11`: Cálido en vez de
+      Acalorado.
+- [ ] **Buscavidas:** al tener relatos de 5 biomas, «Nuevo rasgo:
+      Buscavidas». Hambre y sed bajan un punto cada 18 s en vez de 15
+      (`@presion` antes y después de un minuto).
+- [ ] **Curtido por las heridas:** cura 3 heridas distintas en el Posadero o
+      el Sacerdote (`@herida <id>` para recibirlas). A la tercera, «Nuevo
+      rasgo: Curtido por las heridas»; luego una herida de atributo resta un
+      punto menos. `@herida 0` no cuenta como cura.
+
+**Ajustes** (opcional; devuélvelos después)
+
+- [ ] `adventure` → `pct_minor` a 8: un mapa nuevo vale el doble en la
+      pestaña Relatos. `streak_step` a 0: la cabecera ya no dice «racha».
+- [ ] `survival` → `need_seconds` a 5: hambre y sed bajan mucho más deprisa.
 
 ## Fuera de esta sesión
 
 Necesitan algo que no cabe en una sesión de una persona:
 
-- **Crédito en grupo** de `expedition-board` (y la regla de grupo en general):
-  hace falta un segundo personaje en grupo. Es la «prueba de dos jugadores»
-  de H2 en [`ROADMAP.md`](./ROADMAP.md).
-- **La fogata compartida** de `campfire` (Cómodo, descansar y cocinar en
-  la fogata del compañero): entra en la misma prueba de dos jugadores.
-- **El relato de grupo de `refuges`**: el compañero en el mismo mapa gana
-  «Restauré el …» al terminar la etapa 1. Misma prueba.
+- **Prueba de dos jugadores** (H2 en [`ROADMAP.md`](./ROADMAP.md)): el
+  crédito en grupo de `expedition-board` y la regla de grupo en general; la
+  fogata compartida de `campfire` (Cómodo, descansar y cocinar en la del
+  compañero); el relato de grupo de `refuges` («Restauré el …» para el
+  compañero en el mismo mapa); los relatos de grupo de `adventure` 0.2
+  (cofre, marca, MVP y refugio).
 - **El veneno flojo de `clima`** (activo unos 12 s de cada 20): no es una
-  prueba, es una decisión de balance pendiente; ver «Estado» de
-  [`clima`](./clima/README.md#estado).
+  prueba, es una decisión de balance pendiente; se ajusta en Settings
+  (`refresh_seconds` por debajo de `status_seconds`).
 - **El personaje que sigue congelado tras cambiar de mapa** (visto el
-  2026-10-23): se reproduce con `rotest`, no en esta sesión; ver «Estado» de
+  2026-10-23): se reproduce con `rotest`; ver «Estado» de
   [`clima`](./clima/README.md#estado).
 
 ## Al terminar
@@ -252,7 +216,9 @@ Necesitan algo que no cabe en una sesión de una persona:
       nuestros mods, sin `event queue is full` ni `experience key refused`,
       nada de `duplicate`, `hideonnpc` ni `unloadnpc` (las fogatas) ni de
       `setnpcdisplay`, `npcshopadditem`, `getitem3` o `getitem4` (refugios,
-      cofres y Herrero).
+      cofres y Herrero), ni `F_Adv_Note`, `F_Adv_Cured` o `F_ModSetting` en
+      un error.
+- [ ] Devuelve `trait_minutes` a 30 y cualquier otro ajuste que cambiaras.
 - [ ] Pasa los resultados a «Estado» de cada README y borra de aquí los pasos
       hechos.
 
@@ -260,20 +226,24 @@ Necesitan algo que no cabe en una sesión de una persona:
 
 | Paso | Bien / Falla | Qué se vio |
 |---|---|---|
-| 1. `@cofre` | | |
-| 1. Cofres de Izlude | | |
-| 2. Frío extremo | | |
-| 2. Iconos | | |
-| 3. Variantes en las cacerías | | |
-| 4. Fogatas: proveedor y objetos | | |
-| 4. Fogatas: encender y apagarse | | |
-| 4. Fogatas: cocinar | | |
-| 4. Fogatas: vendar | | |
-| 4. Fogatas: temperatura | | |
-| 4. Fogatas: Descansado | | |
-| 5. Refugios: en ruinas | | |
-| 5. Refugios: etapa 1 | | |
-| 5. Refugios: descansar y contar | | |
-| 5. Refugios: despensa y caravana | | |
-| 6. `nemesis` fuera del atlas | | |
+| Instalar y log | | |
+| 1. Icono de calor | | |
+| 2. Refugios: etapa 1 | | |
+| 2. Refugios: descansar y contar | | |
+| 2. Refugios: despensa y caravana | | |
+| 3. `nemesis` fuera del atlas | | |
+| 4. Ajustes visibles | | |
+| 4. Racha y pestañas | | |
+| 4. Relato de cofre | | |
+| 4. Relatos de marca y cacería | | |
+| 4. Relatos de clima | | |
+| 4. Relato de temperatura | | |
+| 4. Expedición larga | | |
+| 4. Por los pelos | | |
+| 4. MVP | | |
+| 4. Notas del diario | | |
+| 4. Rasgos de frío y calor | | |
+| 4. Buscavidas | | |
+| 4. Curtido por las heridas | | |
+| 4. Ajustes | | |
 | Log final | | |

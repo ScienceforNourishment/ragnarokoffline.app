@@ -12,7 +12,7 @@ corresponde, su efecto visual y protección compatible. Requiere `world-atlas`
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.4.1 (la de `mod.json`): arregla `F_Clima_Now` y `F_Clima_EndsIn` con un mapa sin clima. Hacían `if (.@i < 0 || …event_active[.@i])`, y en rAthena `||` evalúa los dos lados: con un mapa fuera de la lista leían `.event_active[-1]`, un error de script que corta el script de quien llama (el Tabernero de `tavern-rumors` se quedaba con la ventana abierta, 2026-10-23). El Pronosticador no lo notaba porque solo pregunta por mapas con clima. La 0.4.0: **pronóstico**. El siguiente evento de cada mapa se sortea al empezar el actual (`.next_combo[]`), en vez de al empezar él; el Pronosticador de Prontera lo dice, y las funciones `F_Clima_*` lo publican para otros mods. Ver «Pronóstico». La 0.3.0 publica `@pr_clima` (1 si el personaje está en un evento sin su protección) y `@pr_clima_map$` (el mapa del evento), para el tope de presión de [`BALANCE.md`](../BALANCE.md#tope-de-presión). Quien lo lee solo lo cuenta si `@pr_clima_map$` es el mapa actual: salir a un mapa sin `loadevent` no lo borra. El estado alterado del clima no se reduce con el tope. La 0.2.1: solo Renewal (`"era": "renewal"`, D1). Quitada la carpeta `pre-renewal/` y `prerenewalFolder`; en un mundo Pre-Renewal la app rechaza el mod en vez de cargarlo sin sus objetos de protección. La 0.2.0 pasó los eventos de por mapa a por bioma
+- **Versión:** 0.5.0 (la de `mod.json`), escrita el 2026-10-23. El ritmo de los eventos y de sus estados pasa a **Settings** (ver «Ajustes»), con los valores de prueba de antes; con `refresh_seconds` por debajo de `status_seconds` se cierra el hueco del veneno (sin decidir, ver abajo). Pide la app 1.5.2 o posterior (`F_ModSetting`). También publica **relatos de `adventure`** 0.2 (dependencia suave). `weather:<combinación>` (Media) la primera vez que tu equipo te protege de una combinación (en la revisión de cada 10 s); `weatherlived:<combinación>` (Menor) si aguantas un evento sin protección desde hace 2 minutos o más (`.lived_min`) hasta que termina. Variables temporales nuevas: `@clima_adv_w` (combinaciones ya publicadas en la sesión) y `@clima_lived_map$`, `@clima_lived_ev`, `@clima_lived_at`. El aviso «Nuevo relato» puede llegar al cambiar de mapa: el reloj adjunta al personaje y el evento de `adventure` espera en su cola. Sin probar en el juego. La 0.4.1: arregla `F_Clima_Now` y `F_Clima_EndsIn` con un mapa sin clima. Hacían `if (.@i < 0 || …event_active[.@i])`, y en rAthena `||` evalúa los dos lados: con un mapa fuera de la lista leían `.event_active[-1]`, un error de script que corta el script de quien llama (el Tabernero de `tavern-rumors` se quedaba con la ventana abierta, 2026-10-23). El Pronosticador no lo notaba porque solo pregunta por mapas con clima. La 0.4.0: **pronóstico**. El siguiente evento de cada mapa se sortea al empezar el actual (`.next_combo[]`), en vez de al empezar él; el Pronosticador de Prontera lo dice, y las funciones `F_Clima_*` lo publican para otros mods. Ver «Pronóstico». La 0.3.0 publica `@pr_clima` (1 si el personaje está en un evento sin su protección) y `@pr_clima_map$` (el mapa del evento), para el tope de presión de [`BALANCE.md`](../BALANCE.md#tope-de-presión). Quien lo lee solo lo cuenta si `@pr_clima_map$` es el mapa actual: salir a un mapa sin `loadevent` no lo borra. El estado alterado del clima no se reduce con el tope. La 0.2.1: solo Renewal (`"era": "renewal"`, D1). Quitada la carpeta `pre-renewal/` y `prerenewalFolder`; en un mundo Pre-Renewal la app rechaza el mod en vez de cargarlo sin sus objetos de protección. La 0.2.0 pasó los eventos de por mapa a por bioma
 - **Probado en el juego:** la versión anterior, con eventos por mapa
 - **Probado en el juego (0.2.0, 2026-10-17):** los eventos por bioma arrancan (log `[clima] Evento … iniciado`); el Poison de Lluvia tóxica afecta en los campos de Prontera
 - **Observado (sin decidir):** el veneno se siente flojo. `S_ApplyWeatherStatus` lo pone 12 s (`.effect_lease`), revisa cada 10 s (`.effect_refresh_interval`) y solo lo vuelve a poner si ya no está (`!getstatus`): queda activo unos 12 s de cada 20 y en el hueco vuelve la regeneración. Mientras dura, rAthena bloquea la regeneración natural y quita 2 + 1,5 % del HP máximo por segundo, pero para al 25 % de HP (regla oficial). Se arregla con una revisión más corta que la duración; afecta a todos los estados del clima, no solo al veneno
@@ -33,11 +33,27 @@ Actualízala al cambiar el mod o al probarlo.
   pierde el que lo descongela. Si es eso, el fallo es del cliente y no del mod.
   Reproducirlo con `rotest` (congelarse en la Ventisca y hacer `@warp`) antes
   de tocar nada
-- **Sin probar:** el hambre doble con Frío extremo en `survival`. La Ventisca
-  **no** suma frío a `temperature` (solo Frío extremo y Calor intenso ponen
-  `@clima_*_extra_loss`), así que no lleva a Congelado
+- **Probado en el juego (0.5.0, 2026-10-24):** con Frío extremo en
+  `mjolnir_12` y sin Abrigo Polar, el hambre de `survival` baja 2 puntos cada
+  15 s en vez de 1, y vuelve a 1 al salir del mapa o acabar el evento. La
+  Ventisca **no** suma frío a `temperature` (solo Frío extremo y Calor intenso
+  ponen `@clima_*_extra_loss`), así que no lleva a Congelado
 - **Limitación:** el visual es fijo por mapa; ver «Limitación conocida»
-- **Actualizado:** 2026-10-23
+- **Actualizado:** 2026-10-24
+
+## Ajustes
+
+En Settings → Mods → `clima`; cambian al pulsar **Apply** (reinicia el
+servidor). Los marcados «de prueba» son los valores de las sesiones de prueba.
+
+| Ajuste | Por defecto | Qué cambia |
+|---|---:|---|
+| `event_minutes` | 5 | de prueba: duración de un evento |
+| `check_seconds` | 60 | de prueba: cada cuánto se mira si empieza un evento |
+| `event_chance` | 100 | de prueba: % de que una revisión empiece un evento; 0 los apaga |
+| `status_seconds` | 12 | de prueba: duración del veneno, la ceguera, la maldición y el sueño (el fango, el doble) |
+| `refresh_seconds` | 10 | de prueba: cada cuánto se repone el estado |
+| `lived_minutes` | 2 | minutos sin protección para el relato «Aguanté el clima» de `adventure` |
 
 ## Pronóstico
 

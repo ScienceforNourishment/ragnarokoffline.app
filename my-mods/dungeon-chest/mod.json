@@ -1,6 +1,6 @@
 {
   "name": "dungeon-chest",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "author": "Ragnarok Offline",
   "description": "Cofres aleatorios por mapa de dungeon, agrupados por Tier según sus monstruos. Dan equipo sin identificar con afijos (listas de arpg-equipments y afijos de affix-forge) o una comida del Tier, y un Herrero de Afijos en Prontera que los pasa, quita o vuelve a sortear.",
   "requires": {

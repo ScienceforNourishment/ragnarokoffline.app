@@ -31,19 +31,22 @@ OnInit:
     // Maps where hunger and thirst do not drop. Main cities only; add an
     // interior or another settlement by appending its map name between bars.
     .safe_maps$ = "|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|";
+    // Settings (mod.json); the defaults are the testing values.
     // Testing rate: each need loses 1 point every 15 seconds.
-    .need_every = 15;
+    .need_every = callfunc("F_ModSetting", "survival", "need_seconds", 15);
+    // adventure's Buscavidas trait (adv_trait_forager): needs drop this much slower.
+    .forager_pct = callfunc("F_ModSetting", "survival", "forager_pct", 20);
     // Stage thresholds, on the 0-100 scale.
     .good = 70;
     .warn = 50;
     .low = 30;
     // Effects, in percent. Penalties shrink under the pressure cap; the
     // regen bonus does not.
-    .regen_bonus = 20;	// good stage: natural HP or SP regen
-    .starve_rate = 10;	// hunger empty: max HP and ATK
-    .dry_cast = 10;		// thirst empty: cast time
-    .dry_aspd = 10;		// thirst empty: ASPD
-    .both_speed = 20;	// both empty: walking speed
+    .regen_bonus = callfunc("F_ModSetting", "survival", "regen_bonus", 20);	// good stage: natural HP or SP regen
+    .starve_rate = callfunc("F_ModSetting", "survival", "starve_rate", 10);	// hunger empty: max HP and ATK
+    .dry_cast = callfunc("F_ModSetting", "survival", "dry_cast", 10);		// thirst empty: cast time
+    .dry_aspd = callfunc("F_ModSetting", "survival", "dry_aspd", 10);		// thirst empty: ASPD
+    .both_speed = callfunc("F_ModSetting", "survival", "both_speed", 20);	// both empty: walking speed
     // Shared pressure cap; temperature and wounds use the same number.
     .pr_cap = 6;
     bindatcmd "presion", "survival_mgr::OnPressure", 0, 99;
@@ -106,9 +109,12 @@ OnTimer4000:
 S_Tick:
     .@now = gettimetick(2);
     if (.@now >= @sv_need_at) {
-        @sv_need_at += .need_every;
+        .@every = .need_every;
+        if (adv_trait_forager)
+            .@every = .need_every * 100 / (100 - .forager_pct);
+        @sv_need_at += .@every;
         if (@sv_need_at <= .@now)
-            @sv_need_at = .@now + .need_every;
+            @sv_need_at = .@now + .@every;
         callsub S_Needs;
     }
     callsub S_Penalty;

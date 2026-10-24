@@ -1,15 +1,13 @@
 {
   "name": "clima",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "author": "Ragnarok Offline",
   "description": "Eventos climáticos por bioma (según world-atlas) con efecto de estado y equipo de protección.",
   "renewalFolder": "renewal",
   "requires": {
-    "app": ">=1.4.0",
+    "app": ">=1.5.2",
     "era": "renewal",
-    "mods": [
-      "world-atlas"
-    ]
+    "mods": ["world-atlas"]
   },
   "maps": {
     "prt_fild01": {
@@ -66,5 +64,13 @@
     "mosk_fild02": {
       "weather": "cloud8"
     }
-  }
+  },
+  "settings": [
+    { "key": "event_minutes", "type": "number", "default": 5, "min": 1, "max": 60, "label": "Duración de un evento (min)", "description": "Valor de prueba." },
+    { "key": "check_seconds", "type": "number", "default": 60, "min": 10, "max": 3600, "label": "Revisión de un mapa sin evento (s)", "description": "Valor de prueba. Cada cuánto se mira si empieza un evento; también el tiempo mínimo entre dos." },
+    { "key": "event_chance", "type": "number", "default": 100, "min": 0, "max": 100, "label": "Probabilidad de evento por revisión (%)", "description": "Valor de prueba. 0 apaga los eventos." },
+    { "key": "status_seconds", "type": "number", "default": 12, "min": 2, "max": 120, "label": "Duración del estado del clima (s)", "description": "Valor de prueba. Veneno, ceguera, maldición y sueño del clima. El fango dura el doble; congelar, aturdir y petrificar siguen en 4 s." },
+    { "key": "refresh_seconds", "type": "number", "default": 10, "min": 2, "max": 120, "label": "Revisión del estado del clima (s)", "description": "Valor de prueba. Si es menor que la duración del estado, el estado no deja huecos (hoy 12 s de cada 20)." },
+    { "key": "lived_minutes", "type": "number", "default": 2, "min": 1, "max": 60, "label": "Aguantar un clima: minutos", "description": "Minutos sin protección hasta el final del evento para el relato «Aguanté el clima sin protección» de adventure." }
+  ]
 }

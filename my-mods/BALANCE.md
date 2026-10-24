@@ -126,7 +126,9 @@ Encontrar el punto justo es un problema de datos, no de intuición.
    tabla.
 3. **Ajustar con opciones, no con código.** Cada mod expone sus ritmos y
    castigos como `settings` en `mod.json` (el límite ya es de 40 por mod).
-   Hoy los valores de prueba están escritos en los scripts.
+   Hecho el 2026-10-23 en todos los mods que castigan; ver «Ajustes» en el
+   README de cada uno. Siguen en los scripts los umbrales de `survival` y el
+   tope de presión (`.pr_cap`), que debe ser igual en tres mods.
 4. **Una variable por vez.** Si una expedición se acorta demasiado, mirar qué
    sistema aportó la presión (`@presion`) antes de tocar nada.
 

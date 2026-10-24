@@ -35,6 +35,26 @@ function	script	F_DungeonChest_Item	{
 	return 0;
 }
 
+// F_DungeonChest_Tale(tier): the adventure relatos of the chest just opened on
+// this map, shared with the party there. Call it after close2: sharing attaches
+// the other players. Without adventure it does nothing.
+function	script	F_DungeonChest_Tale	{
+	if (!getnpcid(0, "Adventure"))
+		return;
+	.@tier = getarg(0);
+	.@map$ = strnpcinfo(4);
+	.@name$ = "";
+	if ($@wa_ready)
+		.@name$ = callfunc("F_Atlas_Name", .@map$);
+	if (.@name$ == "")
+		.@name$ = .@map$;
+	callfunc "F_Adv_Experience", "chest:" + .@map$, 1, .@tier, "Abrí el cofre de " + .@name$, 1;
+	callfunc "F_Adv_Experience", "chesttier:" + .@tier, 3, .@tier, "Mi primer cofre de Tier " + .@tier, 1;
+	return;
+}
+
+// F_DungeonChest_Open(npc$, tier, item) -> the Tier when the chest was opened
+// (always 1 or more), 0 when not.
 function	script	F_DungeonChest_Open	{
 	.@npc$ = getarg(0);
 	.@tier = getarg(1);
@@ -86,7 +106,7 @@ function	script	F_DungeonChest_Open	{
 		mes "[Cofre de Tier " + .@tier + "]";
 		mes "Entre telas viejas encuentras una prenda vistosa, sin identificar.";
 		mes "Una Lupa dirá qué es.";
-		return 1;
+		return .@tier;
 	}
 	.@gear = 0;
 	if ($@dc_ready && rand(100) < $@dc_gear[.@tier])
@@ -108,7 +128,7 @@ function	script	F_DungeonChest_Open	{
 		else
 			mes "Encuentras una pieza de armadura sin identificar.";
 		mes "Una Lupa dirá qué es y qué guarda.";
-		return 1;
+		return .@tier;
 	}
 
 	if (!checkweight(.@item, 1)) {
@@ -121,7 +141,7 @@ function	script	F_DungeonChest_Open	{
 	getitem .@item, 1;
 	mes "[Cofre de Tier " + .@tier + "]";
 	mes "Encuentras " + getitemname(.@item) + ".";
-	return 1;
+	return .@tier;
 }
 
 function	script	F_DungeonChest_Tick	{
@@ -146,6 +166,9 @@ abbey01,0,0,4	script	Cofre T4#dcp_abbey01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -168,6 +191,9 @@ abbey02,0,0,4	script	Cofre T5#dcp_abbey02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -190,6 +216,9 @@ abbey03,0,0,4	script	Cofre T5#dcp_abbey03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -212,6 +241,9 @@ abyss_01,0,0,4	script	Cofre T4#dcp_abyss_01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -234,6 +266,9 @@ abyss_02,0,0,4	script	Cofre T4#dcp_abyss_02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -256,6 +291,9 @@ abyss_03,0,0,4	script	Cofre T5#dcp_abyss_03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -278,6 +316,9 @@ abyss_04,0,0,4	script	Cofre T6#dcp_abyss_04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -300,6 +341,9 @@ alde_dun01,0,0,4	script	Cofre T3#dcp_alde_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -322,6 +366,9 @@ alde_dun02,0,0,4	script	Cofre T3#dcp_alde_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -344,6 +391,9 @@ alde_dun03,0,0,4	script	Cofre T3#dcp_alde_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -366,6 +416,9 @@ alde_dun04,0,0,4	script	Cofre T3#dcp_alde_dun04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -388,6 +441,9 @@ ama_dun01,0,0,4	script	Cofre T3#dcp_ama_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -410,6 +466,9 @@ ama_dun02,0,0,4	script	Cofre T3#dcp_ama_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -432,6 +491,9 @@ ama_dun03,0,0,4	script	Cofre T4#dcp_ama_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -454,6 +516,9 @@ anthell01,0,0,4	script	Cofre T1#dcp_anthell01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -476,6 +541,9 @@ anthell02,0,0,4	script	Cofre T1#dcp_anthell02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -498,6 +566,9 @@ arug_dun01,0,0,4	script	Cofre T4#dcp_arug_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -520,6 +591,9 @@ ayo_dun01,0,0,4	script	Cofre T3#dcp_ayo_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -542,6 +616,9 @@ ayo_dun02,0,0,4	script	Cofre T3#dcp_ayo_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -564,6 +641,9 @@ beach_dun,0,0,4	script	Cofre T4#dcp_beach_dun	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -586,6 +666,9 @@ beach_dun2,0,0,4	script	Cofre T3#dcp_beach_dun2	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -608,6 +691,9 @@ beach_dun3,0,0,4	script	Cofre T2#dcp_beach_dun3	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -630,6 +716,9 @@ bossnia_01,0,0,4	script	Cofre T5#dcp_bossnia_01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -652,6 +741,9 @@ bossnia_02,0,0,4	script	Cofre T5#dcp_bossnia_02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -674,6 +766,9 @@ bossnia_03,0,0,4	script	Cofre T5#dcp_bossnia_03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -696,6 +791,9 @@ bossnia_04,0,0,4	script	Cofre T5#dcp_bossnia_04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -718,6 +816,9 @@ bra_dun01,0,0,4	script	Cofre T3#dcp_bra_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -740,6 +841,9 @@ bra_dun02,0,0,4	script	Cofre T3#dcp_bra_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -762,6 +866,9 @@ c_tower1,0,0,4	script	Cofre T3#dcp_c_tower1	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -784,6 +891,9 @@ c_tower2,0,0,4	script	Cofre T3#dcp_c_tower2	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -806,6 +916,9 @@ c_tower2_,0,0,4	script	Cofre T6#dcp_c_tower2_	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -828,6 +941,9 @@ c_tower3,0,0,4	script	Cofre T3#dcp_c_tower3	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -850,6 +966,9 @@ c_tower3_,0,0,4	script	Cofre T6#dcp_c_tower3_	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -872,6 +991,9 @@ c_tower4,0,0,4	script	Cofre T3#dcp_c_tower4	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -894,6 +1016,9 @@ dew_dun01,0,0,4	script	Cofre T3#dcp_dew_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -916,6 +1041,9 @@ dew_dun02,0,0,4	script	Cofre T3#dcp_dew_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -938,6 +1066,9 @@ dic_dun01,0,0,4	script	Cofre T5#dcp_dic_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -960,6 +1091,9 @@ dic_dun02,0,0,4	script	Cofre T5#dcp_dic_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -982,6 +1116,9 @@ dic_dun03,0,0,4	script	Cofre T5#dcp_dic_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1004,6 +1141,9 @@ ein_dun01,0,0,4	script	Cofre T3#dcp_ein_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1026,6 +1166,9 @@ ein_dun02,0,0,4	script	Cofre T4#dcp_ein_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1048,6 +1191,9 @@ ein_dun03,0,0,4	script	Cofre T6#dcp_ein_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1070,6 +1216,9 @@ gef_dun00,0,0,4	script	Cofre T1#dcp_gef_dun00	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1092,6 +1241,9 @@ gef_dun01,0,0,4	script	Cofre T2#dcp_gef_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1114,6 +1266,9 @@ gef_dun02,0,0,4	script	Cofre T3#dcp_gef_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1136,6 +1291,9 @@ gef_dun03,0,0,4	script	Cofre T1#dcp_gef_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1158,6 +1316,9 @@ gefenia01,0,0,4	script	Cofre T4#dcp_gefenia01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1180,6 +1341,9 @@ gefenia02,0,0,4	script	Cofre T4#dcp_gefenia02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1202,6 +1366,9 @@ gefenia03,0,0,4	script	Cofre T4#dcp_gefenia03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1224,6 +1391,9 @@ gefenia04,0,0,4	script	Cofre T4#dcp_gefenia04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1246,6 +1416,9 @@ gl_cas01,0,0,4	script	Cofre T3#dcp_gl_cas01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1268,6 +1441,9 @@ gl_cas01_,0,0,4	script	Cofre T6#dcp_gl_cas01_	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1290,6 +1466,9 @@ gl_cas02,0,0,4	script	Cofre T4#dcp_gl_cas02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1312,6 +1491,9 @@ gl_cas02_,0,0,4	script	Cofre T5#dcp_gl_cas02_	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1334,6 +1516,9 @@ gl_church,0,0,4	script	Cofre T3#dcp_gl_church	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1356,6 +1541,9 @@ gl_chyard,0,0,4	script	Cofre T3#dcp_gl_chyard	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1378,6 +1566,9 @@ gl_chyard_,0,0,4	script	Cofre T5#dcp_gl_chyard_	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1400,6 +1591,9 @@ gl_dun01,0,0,4	script	Cofre T4#dcp_gl_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1422,6 +1616,9 @@ gl_dun02,0,0,4	script	Cofre T4#dcp_gl_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1444,6 +1641,9 @@ gl_in01,0,0,4	script	Cofre T3#dcp_gl_in01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1466,6 +1666,9 @@ gl_knt01,0,0,4	script	Cofre T4#dcp_gl_knt01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1488,6 +1691,9 @@ gl_knt02,0,0,4	script	Cofre T4#dcp_gl_knt02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1510,6 +1716,9 @@ gl_prison,0,0,4	script	Cofre T3#dcp_gl_prison	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1532,6 +1741,9 @@ gl_prison1,0,0,4	script	Cofre T4#dcp_gl_prison1	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1554,6 +1766,9 @@ gl_sew01,0,0,4	script	Cofre T3#dcp_gl_sew01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1576,6 +1791,9 @@ gl_sew02,0,0,4	script	Cofre T4#dcp_gl_sew02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1598,6 +1816,9 @@ gl_sew03,0,0,4	script	Cofre T4#dcp_gl_sew03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1620,6 +1841,9 @@ gl_sew04,0,0,4	script	Cofre T4#dcp_gl_sew04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1642,6 +1866,9 @@ gl_step,0,0,4	script	Cofre T3#dcp_gl_step	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1664,6 +1891,9 @@ glast_01,0,0,4	script	Cofre T1#dcp_glast_01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1686,6 +1916,9 @@ gld2_ald,0,0,4	script	Cofre T5#dcp_gld2_ald	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1708,6 +1941,9 @@ gld2_gef,0,0,4	script	Cofre T5#dcp_gld2_gef	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1730,6 +1966,9 @@ gld2_pay,0,0,4	script	Cofre T5#dcp_gld2_pay	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1752,6 +1991,9 @@ gld2_prt,0,0,4	script	Cofre T5#dcp_gld2_prt	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1774,6 +2016,9 @@ gld_dun01,0,0,4	script	Cofre T5#dcp_gld_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1796,6 +2041,9 @@ gld_dun01_2,0,0,4	script	Cofre T5#dcp_gld_dun01_2	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1818,6 +2066,9 @@ gld_dun02,0,0,4	script	Cofre T5#dcp_gld_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1840,6 +2091,9 @@ gld_dun02_2,0,0,4	script	Cofre T5#dcp_gld_dun02_2	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1862,6 +2116,9 @@ gld_dun03,0,0,4	script	Cofre T4#dcp_gld_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1884,6 +2141,9 @@ gld_dun03_2,0,0,4	script	Cofre T5#dcp_gld_dun03_2	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1906,6 +2166,9 @@ gld_dun04,0,0,4	script	Cofre T4#dcp_gld_dun04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1928,6 +2191,9 @@ gld_dun04_2,0,0,4	script	Cofre T5#dcp_gld_dun04_2	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1950,6 +2216,9 @@ gon_dun01,0,0,4	script	Cofre T3#dcp_gon_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1972,6 +2241,9 @@ gon_dun02,0,0,4	script	Cofre T3#dcp_gon_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -1994,6 +2266,9 @@ gon_dun03,0,0,4	script	Cofre T3#dcp_gon_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2016,6 +2291,9 @@ ice_dun01,0,0,4	script	Cofre T4#dcp_ice_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2038,6 +2316,9 @@ ice_dun02,0,0,4	script	Cofre T4#dcp_ice_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2060,6 +2341,9 @@ ice_dun03,0,0,4	script	Cofre T4#dcp_ice_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2082,6 +2366,9 @@ in_sphinx1,0,0,4	script	Cofre T2#dcp_in_sphinx1	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2104,6 +2391,9 @@ in_sphinx2,0,0,4	script	Cofre T3#dcp_in_sphinx2	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2126,6 +2416,9 @@ in_sphinx3,0,0,4	script	Cofre T3#dcp_in_sphinx3	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2148,6 +2441,9 @@ in_sphinx4,0,0,4	script	Cofre T3#dcp_in_sphinx4	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2170,6 +2466,9 @@ in_sphinx5,0,0,4	script	Cofre T3#dcp_in_sphinx5	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2192,6 +2491,9 @@ iz_d04_i,0,0,4	script	Cofre T5#dcp_iz_d04_i	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2214,6 +2516,9 @@ iz_d05_i,0,0,4	script	Cofre T6#dcp_iz_d05_i	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2236,6 +2541,9 @@ iz_dun00,0,0,4	script	Cofre T1#dcp_iz_dun00	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2258,6 +2566,9 @@ iz_dun01,0,0,4	script	Cofre T1#dcp_iz_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2280,6 +2591,9 @@ iz_dun02,0,0,4	script	Cofre T2#dcp_iz_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2302,6 +2616,9 @@ iz_dun03,0,0,4	script	Cofre T2#dcp_iz_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2324,6 +2641,9 @@ iz_dun04,0,0,4	script	Cofre T2#dcp_iz_dun04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2346,6 +2666,9 @@ iz_dun05,0,0,4	script	Cofre T4#dcp_iz_dun05	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2368,6 +2691,9 @@ jupe_core,0,0,4	script	Cofre T4#dcp_jupe_core	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2390,6 +2716,9 @@ juperos_01,0,0,4	script	Cofre T4#dcp_juperos_01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2412,6 +2741,9 @@ juperos_02,0,0,4	script	Cofre T4#dcp_juperos_02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2434,6 +2766,9 @@ kh_dun01,0,0,4	script	Cofre T4#dcp_kh_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2456,6 +2791,9 @@ kh_dun02,0,0,4	script	Cofre T4#dcp_kh_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2478,6 +2816,9 @@ lhz_dun01,0,0,4	script	Cofre T4#dcp_lhz_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2500,6 +2841,9 @@ lhz_dun02,0,0,4	script	Cofre T5#dcp_lhz_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2522,6 +2866,9 @@ lhz_dun03,0,0,4	script	Cofre T5#dcp_lhz_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2544,6 +2891,9 @@ lhz_dun04,0,0,4	script	Cofre T5#dcp_lhz_dun04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2566,6 +2916,9 @@ lou_dun01,0,0,4	script	Cofre T3#dcp_lou_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2588,6 +2941,9 @@ lou_dun02,0,0,4	script	Cofre T3#dcp_lou_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2610,6 +2966,9 @@ lou_dun03,0,0,4	script	Cofre T3#dcp_lou_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2632,6 +2991,9 @@ mag_dun01,0,0,4	script	Cofre T4#dcp_mag_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2654,6 +3016,9 @@ mag_dun02,0,0,4	script	Cofre T4#dcp_mag_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2676,6 +3041,9 @@ mag_dun03,0,0,4	script	Cofre T6#dcp_mag_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2698,6 +3066,9 @@ mal_dun01,0,0,4	script	Cofre T3#dcp_mal_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2720,6 +3091,9 @@ mjo_dun01,0,0,4	script	Cofre T1#dcp_mjo_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2742,6 +3116,9 @@ mjo_dun02,0,0,4	script	Cofre T2#dcp_mjo_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2764,6 +3141,9 @@ mjo_dun03,0,0,4	script	Cofre T2#dcp_mjo_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2786,6 +3166,9 @@ moc_pryd01,0,0,4	script	Cofre T1#dcp_moc_pryd01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2808,6 +3191,9 @@ moc_pryd02,0,0,4	script	Cofre T2#dcp_moc_pryd02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2830,6 +3216,9 @@ moc_pryd03,0,0,4	script	Cofre T2#dcp_moc_pryd03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2852,6 +3241,9 @@ moc_pryd04,0,0,4	script	Cofre T2#dcp_moc_pryd04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2874,6 +3266,9 @@ moc_pryd05,0,0,4	script	Cofre T2#dcp_moc_pryd05	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2896,6 +3291,9 @@ moc_pryd06,0,0,4	script	Cofre T3#dcp_moc_pryd06	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2918,6 +3316,9 @@ moc_prydn1,0,0,4	script	Cofre T4#dcp_moc_prydn1	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2940,6 +3341,9 @@ moc_prydn2,0,0,4	script	Cofre T5#dcp_moc_prydn2	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2962,6 +3366,9 @@ mosk_dun01,0,0,4	script	Cofre T3#dcp_mosk_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -2984,6 +3391,9 @@ mosk_dun02,0,0,4	script	Cofre T3#dcp_mosk_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3006,6 +3416,9 @@ mosk_dun03,0,0,4	script	Cofre T3#dcp_mosk_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3028,6 +3441,9 @@ nameless_n,0,0,4	script	Cofre T4#dcp_nameless_n	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3050,6 +3466,9 @@ nyd_dun01,0,0,4	script	Cofre T4#dcp_nyd_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3072,6 +3491,9 @@ odin_tem01,0,0,4	script	Cofre T3#dcp_odin_tem01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3094,6 +3516,9 @@ odin_tem02,0,0,4	script	Cofre T4#dcp_odin_tem02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3116,6 +3541,9 @@ odin_tem03,0,0,4	script	Cofre T3#dcp_odin_tem03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3138,6 +3566,9 @@ orcsdun01,0,0,4	script	Cofre T2#dcp_orcsdun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3160,6 +3591,9 @@ orcsdun02,0,0,4	script	Cofre T2#dcp_orcsdun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3182,6 +3616,9 @@ pay_dun00,0,0,4	script	Cofre T1#dcp_pay_dun00	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3204,6 +3641,9 @@ pay_dun01,0,0,4	script	Cofre T1#dcp_pay_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3226,6 +3666,9 @@ pay_dun02,0,0,4	script	Cofre T2#dcp_pay_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3248,6 +3691,9 @@ pay_dun03,0,0,4	script	Cofre T2#dcp_pay_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3270,6 +3716,9 @@ pay_dun04,0,0,4	script	Cofre T2#dcp_pay_dun04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3292,6 +3741,9 @@ prt_maze01,0,0,4	script	Cofre T1#dcp_prt_maze01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3314,6 +3766,9 @@ prt_maze02,0,0,4	script	Cofre T1#dcp_prt_maze02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3336,6 +3791,9 @@ prt_maze03,0,0,4	script	Cofre T2#dcp_prt_maze03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3358,6 +3816,9 @@ prt_mz03_i,0,0,4	script	Cofre T6#dcp_prt_mz03_i	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3380,6 +3841,9 @@ prt_prison,0,0,4	script	Cofre T5#dcp_prt_prison	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3402,6 +3866,9 @@ prt_sewb1,0,0,4	script	Cofre T1#dcp_prt_sewb1	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3424,6 +3891,9 @@ prt_sewb2,0,0,4	script	Cofre T1#dcp_prt_sewb2	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3446,6 +3916,9 @@ prt_sewb3,0,0,4	script	Cofre T1#dcp_prt_sewb3	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3468,6 +3941,9 @@ prt_sewb4,0,0,4	script	Cofre T1#dcp_prt_sewb4	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3490,6 +3966,9 @@ ra_san01,0,0,4	script	Cofre T5#dcp_ra_san01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3512,6 +3991,9 @@ ra_san02,0,0,4	script	Cofre T5#dcp_ra_san02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3534,6 +4016,9 @@ ra_san03,0,0,4	script	Cofre T5#dcp_ra_san03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3556,6 +4041,9 @@ ra_san04,0,0,4	script	Cofre T5#dcp_ra_san04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3578,6 +4066,9 @@ ra_san05,0,0,4	script	Cofre T5#dcp_ra_san05	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3600,6 +4091,9 @@ schg_dun01,0,0,4	script	Cofre T4#dcp_schg_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3622,6 +4116,9 @@ tha_t01,0,0,4	script	Cofre T3#dcp_tha_t01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3644,6 +4141,9 @@ tha_t02,0,0,4	script	Cofre T4#dcp_tha_t02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3666,6 +4166,9 @@ tha_t03,0,0,4	script	Cofre T4#dcp_tha_t03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3688,6 +4191,9 @@ tha_t04,0,0,4	script	Cofre T4#dcp_tha_t04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3710,6 +4216,9 @@ tha_t05,0,0,4	script	Cofre T4#dcp_tha_t05	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3732,6 +4241,9 @@ tha_t06,0,0,4	script	Cofre T4#dcp_tha_t06	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3754,6 +4266,9 @@ tha_t07,0,0,4	script	Cofre T4#dcp_tha_t07	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3776,6 +4291,9 @@ tha_t08,0,0,4	script	Cofre T4#dcp_tha_t08	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3798,6 +4316,9 @@ tha_t09,0,0,4	script	Cofre T5#dcp_tha_t09	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3820,6 +4341,9 @@ tha_t10,0,0,4	script	Cofre T5#dcp_tha_t10	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3842,6 +4366,9 @@ tha_t11,0,0,4	script	Cofre T5#dcp_tha_t11	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3864,6 +4391,9 @@ tha_t12,0,0,4	script	Cofre T5#dcp_tha_t12	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3886,6 +4416,9 @@ thor_v01,0,0,4	script	Cofre T5#dcp_thor_v01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3908,6 +4441,9 @@ thor_v02,0,0,4	script	Cofre T5#dcp_thor_v02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3930,6 +4466,9 @@ thor_v03,0,0,4	script	Cofre T5#dcp_thor_v03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3952,6 +4491,9 @@ treasure01,0,0,4	script	Cofre T1#dcp_treasure01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3974,6 +4516,9 @@ treasure02,0,0,4	script	Cofre T2#dcp_treasure02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -3996,6 +4541,9 @@ tur_dun01,0,0,4	script	Cofre T3#dcp_tur_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -4018,6 +4566,9 @@ tur_dun02,0,0,4	script	Cofre T4#dcp_tur_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -4040,6 +4591,9 @@ tur_dun03,0,0,4	script	Cofre T4#dcp_tur_dun03	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -4062,6 +4616,9 @@ tur_dun04,0,0,4	script	Cofre T4#dcp_tur_dun04	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -4084,6 +4641,9 @@ um_dun01,0,0,4	script	Cofre T2#dcp_um_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -4106,6 +4666,9 @@ um_dun02,0,0,4	script	Cofre T3#dcp_um_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -4128,6 +4691,9 @@ xmas_dun01,0,0,4	script	Cofre T1#dcp_xmas_dun01	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 
@@ -4150,6 +4716,9 @@ xmas_dun02,0,0,4	script	Cofre T1#dcp_xmas_dun02	3075,{
 	if (.@opened) {
 		stopnpctimer;
 		initnpctimer;
+		close2;
+		callfunc "F_DungeonChest_Tale", .@opened;
+		end;
 	}
 	close;
 

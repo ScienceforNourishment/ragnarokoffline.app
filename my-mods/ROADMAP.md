@@ -2,7 +2,7 @@
 
 Qué se hace, en qué orden y cómo se sabe que está terminado. Lo decidido está
 en [`DECISIONS.md`](./DECISIONS.md); el diseño de cada sistema, en
-[`PLAN.md`](./PLAN.md). Revisada el 2026-10-17.
+[`PLAN.md`](./PLAN.md). Revisada el 2026-10-23.
 
 ## La visión en una página
 
@@ -43,7 +43,8 @@ Que lo que ya existe funcione y no se rompa.
       en una sesión larga, salvo lo que cada README marca «Sin probar». Lo
       más importante pendiente: los **iconos de `temperature`**, que no
       salían al llegar a un mapa frío o caluroso (visto el 2026-10-23,
-      arreglado en 0.4.1 sin probar; ver su
+      arreglado en 0.4.1; el 2026-10-24 el de frío ya salía y el de calor
+      no, arreglado en 0.5.1 sin probar; ver su
       [«Estado»](./temperature/README.md#estado)).
 - [x] Aplicar [`CONVENTIONS.md`](./CONVENTIONS.md): rangos de IDs,
       prefijos y eventos públicos registrados (revisado el 2026-10-17: se cumplen; completadas las tablas).
@@ -70,11 +71,14 @@ el relato de herida de `wounds` 0.4.1; después, `nemesis` y `tavern-rumors`.
 La segunda parte, también del 2026-10-23, probó la cantimplora, `@atlas`, el
 botín de equipo y el Herrero de `dungeon-chest` 0.4, los NPC de las siete
 ciudades, la herida de la marca, los contratos de Tier 2 y el clima con
-presión; los resultados están en el «Estado» de cada README. Queda en
-[`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md): `@cofre` y los cofres de
-`iz_d04_i` e `iz_d05_i`, los iconos de `temperature` 0.4.1, las variantes
-de las cacerías de `expedition-board` 0.6.2,
-`campfire` 0.2 con `temperature` 0.4.0 y `wounds` 0.6.1, y `refuges` 0.1.
+presión; los resultados están en el «Estado» de cada README. La sesión del
+2026-10-24 probó `@cofre` y los cofres de `iz_d04_i` e `iz_d05_i`, el
+hambre doble con Frío extremo, el icono de frío, las variantes de las
+cacerías, `campfire` 0.2 entero y las ruinas de `refuges`; encontró dos
+fallos, arreglados sin probar (`temperature` 0.5.1, icono de calor;
+`refuges` 0.1.2, el refugio no abría diálogo). Queda en
+[`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md): esos dos arreglos, el resto
+de `refuges` y `adventure` 0.3 con sus enganches.
 
 ### H1. Porción vertical: Prontera e Izlude, Tier 1 y 2
 
@@ -119,12 +123,13 @@ mundo.
 
 - [x] `nemesis` 0.1 (con `wounds` 0.5.0). Escrito y probado en el juego el
       2026-10-23.
-- [ ] `campfire`: Descansando, cocinar, venda. 0.1 escrita el 2026-10-23
-      (D28–D30, con `temperature` 0.4.0 y `wounds` 0.6.0); falta probarla
-      en el juego.
+- [x] `campfire`: Descansando, cocinar, venda. 0.1 escrita el 2026-10-23
+      (D28–D30, con `temperature` 0.4.0 y `wounds` 0.6.0); la 0.2.0 probada
+      en el juego el 2026-10-24, salvo la fogata compartida (dos jugadores).
 - [ ] `refuges`: al menos un refugio restaurable en la región. 0.1 escrita
       el 2026-10-23 (D32–D34): la Abadía y `prt_fild11`, con `campfire`
-      0.2.0; falta probarla en el juego.
+      0.2.0; las ruinas probadas el 2026-10-24, la restauración falta (0.1.2
+      arregla el diálogo que no abría).
 - [x] `tavern-rumors` 0.1: la taberna de Prontera, con pronóstico, pistas
       del contrato y del némesis, y donde se cuentan los relatos. Escrito el
       2026-10-23 y probado en el juego el mismo día (con `clima` 0.4.1).
@@ -135,7 +140,11 @@ mundo.
       falta probarlo. Quedan los trofeos de marcas y los objetos de `clima` y
       `temperature` como botín.
 - [ ] Integraciones de `adventure` 0.2: cofres, contratos, clima,
-      temperatura, racha y crédito en grupo.
+      temperatura, racha y crédito en grupo. Escritas el 2026-10-23
+      (`adventure` 0.2.0, `dungeon-chest` 0.5.0, `expedition-board` 0.7.0,
+      `clima` 0.5.0, `temperature` 0.5.0, `refuges` 0.1.1), con la pestaña
+      Expediciones del diario; falta probarlas en el juego («Probar la 0.2»
+      en el [README de `adventure`](./adventure/README.md#probar-la-02)).
 - [ ] Prueba de dos jugadores: crédito en grupo en todos los mods.
 
 **Terminado cuando:** una partida en la región tiene un principio (rumor), un
@@ -185,9 +194,9 @@ Qué hace cada mod, su versión y qué se probó están **solo** en la sección
 | `clima` | [README](./clima/README.md#estado) | H0; probar el pronóstico |
 | `temperature` | [README](./temperature/README.md#estado) | H0 |
 | `wounds` | [README](./wounds/README.md#estado) | H0; interiores en H1 |
-| `adventure` | [README](./adventure/README.md#estado) | 0.1 probada; 0.2 en H2 (con la pestaña de expediciones) |
+| `adventure` | [README](./adventure/README.md#estado) | 0.1 probada; 0.2 (racha, grupo, relatos de otros mods, Expediciones) y 0.3 (rasgos y ajustes) escritas: probarlas. Los saberes esperan a decidir qué skills |
 | `expedition-board` | [README](./expedition-board/README.md#estado) | H0 |
-| `dungeon-chest` | [README](./dungeon-chest/README.md#estado) | probar el botín de equipo (0.4.0) y los 4 cofres nuevos |
+| `dungeon-chest` | [README](./dungeon-chest/README.md#estado) | probar `@cofre`, los cofres de Izlude y los relatos de cofre (0.5.0) |
 | `affix-forge`, `arpg-equipments` | referencia externa, no se activan | datos ya importados a `dungeon-chest`; ver «Otros pendientes» |
 | `nemesis` | [README](./nemesis/README.md#estado) | probado; H2 |
 | `tavern-rumors` | [README](./tavern-rumors/README.md#estado) | probado; otras ciudades en H3 |
@@ -276,10 +285,10 @@ temperatura, heridas y entradas del diario hasta volver a entrar.
   que `@temperatura` cambia con la ropa y que una herida sigue restando. En
   `ragnarok-stack logs map 2000` no debe salir `event queue is full` para
   `survival_mgr`, `temp_mgr`, `wounds_mgr` ni `TravelJournal::OnMapTick`.
-- **Queda:** `doevent "TravelJournal::OnLog"` desde otros mods (`wounds`,
-  `expedition-board`) sigue usando la cola. Con menos cadenas ya casi no hay
-  competencia, pero una nota lanzada durante un diálogo largo junto con otros
-  eventos todavía podría perderse.
+- **Resuelto el 2026-10-24, sin probar en el juego:** las notas que otros mods
+  escribían con `doevent "TravelJournal::OnLog"` (`wounds`, `nemesis`,
+  `expedition-board`) usan ahora `F_Adv_Note` de `adventure` 0.3, que se
+  encola como los relatos y no se pierde.
 
 ## Otros pendientes de los mods existentes
 
@@ -307,8 +316,12 @@ aquí solo lo que cruza varios mods o no es de ninguno.
   que guardar zonas de agua por mapa (o la orilla), medidas al generarlo; hoy
   `water` es solo un 0 o 1 por mapa.
 - Pasar los valores de prueba de cada mod a `settings` en `mod.json`. Hecho
-  en `campfire` 0.2.0, `wounds` 0.6.1, `refuges` 0.1.0 y `tavern-rumors`;
-  `dungeon-chest` 0.4.0 (precios del Herrero); faltan los demás.
+  en `campfire` 0.2.0, `wounds` 0.6.1, `refuges` 0.1.0, `tavern-rumors`,
+  `dungeon-chest` 0.4.0 (precios del Herrero) y, el 2026-10-23, `survival`
+  1.3.0, `clima` 0.5.0, `temperature` 0.5.0, `expedition-board` 0.7.0,
+  `nemesis` 0.2.0 y `adventure` 0.3.0. `world-atlas` no tiene valores que
+  ajustar. Quedan en los scripts, a propósito, los umbrales de `survival`
+  (repetidos en su cliente) y el tope de presión (igual en tres mods).
 - Verificar los puntos marcados *(verificar)* en `PLAN.md` contra el rAthena
   fijado.
 - Probar `companion-party-overhaul` con estos mods.

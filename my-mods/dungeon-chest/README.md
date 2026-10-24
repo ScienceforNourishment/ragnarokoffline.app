@@ -11,7 +11,14 @@ con 1 a 4 afijos** del Tier del mapa; si no, una comida del Tier.
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.4.1 (la de `mod.json`): el comando de GM **`@cofre`** para
+- **Versión:** 0.5.0 (la de `mod.json`): abrir un cofre publica dos
+  **relatos de `adventure`** 0.2 (dependencia suave): `chest:<mapa>` (Menor,
+  el primer cofre de cada mapa) y `chesttier:<n>` (Mayor, el primer cofre de
+  cada Tier), compartidos con el grupo que esté en el mismo mapa.
+  `F_DungeonChest_Open` devuelve ahora el Tier del cofre abierto (antes 1) y
+  el cofre llama a `F_DungeonChest_Tale` tras `close2`. Generado con
+  `build_chests.cjs` (183 cofres, `--check` al día). Sin probar en el juego
+- La 0.4.1: el comando de GM **`@cofre`** para
   probar sin buscar el cofre (ver «Probarlo»); cada cofre apunta su nombre en
   `$@dc_npc_<mapa>$` al arrancar. Sin probar en el juego; comprobado sin el
   juego: los 183 cofres generados lo apuntan, llaves y comillas equilibradas.
@@ -39,12 +46,14 @@ Actualízala al cambiar el mod o al probarlo.
   de ningún archivo del mod
 - **Balance, más adelante:** la fuerza de las piezas del Tier 1 (`loot_tiers.csv`)
   vale por ahora; se ajusta al medir el balance de H1
-- **Sin probar:** el comando `@cofre` (0.4.1); los cofres de `iz_d04_i` y
-  `iz_d05_i`, que no se encontraron en mapas tan grandes (con `@cofre` ya no
-  hace falta buscarlos); que el log, tras una sesión abriendo cofres, no se
-  queje de `getitem3` ni `getitem4` (el log de esa sesión se perdió al
-  reiniciar el servidor)
-- **Actualizado:** 2026-10-23
+- **Probado en el juego (0.5.0, 2026-10-24):** `@cofre prt_sewb1` deja en
+  una celda libre al sur del cofre y dice sus coordenadas y si está abierto;
+  `@cofre aqui`, `@cofre cerrar` (deja abrirlo otra vez) y `@cofre mover`;
+  `@cofre prontera` dice «no tiene cofre». Los cofres de `iz_d04_i` (T5) e
+  `iz_d05_i` (T6) aparecen y dan lo de su Tier
+- **Sin probar:** que el log, tras una sesión abriendo cofres, no se queje de
+  `getitem3` ni `getitem4` (se mira al final de la sesión de prueba)
+- **Actualizado:** 2026-10-24
 
 - **Cantidad:** un cofre por mapa.
 - **Ubicación:** aleatoria dentro de cada mapa; solo se eligen celdas

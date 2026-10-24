@@ -15,7 +15,7 @@ fuera de una ciudad donde se cuentan los relatos (D10).
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.1.0 (la de `mod.json`), la primera
+- **Versión:** 0.1.2 (la de `mod.json`), del 2026-10-24: arregla el refugio que no abría diálogo (ver «Falla en el juego (0.1.1)», abajo). `F_Refuge_Self` lee el id del nombre único (`strnpcinfo(3)`) en vez del oculto. Sin probar en el juego. La 0.1.1: el relato `refuge:<id>` se comparte con el grupo mediante el último argumento de `F_Adv_Experience`, que trae `adventure` 0.2; ya no recorre el grupo a mano. Con `adventure` 0.1 solo lo gana quien termina la etapa. Sin probar en el juego. La 0.1.0 fue la primera
 - **Decidido con el autor (2026-10-23):** lo restaurado es del mundo, no del
   personaje (D32); se restaura en tres etapas con drops de la región y zeny,
   y más adelante también con materiales propios de oficios como la minería y
@@ -33,11 +33,22 @@ Actualízala al cambiar el mod o al probarlo.
   argumentos de `modstore_*`, que el mod store está listo antes de los
   `OnInit`, que una copia de una plantilla usa el mod store de su mod, y
   `JT_4_WOODPILE` = 10026 y `JT_4_BONFIRE` = 10252
-- **Sin probar en el juego:** todo. Lo que más dudas tiene: que los sprites
-  `4_WOODPILE` y `4_BONFIRE` se vean en roBrowser, que el cambio de nombre y
+- **Falla en el juego (0.1.1, 2026-10-24): al hablar con el Refugio en
+  ruinas no pasa nada**; el personaje se queda un momento como cargando. Sin
+  errores en el log. **Causa:** `F_Refuge_Show` hace `setnpcdisplay` al
+  cargar, y eso reemplaza el nombre del NPC entero (`npc_setdisplayname`)
+  por «Refugio en ruinas» o el del refugio, sin `#rf_<id>`. `strnpcinfo(2)`
+  quedaba vacío, `F_Refuge_Self` devolvía −1 y el script terminaba sin
+  diálogo. El nombre único (`strnpcinfo(3)`) no cambia. Arreglado en 0.1.2
+- **Probado en el juego (0.1.1, 2026-10-24):** `@refugios` dice los dos «en
+  ruinas»; el montón de leña (`4_WOODPILE`) se ve en `prt_monk 90,238` con
+  el nombre «Refugio en ruinas» y nadie a sus lados; la Caravana de Prontera
+  cuenta las dos ruinas y que ningún refugio tiene cobertizo
+- **Sin probar en el juego:** el resto. Lo que más dudas tiene: que el sprite
+  `4_BONFIRE` se vea en roBrowser, que el cambio de nombre y
   sprite al restaurar se vea sin salir del mapa, y que el Intendente y el
   Caravanero aparezcan al terminar su etapa
-- **Actualizado:** 2026-10-23
+- **Actualizado:** 2026-10-24
 
 ## Instalar
 

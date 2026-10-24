@@ -20,11 +20,18 @@
 //=   client.e.<n>      "<unix>|<type>|<text>", the last 300 are kept
 //=   client.p.<n>      untold relato: "<base>|<job>|<per mille>|<tier>|<text>"
 //=   client.x.*        the expedition: on, no, start, out, since, deaths, top,
-//=                     from, deep, pn (relatos written so far)
+//=                     from, deep, pn (relatos written so far), streak (new
+//=                     experiences in this expedition, for the racha)
+//=   client.t.*        the journal's copy of the rasgos: cold, heat, forager,
+//=                     tough (1 once had) and cold_s, heat_s, biomes, cures
+//=                     (progress). The rasgos themselves are the character
+//=                     variables adv_trait_*, see "Rasgos" below
 //=
 //= Other mods publish an experience with the player attached:
 //=   if (getnpcid(0, "Adventure"))
-//=       callfunc "F_Adv_Experience", "chest:" + .@map$, 1, .@tier, "Abri el cofre de ...";
+//=       callfunc "F_Adv_Experience", "chest:" + .@map$, 1, .@tier, "Abri el cofre de ...", 1;
+//= The last argument (optional) shares it with the party members online on the
+//= same map, each gaining it once (the group rule in CONVENTIONS.md).
 //= The store is per mod and belongs to the NPC that runs the script, so
 //= F_Adv_Experience cannot write it from another mod: it queues the experience
 //= in temporary character variables and fires Adventure::OnQueue. If that event
@@ -35,10 +42,11 @@
 //= with @tj_type$ and @tj_text$. Never run this mod and travel-journal together.
 //===========================================================================
 
-// F_Adv_Experience(key$, size, tier, text$) -> 1 when queued. PUBLIC.
+// F_Adv_Experience(key$, size, tier, text${, party}) -> 1 when queued. PUBLIC.
 // key$: "map:prt_fild08", "wound:3"...; letters, digits, _ and one : or .
 // size: 1 minor, 2 medium, 3 major, 4 milestone. tier: the atlas Tier of
 // where it happened (0 = the character's own band). text$: a short sentence.
+// party: 1 to share it with the party members online on this map.
 function	script	F_Adv_Experience	{
 	.@key$ = getarg(0);
 	if (.@key$ == "" || getarg(3) == "")
@@ -50,6 +58,26 @@ function	script	F_Adv_Experience	{
 	@adv_qs[.@n] = getarg(1);
 	@adv_qt[.@n] = getarg(2);
 	@adv_qx$[.@n] = getarg(3);
+	// The map is kept so the party is looked for where it happened, not where
+	// the character is when the queue is taken.
+	@adv_qm$[.@n] = (getarg(4, 0) ? strcharinfo(3) : "");
+	doevent "Adventure::OnQueue";
+	return 1;
+}
+
+// F_Adv_Note(type$, text$) -> 1 when queued. PUBLIC: a journal entry from
+// another mod, with the player attached. Like F_Adv_Experience it only queues
+// (@adv_nt$, @adv_nx$) and fires Adventure::OnQueue, so a dropped event loses
+// nothing: the note is written at the next map change, rest or @relatos.
+// Prefer it to doevent "TravelJournal::OnLog", which is lost when dropped.
+function	script	F_Adv_Note	{
+	if (getarg(0) == "" || getarg(1) == "")
+		return 0;
+	.@n = getarraysize(@adv_nt$);
+	if (.@n >= 32)
+		return 0;
+	@adv_nt$[.@n] = getarg(0);
+	@adv_nx$[.@n] = getarg(1);
 	doevent "Adventure::OnQueue";
 	return 1;
 }
@@ -82,16 +110,18 @@ function	script	F_Adv_Place	{
 	return .@code$;
 }
 
-// F_Adv_Exp(next, size, tier) -> EXP of one relato for the attached character,
-// from NextBaseExp or NextJobExp (ADVENTURE.md, "Cuanta EXP da una experiencia").
+// F_Adv_Exp(next, size, tier, streak) -> EXP of one relato for the attached
+// character, from NextBaseExp or NextJobExp (ADVENTURE.md, "Cuanta EXP da una
+// experiencia"). streak: the % the racha adds, 0 to 50.
 function	script	F_Adv_Exp	{
 	.@next = getarg(0);
 	.@size = getarg(1);
 	.@tier = getarg(2);
+	.@streak = getarg(3, 0);
 	if (.@next <= 0)
 		return 0;
-	// % of a level by size: minor, medium, major, milestone. Starting values.
-	setarray .@pct[1], 4, 10, 25, 50;
+	// % of a level by size: minor, medium, major, milestone (settings, read in
+	// the Adventure NPC's OnInit).
 	if (.@size < 1)
 		.@size = 1;
 	if (.@size > 4)
@@ -112,9 +142,10 @@ function	script	F_Adv_Exp	{
 		else if (.@d == 1) .@f = 15;
 		else if (.@d >= 2) .@f = 20;
 	}
-	.@e = .@next * .@pct[.@size] * .@f / 1000;
-	// One relato never pays more than 60 % of a level.
-	.@cap = .@next * 60 / 100;
+	.@e = .@next * getvariableofnpc(.pct[.@size], "Adventure") * .@f / 1000;
+	.@e = .@e * (100 + .@streak) / 100;
+	// One relato never pays more than .cap % of a level (60), racha included.
+	.@cap = .@next * getvariableofnpc(.cap, "Adventure") / 100;
 	if (.@e > .@cap)
 		.@e = .@cap;
 	if (.@e < 1)
@@ -137,8 +168,13 @@ function	script	F_Adv_Gain	{
 	.@size = getarg(1);
 	.@tier = getarg(2);
 	.@text$ = replacestr(getarg(3), "|", "/");
-	.@base = callfunc("F_Adv_Exp", NextBaseExp, .@size, .@tier);
-	.@job = callfunc("F_Adv_Exp", NextJobExp, .@size, .@tier);
+	// Racha: +.streak_step % (10) for each new experience already had in this
+	// expedition, up to +.streak_max % (50). The first one pays plain.
+	.@streak = modstore_get("char", "client.x.streak", 0);
+	modstore_inc "char", "client.x.streak", 1;
+	.@bonus = min(.@streak * getvariableofnpc(.streak_step, "Adventure"), getvariableofnpc(.streak_max, "Adventure"));
+	.@base = callfunc("F_Adv_Exp", NextBaseExp, .@size, .@tier, .@bonus);
+	.@job = callfunc("F_Adv_Exp", NextJobExp, .@size, .@tier, .@bonus);
 	.@pm = 0;
 	if (NextBaseExp > 0)
 		.@pm = .@base * 1000 / NextBaseExp;
@@ -149,8 +185,20 @@ function	script	F_Adv_Gain	{
 	return 1;
 }
 
-// F_Adv_Drain: takes the experiences other mods queued with F_Adv_Experience.
+// F_Adv_Drain({share}): writes the notes queued with F_Adv_Note and takes the
+// experiences queued with F_Adv_Experience. share 1 also gives the party ones to
+// the party (F_Adv_Share); only from an event, never inside a dialog, because it
+// attaches other players. Without it a party experience is the character's own.
 function	script	F_Adv_Drain	{
+	.@nn = getarraysize(@adv_nt$);
+	if (.@nn) {
+		copyarray .@nt$[0], @adv_nt$[0], .@nn;
+		copyarray .@nx$[0], @adv_nx$[0], .@nn;
+		deletearray @adv_nt$;
+		deletearray @adv_nx$;
+		for (.@i = 0; .@i < .@nn; .@i++)
+			callfunc "F_Adv_Write", .@nt$[.@i], .@nx$[.@i];
+	}
 	.@n = getarraysize(@adv_qk$);
 	if (.@n == 0)
 		return;
@@ -159,12 +207,40 @@ function	script	F_Adv_Drain	{
 	copyarray .@s[0], @adv_qs[0], .@n;
 	copyarray .@t[0], @adv_qt[0], .@n;
 	copyarray .@x$[0], @adv_qx$[0], .@n;
+	copyarray .@m$[0], @adv_qm$[0], .@n;
 	deletearray @adv_qk$;
 	deletearray @adv_qs;
 	deletearray @adv_qt;
 	deletearray @adv_qx$;
-	for (.@i = 0; .@i < .@n; .@i++)
+	deletearray @adv_qm$;
+	for (.@i = 0; .@i < .@n; .@i++) {
 		callfunc "F_Adv_Gain", .@k$[.@i], .@s[.@i], .@t[.@i], .@x$[.@i];
+		if (getarg(0, 0) && .@m$[.@i] != "")
+			callfunc "F_Adv_Share", .@k$[.@i], .@s[.@i], .@t[.@i], .@x$[.@i], .@m$[.@i];
+	}
+	return;
+}
+
+// F_Adv_Share(key$, size, tier, text$, map$): the same experience for each party
+// member online on map$ (CONVENTIONS.md, "Regla comun de grupo"). Each one
+// gains it once, with their own level and racha. Ends attached to the caller.
+function	script	F_Adv_Share	{
+	.@pid = getcharid(1);
+	if (!.@pid)
+		return;
+	.@self = getcharid(3);
+	getpartymember .@pid, 2;
+	.@n = $@partymembercount;
+	copyarray .@aid[0], $@partymemberaid[0], .@n;
+	for (.@i = 0; .@i < .@n; .@i++) {
+		if (.@aid[.@i] == .@self)
+			continue;
+		if (!attachrid(.@aid[.@i]))
+			continue;
+		if (strcharinfo(3) == getarg(4))
+			callfunc "F_Adv_Gain", getarg(0), getarg(1), getarg(2), getarg(3);
+	}
+	attachrid(.@self);
 	return;
 }
 
@@ -215,6 +291,7 @@ function	script	F_Adv_Rest	{
 	}
 	modstore_delete "char", "client.p";
 	modstore_set "char", "client.x.pn", 0;
+	modstore_set "char", "client.x.streak", 0;
 	if (.@on) {
 		.@no = modstore_get("char", "client.x.no", 0);
 		.@out = modstore_get("char", "client.x.out", 0);
@@ -259,10 +336,160 @@ function	script	F_Adv_BiomeName	{
 	return .@b$;
 }
 
+//--- Rasgos (ADVENTURE.md, "Rasgos"): permanent character variables that the
+//--- mod owning each system reads to soften its own penalty. Character
+//--- variables are seen from every NPC, so the readers need neither the store
+//--- nor requires.mods. A trait reduces a pressure, it never cancels it.
+//=   adv_trait_cold     frio cuenta 1 menos (temperature)
+//=   adv_trait_heat     calor cuenta 1 menos (temperature)
+//=   adv_trait_tough    las heridas restan 1 punto menos (wounds)
+//=   adv_trait_forager  hambre y sed bajan un 20 % mas lento (survival)
+//= Their progress, also character variables: adv_t_cold and adv_t_heat
+//= (seconds on snow, or on desert and volcano maps) and adv_cured (one bit per
+//= wound id ever cured). The journal reads a copy in the store (client.t.*).
+
+// F_Adv_Cured(id): a wound or curse was cured. PUBLIC; wounds calls it after a
+// real cure (not the GM command). Only character variables, so it works from
+// any mod's NPC. Grants adv_trait_tough at the .tough_cures-th distinct one.
+function	script	F_Adv_Cured	{
+	.@id = getarg(0);
+	if (.@id < 1 || .@id > 30)
+		return;
+	adv_cured = adv_cured | (1 << .@id);
+	if (adv_trait_tough)
+		return;
+	if (callfunc("F_Adv_Bits", adv_cured) < getvariableofnpc(.tough_cures, "Adventure"))
+		return;
+	adv_trait_tough = 1;
+	dispbottom "Nuevo rasgo: Curtido por las heridas. Las heridas te restan menos.";
+	return;
+}
+
+// F_Adv_Bits(n) -> how many bits are set in n (bits 1 to 30).
+function	script	F_Adv_Bits	{
+	.@n = getarg(0);
+	.@c = 0;
+	for (.@i = 1; .@i <= 30; .@i++)
+		if (.@n & (1 << .@i))
+			.@c++;
+	return .@c;
+}
+
+// F_Adv_TraitClock(kind$): adds the time on the last cold or hot map to its
+// counter and starts timing the new one. kind$: "cold", "heat" or "" (any
+// other map, a city, logging out).
+function	script	F_Adv_TraitClock	{
+	.@now = gettimetick(2);
+	if (@adv_tat > 0) {
+		.@d = .@now - @adv_tat;
+		if (.@d > 0) {
+			if (@adv_tk$ == "cold")
+				adv_t_cold += .@d;
+			else if (@adv_tk$ == "heat")
+				adv_t_heat += .@d;
+		}
+	}
+	@adv_tk$ = getarg(0);
+	@adv_tat = (@adv_tk$ != "" ? .@now : 0);
+	return;
+}
+
+// F_Adv_Biomes() -> how many biomes the character has a relato of.
+function	script	F_Adv_Biomes	{
+	setarray .@b$[0], "bosque", "costa", "cueva", "desierto", "montana", "nieve", "pantano", "pradera", "ruinas", "selva", "volcan";
+	.@c = 0;
+	for (.@i = 0; .@i < getarraysize(.@b$); .@i++)
+		if (modstore_get("char", "x.biome." + .@b$[.@i], 0))
+			.@c++;
+	return .@c;
+}
+
+// F_Adv_Traits: grants the traits whose condition is met, writes each new one
+// in the journal and refreshes the journal's copy of the progress. Store use:
+// only from this mod's NPCs.
+function	script	F_Adv_Traits	{
+	.@secs = getvariableofnpc(.trait_minutes, "Adventure") * 60;
+	.@biomes = callfunc("F_Adv_Biomes");
+	.@cures = callfunc("F_Adv_Bits", adv_cured);
+	if (!adv_trait_cold && adv_t_cold >= .@secs) {
+		adv_trait_cold = 1;
+		dispbottom "Nuevo rasgo: Hecho al frío. El frío te pesa menos.";
+	}
+	if (!adv_trait_heat && adv_t_heat >= .@secs) {
+		adv_trait_heat = 1;
+		dispbottom "Nuevo rasgo: Hecho al calor. El calor te pesa menos.";
+	}
+	if (!adv_trait_forager && .@biomes >= getvariableofnpc(.forager_biomes, "Adventure")) {
+		adv_trait_forager = 1;
+		dispbottom "Nuevo rasgo: Buscavidas. El hambre y la sed tardan más en llegar.";
+	}
+	if (!adv_trait_tough && .@cures >= getvariableofnpc(.tough_cures, "Adventure")) {
+		adv_trait_tough = 1;
+		dispbottom "Nuevo rasgo: Curtido por las heridas. Las heridas te restan menos.";
+	}
+	// The journal entry, once per trait, also for one F_Adv_Cured granted from
+	// another mod (which cannot write this store).
+	setarray .@k$[0], "cold", "heat", "forager", "tough";
+	setarray .@t$[0], "Rasgo: Hecho al frío", "Rasgo: Hecho al calor", "Rasgo: Buscavidas", "Rasgo: Curtido por las heridas";
+	for (.@i = 0; .@i < 4; .@i++) {
+		if (getd("adv_trait_" + .@k$[.@i]) && !modstore_get("char", "client.t." + .@k$[.@i], 0)) {
+			modstore_set "char", "client.t." + .@k$[.@i], 1;
+			callfunc "F_Adv_Write", "trait", .@t$[.@i];
+		}
+	}
+	// Progress for the Rasgos tab, written only when it changed.
+	setarray .@pk$[0], "cold_s", "heat_s", "biomes", "cures";
+	setarray .@pv[0], adv_t_cold, adv_t_heat, .@biomes, .@cures;
+	for (.@i = 0; .@i < 4; .@i++)
+		if (modstore_get("char", "client.t." + .@pk$[.@i], 0) != .@pv[.@i])
+			modstore_set "char", "client.t." + .@pk$[.@i], .@pv[.@i];
+	return;
+}
+
+// F_Adv_Long(seconds out): the relatos of a long expedition, 30, 60 and 120
+// minutes outside (Media), each once per character. Tier: the deepest one.
+function	script	F_Adv_Long	{
+	.@out = getarg(0);
+	if (.@out < 1800)
+		return;
+	.@top = modstore_get("char", "client.x.top", 0);
+	callfunc "F_Adv_Gain", "long.30", 2, .@top, "Más de media hora fuera de las ciudades";
+	if (.@out >= 3600)
+		callfunc "F_Adv_Gain", "long.60", 2, .@top, "Más de una hora fuera de las ciudades";
+	if (.@out >= 7200)
+		callfunc "F_Adv_Gain", "long.120", 2, .@top, "Más de dos horas fuera de las ciudades";
+	return;
+}
+
+// F_Adv_Close(): the "por los pelos" relato (Media, once) on reaching a safe
+// map from outside with under 20 % HP, or with hunger or thirst at 0 (survival,
+// soft: its variables only count once survival set them up).
+function	script	F_Adv_Close	{
+	.@close = (MaxHp > 0 && Hp * 100 < MaxHp * 20);
+	if (hm_initialized && hm_hunger <= 0)
+		.@close = 1;
+	if (thirst_initialized && thirst_value <= 0)
+		.@close = 1;
+	if (.@close)
+		callfunc "F_Adv_Gain", "close.return", 2, modstore_get("char", "client.x.top", 0), "Volví por los pelos";
+	return;
+}
+
 -	script	Adventure	-1,{
 	end;
 
 OnInit:
+	// Settings (mod.json); the defaults are the starting values of ADVENTURE.md.
+	.pct[1] = callfunc("F_ModSetting", "adventure", "pct_minor", 4);
+	.pct[2] = callfunc("F_ModSetting", "adventure", "pct_medium", 10);
+	.pct[3] = callfunc("F_ModSetting", "adventure", "pct_major", 25);
+	.pct[4] = callfunc("F_ModSetting", "adventure", "pct_milestone", 50);
+	.cap = callfunc("F_ModSetting", "adventure", "relato_cap", 60);
+	.streak_step = callfunc("F_ModSetting", "adventure", "streak_step", 10);
+	.streak_max = callfunc("F_ModSetting", "adventure", "streak_max", 50);
+	.trait_minutes = callfunc("F_ModSetting", "adventure", "trait_minutes", 30);
+	.forager_biomes = callfunc("F_ModSetting", "adventure", "forager_biomes", 5);
+	.tough_cures = callfunc("F_ModSetting", "adventure", "tough_cures", 3);
 	bindatcmd "diario", strnpcinfo(3) + "::OnCommand", 0, 99;
 	bindatcmd "relatos", strnpcinfo(3) + "::OnTales", 0, 99;
 	end;
@@ -273,7 +500,9 @@ OnCommand:
 
 // @relatos: the expedition and its untold relatos, in the chat.
 OnTales:
-	callfunc "F_Adv_Drain";
+	callfunc "F_Adv_Drain", 1;
+	callfunc "F_Adv_TraitClock", @adv_tk$;
+	callfunc "F_Adv_Traits";
 	.@pn = modstore_get("char", "client.x.pn", 0);
 	if (modstore_get("char", "client.x.on", 0)) {
 		.@out = modstore_get("char", "client.x.out", 0);
@@ -293,34 +522,57 @@ OnTales:
 		dispbottom "- " + .@f$[4];
 	}
 	dispbottom .@pn + " relato" + (.@pn == 1 ? "" : "s") + " sin contar. Se cuentan al Cronista.";
+	.@r$ = (adv_trait_cold ? " Hecho al frío." : "") + (adv_trait_heat ? " Hecho al calor." : "") + (adv_trait_forager ? " Buscavidas." : "") + (adv_trait_tough ? " Curtido por las heridas." : "");
+	if (.@r$ != "")
+		dispbottom "Rasgos:" + .@r$;
 	end;
 
 // A segment left open by a crash (no logout event) is not time outside: the
 // map load that follows the login opens a new one.
 OnPCLoginEvent:
+	// Real players only: Population Engine bots never fire this event, and
+	// OnNPCKillEvent skips anyone without @adv_on.
+	@adv_on = 1;
 	@adv_map$ = "";
 	if (modstore_get("char", "client.x.since", 0) > 0)
 		modstore_set "char", "client.x.since", 0;
+	// A character from before the rasgos may already meet a condition.
+	callfunc "F_Adv_Traits";
 	end;
 
 OnPCLogoutEvent:
 	callfunc "F_Adv_CloseSegment";
+	callfunc "F_Adv_TraitClock", "";
 	end;
 
 OnPCLoadMapEvent:
-	callfunc "F_Adv_Drain";
+	callfunc "F_Adv_Drain", 1;
 	.@map$ = strcharinfo(3);
 	if (.@map$ == @adv_map$)
 		end;
 	@adv_map$ = .@map$;
 	// A map outside the atlas changes nothing: no experiences, and the time
 	// keeps counting as it was.
-	if (!$@wa_ready)
+	if (!$@wa_ready) {
+		callfunc "F_Adv_TraitClock", "";
 		end;
-	if (!callfunc("F_Atlas_Has", .@map$))
+	}
+	if (!callfunc("F_Atlas_Has", .@map$)) {
+		callfunc "F_Adv_TraitClock", "";
 		end;
+	}
 	if (callfunc("F_Atlas_IsSafe", .@map$)) {
+		callfunc "F_Adv_TraitClock", "";
+		callfunc "F_Adv_Traits";
 		callfunc "F_Adv_CloseSegment";
+		// Back from outside (not a respawn after dying) on an expedition.
+		if (@adv_out && modstore_get("char", "client.x.on", 0)) {
+			callfunc "F_Adv_Long", modstore_get("char", "client.x.out", 0);
+			if (!@adv_died)
+				callfunc "F_Adv_Close";
+		}
+		@adv_out = 0;
+		@adv_died = 0;
 		if (modstore_get("char", "x.map." + .@map$, 0) == 0) {
 			modstore_set "char", "x.map." + .@map$, 1;
 			if (modstore_get("char", "x.map." + .@map$, 0) == 1)
@@ -332,6 +584,13 @@ OnPCLoadMapEvent:
 	.@name$ = callfunc("F_Adv_Place", .@map$);
 	.@tier = callfunc("F_Atlas_Tier", .@map$);
 	.@biome$ = callfunc("F_Atlas_Biome", .@map$);
+	// Time on snow, or on desert and volcano maps, for the rasgos.
+	.@kind$ = "";
+	if (.@biome$ == "nieve")
+		.@kind$ = "cold";
+	else if (.@biome$ == "desierto" || .@biome$ == "volcan")
+		.@kind$ = "heat";
+	callfunc "F_Adv_TraitClock", .@kind$;
 	if (!modstore_get("char", "client.x.on", 0)) {
 		.@no = modstore_inc("char", "client.x.no", 1);
 		modstore_set "char", "client.x.on", 1;
@@ -345,6 +604,8 @@ OnPCLoadMapEvent:
 	}
 	if (modstore_get("char", "client.x.since", 0) == 0)
 		modstore_set "char", "client.x.since", .@now;
+	@adv_out = 1;
+	@adv_died = 0;
 	if (.@tier > modstore_get("char", "client.x.top", 0)) {
 		modstore_set "char", "client.x.top", .@tier;
 		modstore_set "char", "client.x.deep", .@name$;
@@ -354,22 +615,46 @@ OnPCLoadMapEvent:
 		callfunc "F_Adv_Gain", "biome." + .@biome$, 2, .@tier, "Primera vez en " + callfunc("F_Adv_BiomeName", .@biome$);
 	if (.@tier > 0)
 		callfunc "F_Adv_Gain", "tier." + .@tier, 4, .@tier, "Primer paso en tierras de Tier " + .@tier;
+	callfunc "F_Adv_Long", modstore_get("char", "client.x.out", 0) + .@now - modstore_get("char", "client.x.since", .@now);
+	callfunc "F_Adv_Traits";
 	end;
 
 OnPCDieEvent:
+	@adv_died = 1;
 	callfunc "F_Adv_Write", "death", callfunc("F_Adv_Place", strcharinfo(3));
 	if (modstore_get("char", "client.x.on", 0))
 		modstore_inc "char", "client.x.deaths", 1;
 	end;
 
-// Fired by F_Adv_Experience.
+// Runs with EVERY monster a player kills, Population Engine bots included
+// (CONVENTIONS.md, "Muertes de monstruos"), so the first line drops all that
+// is not an MVP (MD_MVP, as nemesis checks). Then only real players (@adv_on).
+// The first MVP of each species is a relato (Mayor), shared with the party
+// on the map.
+OnNPCKillEvent:
+	if (!(getmonsterinfo(killedrid, MOB_MODE) & MD_MVP))
+		end;
+	if (!@adv_on)
+		end;
+	.@mob = killedrid;
+	.@map$ = strcharinfo(3);
+	.@tier = 0;
+	if ($@wa_ready)
+		.@tier = callfunc("F_Atlas_Tier", .@map$);
+	.@text$ = "Abatí a " + getmonsterinfo(.@mob, MOB_NAME);
+	callfunc "F_Adv_Gain", "mvp." + .@mob, 3, .@tier, .@text$;
+	callfunc "F_Adv_Share", "mvp." + .@mob, 3, .@tier, .@text$, .@map$;
+	end;
+
+// Fired by F_Adv_Experience and F_Adv_Note.
 OnQueue:
-	callfunc "F_Adv_Drain";
+	callfunc "F_Adv_Drain", 1;
 	end;
 
 // PUBLIC, the form ADVENTURE.md first described: @adv_key$, @adv_size,
-// @adv_tier, @adv_text$ (@adv_party is for 0.2). Prefer F_Adv_Experience: if
-// this event is dropped, these variables are overwritten by the next caller.
+// @adv_tier, @adv_text$ and @adv_party (1 to share it with the party on this
+// map). Prefer F_Adv_Experience: if this event is dropped, these variables are
+// overwritten by the next caller.
 OnExperience:
 	if (@adv_key$ != "" && @adv_text$ != "") {
 		.@n = getarraysize(@adv_qk$);
@@ -377,13 +662,14 @@ OnExperience:
 		@adv_qs[.@n] = @adv_size;
 		@adv_qt[.@n] = @adv_tier;
 		@adv_qx$[.@n] = @adv_text$;
+		@adv_qm$[.@n] = (@adv_party ? strcharinfo(3) : "");
 	}
 	@adv_key$ = "";
 	@adv_size = 0;
 	@adv_tier = 0;
 	@adv_text$ = "";
 	@adv_party = 0;
-	callfunc "F_Adv_Drain";
+	callfunc "F_Adv_Drain", 1;
 	end;
 
 // PUBLIC: tells the attached character's relatos and closes the expedition.

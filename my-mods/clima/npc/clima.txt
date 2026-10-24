@@ -24,10 +24,16 @@ prontera,0,0,0	script	Clima#clima	-1,{
 
 OnInit:
 	.map_count = 20;
-	.check_interval = 60;
+	// Ajustes (mod.json); los valores por defecto son los de prueba.
+	.check_interval = callfunc("F_ModSetting", "clima", "check_seconds", 60);
 	.first_check_delay = 30;
-	.effect_refresh_interval = 10;
-	.effect_lease = 12;
+	.effect_refresh_interval = callfunc("F_ModSetting", "clima", "refresh_seconds", 10);
+	.effect_lease = callfunc("F_ModSetting", "clima", "status_seconds", 12);
+	.event_chance = callfunc("F_ModSetting", "clima", "event_chance", 100);
+	.event_seconds = callfunc("F_ModSetting", "clima", "event_minutes", 5) * 60;
+	// Segundos sin proteccion bajo un evento, hasta que termina, para el
+	// relato "weatherlived" de adventure (S_Endured).
+	.lived_min = callfunc("F_ModSetting", "clima", "lived_minutes", 2) * 60;
 
 	.combo_count = 10;
 	for (.@i = 1; .@i <= .combo_count; .@i++)
@@ -214,8 +220,8 @@ OnInit:
 		// runs after the atlas has filled its table.
 		.next_combo[.@i] = 0;
 		.next_check[.@i] = gettimetick(2) + .first_check_delay;
-		.chance[.@i] = 100;
-		.duration[.@i] = 300;
+		.chance[.@i] = .event_chance;
+		.duration[.@i] = .event_seconds;
 		debugmes "[clima] " + .map$[.@i] + " registrado; el evento se sortea por su bioma al empezar; primer chequeo en " + .first_check_delay + " segundos.";
 	}
 
@@ -227,6 +233,8 @@ OnTimer1000:
 
 	for (.@i = 0; .@i < .map_count; .@i++) {
 		if (.event_active[.@i] && .@now >= .event_end[.@i]) {
+			// El fin del evento lo identifica para S_Endured.
+			.@ended = .event_end[.@i];
 			.event_active[.@i] = 0;
 			.event_end[.@i] = 0;
 			if (.next_check[.@i] <= .@now)
@@ -234,8 +242,11 @@ OnTimer1000:
 			debugmes "[clima] Evento " + .combo_name$[.combination[.@i]] + " terminado en " + .map$[.@i] + ".";
 			mapannounce .map$[.@i], .combo_end_message$[.combination[.@i]], bc_map;
 			.@player_count = getmapunits(BL_PC, .map$[.@i], .@player_ids[0]);
+			.@adv = getnpcid(0, "Adventure");
 			freeloop(1);
 			for (.@j = 0; .@j < .@player_count; .@j++) {
+				if (.@adv)
+					callsub S_Endured, .@i, .@player_ids[.@j], .@ended;
 				callsub S_ApplyWeatherStatus, .@i, .@player_ids[.@j];
 			}
 			freeloop(0);
@@ -346,6 +357,21 @@ S_ApplyWeatherStatus:
 	// map without loadevent does not reset it.
 	set @pr_clima, !.@protected;
 	set @pr_clima_map$, .map$[.@map_index];
+	if (.@protected) {
+		// Relato de adventure (Media) la primera vez que el equipo protege de
+		// esta combinacion. @clima_adv_w (un bit por combinacion) evita volver a
+		// publicarlo en cada revision de la sesion; adventure ya lo deduplica.
+		if (!(@clima_adv_w & (1 << .@combo_id))) {
+			set @clima_adv_w, @clima_adv_w | (1 << .@combo_id);
+			if (getnpcid(0, "Adventure"))
+				callfunc "F_Adv_Experience", "weather:" + .@combo_id, 2, callsub(S_Tier, .map$[.@map_index]), "Mi equipo me protegió del clima: " + .combo_name$[.@combo_id];
+		}
+	} else if (@clima_lived_map$ != .map$[.@map_index] || @clima_lived_ev != .event_end[.@map_index]) {
+		// Desde cuando lo aguanta sin proteccion, para S_Endured.
+		set @clima_lived_map$, .map$[.@map_index];
+		set @clima_lived_ev, .event_end[.@map_index];
+		set @clima_lived_at, gettimetick(2);
+	}
 	if (!.@protected && .@combo_id == 9) {
 		set @clima_thirst_extra_loss, 1;
 		set @clima_exposure_map$, .map$[.@map_index];
@@ -357,6 +383,29 @@ S_ApplyWeatherStatus:
 		sc_start .combo_status[.@combo_id], .combo_status_duration[.@combo_id] * 1000, 0, 10000, SCSTART_NOAVOID;
 	detachrid;
 	return;
+
+// S_Endured(indice del mapa, account id, fin del evento): al terminar un
+// evento, relato de adventure (Menor) para quien lo aguanto sin proteccion
+// desde hace .lived_min segundos o mas. Solo se llama con adventure activo.
+S_Endured:
+	.@map_index = getarg(0);
+	if (!attachrid(getarg(1)))
+		return;
+	if (@clima_lived_map$ == .map$[.@map_index] && @clima_lived_ev == getarg(2)) {
+		if (gettimetick(2) - @clima_lived_at >= .lived_min && !callsub(S_IsWeatherProtected, .@map_index)) {
+			.@combo_id = .combination[.@map_index];
+			callfunc "F_Adv_Experience", "weatherlived:" + .@combo_id, 1, callsub(S_Tier, .map$[.@map_index]), "Aguanté el clima sin protección: " + .combo_name$[.@combo_id];
+		}
+	}
+	set @clima_lived_map$, "";
+	detachrid;
+	return;
+
+// S_Tier(mapa$) -> su Tier en el atlas; 0 sin atlas.
+S_Tier:
+	if (!$@wa_ready)
+		return 0;
+	return callfunc("F_Atlas_Tier", getarg(0));
 
 OnPCLoadMapEvent:
 	set @clima_hunger_extra_loss, 0;
