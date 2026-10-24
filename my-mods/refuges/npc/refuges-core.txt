@@ -1,0 +1,386 @@
+//===== Ragnarok Offline: refuges ==========================================
+//= Refugios en ruinas en los campos (PLAN.md, «Mods nuevos propuestos» 4).
+//= Se restauran en tres etapas entregando drops de la region y zeny (D33), y
+//= lo restaurado queda para el mundo entero, no para un personaje (D32):
+//=
+//=   1 Techo y fogata  descansar (Descansado de campfire) y contar los relatos
+//=                     de adventure (Adventure::OnRest, D10). Relato Mayor
+//=                     refuge:<id> para quien la termina y su grupo en el mapa.
+//=   2 Despensa        el Intendente del Refugio, una tienda.
+//=   3 Caravana        el Caravanero lleva a la ciudad, y la Caravana de los
+//=                     Refugios de la ciudad lleva al refugio (D34).
+//=
+//= Los refugios, sus etapas y lo que cuestan salen de refuges-places.txt, que
+//= se genera desde los CSV de registry/tools/refuges/; este archivo tiene las
+//= plantillas que alli se duplican, por eso se carga antes (nombre).
+//=
+//= Mod store, alcance global (r.<id> es un refugio):
+//=   r.<id>.st        etapas terminadas, 0 a 3
+//=   r.<id>.by        quien termino la etapa 1
+//=   r.<id>.g.<item>  objetos entregados para la etapa en curso
+//=   r.<id>.z         1 si el zeny de la etapa en curso esta pagado
+//= Sin temporizadores ni variables de personaje.
+//=
+//= Dependencias suaves: campfire (Descansado y los objetos del Intendente),
+//= adventure (relatos), survival (cantimplora del Intendente), world-atlas
+//= (Tier y nombres de los mapas).
+//===========================================================================
+
+// F_Refuge_Find(id$) -> indice del refugio en refuges_data, o -1.
+function	script	F_Refuge_Find	{
+	.@n = getvariableofnpc(.n, "refuges_data");
+	for (.@i = 0; .@i < .@n; .@i++)
+		if (getvariableofnpc(.id$[.@i], "refuges_data") == getarg(0))
+			return .@i;
+	return -1;
+}
+
+// F_Refuge_Self() -> indice del refugio de la copia que corre el script (su
+// nombre oculto es rf_<id> o rf_<id>_<letra>), o -1.
+function	script	F_Refuge_Self	{
+	explode(.@h$, strnpcinfo(2), "_");
+	if (getarraysize(.@h$) < 2)
+		return -1;
+	return callfunc("F_Refuge_Find", .@h$[1]);
+}
+
+// F_Refuge_Place(mapa$) -> nombre legible del mapa (world-atlas si esta).
+function	script	F_Refuge_Place	{
+	if ($@wa_ready)
+		return callfunc("F_Atlas_Name", getarg(0));
+	return getarg(0);
+}
+
+// F_Refuge_Show(indice): el refugio se ve como dice su etapa. Sin personaje.
+function	script	F_Refuge_Show	{
+	.@r = getarg(0);
+	.@id$ = getvariableofnpc(.id$[.@r], "refuges_data");
+	.@st = modstore_get("r." + .@id$ + ".st", 0);
+	// 10252 = 4_BONFIRE, 10026 = 4_WOODPILE (npc.hpp).
+	if (.@st >= 1)
+		setnpcdisplay "Refugio en ruinas#rf_" + .@id$, getvariableofnpc(.name$[.@r], "refuges_data"), 10252;
+	else
+		setnpcdisplay "Refugio en ruinas#rf_" + .@id$, "Refugio en ruinas", 10026;
+	if (.@st >= 2)
+		enablenpc "Intendente del Refugio#rf_" + .@id$ + "_s";
+	else
+		disablenpc "Intendente del Refugio#rf_" + .@id$ + "_s";
+	if (.@st >= 3)
+		enablenpc "Caravanero#rf_" + .@id$ + "_c";
+	else
+		disablenpc "Caravanero#rf_" + .@id$ + "_c";
+	return;
+}
+
+-	script	refuges_mgr	-1,{
+	end;
+
+OnInit:
+	bindatcmd "refugios", "refuges_mgr::OnList", 0, 99;
+	bindatcmd "refugio", "refuges_mgr::OnSet", 99, 99;
+	end;
+
+// Lo lanza refuges_data al cargar sus datos.
+OnReady:
+	.@n = getvariableofnpc(.n, "refuges_data");
+	for (.@r = 0; .@r < .@n; .@r++) {
+		callfunc "F_Refuge_Show", .@r;
+		.@s$ = "Intendente del Refugio#rf_" + getvariableofnpc(.id$[.@r], "refuges_data") + "_s";
+		// Lena y Venda de campfire, Cantimplora de survival: algo mas caras
+		// que en la ciudad.
+		if (getnpcid(0, "campfire_mgr"))
+			npcshopadditem .@s$, 51100, 400, 51102, 500;
+		if (getnpcid(0, "survival_mgr"))
+			npcshopadditem .@s$, 50834, 650;
+	}
+	end;
+
+// @refugios: cada refugio, donde esta y hasta donde se ha restaurado.
+OnList:
+	.@n = getvariableofnpc(.n, "refuges_data");
+	for (.@r = 0; .@r < .@n; .@r++) {
+		.@id$ = getvariableofnpc(.id$[.@r], "refuges_data");
+		.@st = modstore_get("r." + .@id$ + ".st", 0);
+		.@msg$ = getvariableofnpc(.name$[.@r], "refuges_data") + " (" + .@id$ + "), " + callfunc("F_Refuge_Place", getvariableofnpc(.map$[.@r], "refuges_data")) + ": ";
+		if (.@st == 0)
+			.@msg$ += "en ruinas";
+		else
+			.@msg$ += .@st + "/3, " + getvariableofnpc(.s_name$[.@r * 3 + .@st - 1], "refuges_data");
+		dispbottom .@msg$ + ".";
+	}
+	end;
+
+// @refugio <id> <etapa>: pone un refugio en esa etapa (0 a 3) y borra lo
+// entregado. Para las pruebas.
+OnSet:
+	.@r = -1;
+	if (.@atcmd_numparameters == 2)
+		.@r = callfunc("F_Refuge_Find", .@atcmd_parameters$[0]);
+	.@st = atoi(.@atcmd_parameters$[1]);
+	if (.@r < 0 || .@st < 0 || .@st > 3) {
+		// El prefijo escrito: Ajustes -> Rates -> Command prefix puede cambiarlo.
+		.@p$ = charat(.@atcmd_command$, 0);
+		dispbottom "Uso: " + .@p$ + "refugio <id> <0-3>. Los id los dice " + .@p$ + "refugios.";
+		end;
+	}
+	.@id$ = .@atcmd_parameters$[0];
+	modstore_set "r." + .@id$ + ".st", .@st;
+	modstore_delete "r." + .@id$ + ".g";
+	modstore_delete "r." + .@id$ + ".z";
+	if (.@st == 0)
+		modstore_delete "r." + .@id$ + ".by";
+	callfunc "F_Refuge_Show", .@r;
+	dispbottom "Refugio " + .@id$ + " en la etapa " + .@st + ".";
+	end;
+}
+
+// El refugio: en ruinas, se le entregan materiales; restaurado, se descansa
+// junto a su fogata. Plantilla flotante sin OnInit: sus copias, una por
+// refugio, estan en refuges-places.txt.
+-	script	Refugio#rf	-1,{
+	.@r = callfunc("F_Refuge_Self");
+	if (.@r < 0)
+		end;
+	.@id$ = getvariableofnpc(.id$[.@r], "refuges_data");
+	.@name$ = getvariableofnpc(.name$[.@r], "refuges_data");
+	while (1) {
+		.@st = modstore_get("r." + .@id$ + ".st", 0);
+		if (.@st == 0) {
+			mes "[Refugio en ruinas]";
+			mes "Muros caídos, un hogar frío y ceniza vieja. Alguien vivió aquí.";
+			mes "Con materiales y algo de zeny podría volver a ser un refugio.";
+		} else {
+			.@by$ = modstore_get("r." + .@id$ + ".by", "");
+			mes "[" + .@name$ + "]";
+			mes "La fogata arde bajo el techo de paja" + (.@by$ != "" ? ", desde que " + .@by$ + " lo levantó." : ".");
+		}
+		next;
+		.@next$ = "";
+		if (.@st < 3)
+			.@next$ = "Siguiente etapa (" + getvariableofnpc(.s_name$[.@r * 3 + .@st], "refuges_data") + ")";
+		.@s = select((.@st >= 1 ? "Descansar junto al fuego" : "") + ":" + .@next$ + ":" + (.@st < 3 ? "Entregar materiales" : "") + ":Nada");
+		if (.@s == 4)
+			close;
+		mes "[" + (.@st ? .@name$ : "Refugio en ruinas") + "]";
+		// Otro jugador pudo terminar la etapa mientras tanto.
+		if (modstore_get("r." + .@id$ + ".st", 0) != .@st) {
+			mes "Alguien ha seguido con las obras mientras mirabas.";
+			next;
+			continue;
+		}
+		if (.@s == 1) {
+			callsub S_Rest;
+			end;
+		}
+		if (.@s == 2) {
+			callsub S_Need, .@r, .@st + 1;
+			next;
+			continue;
+		}
+		if (callsub(S_Give, .@r, .@st + 1)) {
+			callsub S_Done, .@r, .@st + 1;
+			end;
+		}
+		next;
+	}
+	end;
+
+// S_Rest: Descansado (campfire) y contar los relatos (adventure). Termina el
+// dialogo: Adventure::OnRest corre al acabar este script.
+S_Rest:
+	if (getnpcid(0, "campfire_mgr")) {
+		.@min = callfunc("F_Campfire_Rest");
+		mes "Te sientas junto al fuego y recuperas el aliento.";
+		mes "Descansado durante " + .@min + " minutos.";
+	} else {
+		mes "Te sientas junto al fuego y recuperas el aliento.";
+	}
+	if (getnpcid(0, "Adventure")) {
+		mes "Bajo techo y sin prisa, cuentas lo que has vivido.";
+		doevent "Adventure::OnRest";
+	}
+	close2;
+	return;
+
+// S_Need(indice, etapa): que hace falta y cuanto se ha entregado ya.
+S_Need:
+	.@k = getarg(0) * 3 + getarg(1) - 1;
+	.@pre$ = "r." + getvariableofnpc(.id$[getarg(0)], "refuges_data");
+	mes getvariableofnpc(.s_name$[.@k], "refuges_data") + ": " + getvariableofnpc(.s_text$[.@k], "refuges_data");
+	explode(.@in$, getvariableofnpc(.s_items$[.@k], "refuges_data"), "|");
+	.@c = getarraysize(.@in$);
+	for (.@j = 0; .@j < .@c; .@j++) {
+		explode(.@p$, .@in$[.@j], ":");
+		.@it = atoi(.@p$[0]);
+		mes "- " + getitemname(.@it) + ": " + modstore_get(.@pre$ + ".g." + .@it, 0) + " / " + atoi(.@p$[1]) + " (llevas " + countitem(.@it) + ")";
+	}
+	.@z = getvariableofnpc(.s_zeny[.@k], "refuges_data");
+	if (.@z)
+		mes "- " + .@z + " zeny" + (modstore_get(.@pre$ + ".z", 0) ? ": pagado" : "");
+	return;
+
+// S_Give(indice, etapa) -> 1 si con esta entrega queda terminada. Entrega lo
+// que falte de cada objeto, hasta lo que se lleve, y ofrece pagar el zeny.
+S_Give:
+	.@k = getarg(0) * 3 + getarg(1) - 1;
+	.@pre$ = "r." + getvariableofnpc(.id$[getarg(0)], "refuges_data");
+	explode(.@in$, getvariableofnpc(.s_items$[.@k], "refuges_data"), "|");
+	.@c = getarraysize(.@in$);
+	.@gave = 0;
+	.@left = 0;
+	for (.@j = 0; .@j < .@c; .@j++) {
+		explode(.@p$, .@in$[.@j], ":");
+		.@it = atoi(.@p$[0]);
+		.@miss = atoi(.@p$[1]) - modstore_get(.@pre$ + ".g." + .@it, 0);
+		.@g = min(.@miss, countitem(.@it));
+		if (.@g > 0) {
+			delitem .@it, .@g;
+			modstore_inc .@pre$ + ".g." + .@it, .@g;
+			mes "Entregas " + .@g + " " + getitemname(.@it) + ".";
+			.@gave++;
+			.@miss -= .@g;
+		}
+		if (.@miss > 0)
+			.@left++;
+	}
+	if (!.@gave && .@left)
+		mes "No llevas nada de lo que falta.";
+	.@z = getvariableofnpc(.s_zeny[.@k], "refuges_data");
+	if (.@z && !modstore_get(.@pre$ + ".z", 0)) {
+		next;
+		mes "[" + getvariableofnpc(.name$[getarg(0)], "refuges_data") + "]";
+		mes "Faltan " + .@z + " zeny para jornales y herramientas.";
+		if (Zeny < .@z) {
+			mes "No llevas tanto.";
+			return 0;
+		}
+		next;
+		if (select("Pagar " + .@z + " zeny:Ahora no") == 2) {
+			mes "[" + getvariableofnpc(.name$[getarg(0)], "refuges_data") + "]";
+			mes "Guardas el dinero.";
+			return 0;
+		}
+		Zeny -= .@z;
+		modstore_set .@pre$ + ".z", 1;
+		mes "[" + getvariableofnpc(.name$[getarg(0)], "refuges_data") + "]";
+		mes "Pagas " + .@z + " zeny.";
+	}
+	if (.@left)
+		mes "Aún falta material: «Siguiente etapa» dice cuánto.";
+	return (.@left == 0 && (!.@z || modstore_get(.@pre$ + ".z", 0)));
+
+// S_Done(indice, etapa): la etapa queda terminada para todo el mundo. Termina
+// el dialogo; la etapa 1 es el relato refuge:<id> de quien la termina y de su
+// grupo en el mismo mapa (regla de grupo de CONVENTIONS.md).
+S_Done:
+	.@r = getarg(0);
+	.@s = getarg(1);
+	.@id$ = getvariableofnpc(.id$[.@r], "refuges_data");
+	.@map$ = getvariableofnpc(.map$[.@r], "refuges_data");
+	.@name$ = getvariableofnpc(.name$[.@r], "refuges_data");
+	modstore_set "r." + .@id$ + ".st", .@s;
+	modstore_delete "r." + .@id$ + ".g";
+	modstore_delete "r." + .@id$ + ".z";
+	if (.@s == 1)
+		modstore_set "r." + .@id$ + ".by", strcharinfo(0);
+	callfunc "F_Refuge_Show", .@r;
+	next;
+	mes "[" + .@name$ + "]";
+	mes getvariableofnpc(.s_text$[.@r * 3 + .@s - 1], "refuges_data");
+	mapannounce .@map$, .@name$ + ": " + getvariableofnpc(.s_name$[.@r * 3 + .@s - 1], "refuges_data") + " terminado.", bc_map;
+	close2;
+	if (.@s != 1 || !getnpcid(0, "Adventure"))
+		return;
+	.@tier = 0;
+	if ($@wa_ready)
+		.@tier = callfunc("F_Atlas_Tier", .@map$);
+	callfunc "F_Adv_Experience", "refuge:" + .@id$, 3, .@tier, "Restauré el " + .@name$;
+	.@pid = getcharid(1);
+	if (!.@pid)
+		return;
+	.@self = getcharid(3);
+	getpartymember .@pid, 2;
+	.@n = $@partymembercount;
+	copyarray .@aid[0], $@partymemberaid[0], .@n;
+	for (.@i = 0; .@i < .@n; .@i++) {
+		if (.@aid[.@i] == .@self)
+			continue;
+		if (!attachrid(.@aid[.@i]))
+			continue;
+		if (strcharinfo(3) == .@map$)
+			callfunc "F_Adv_Experience", "refuge:" + .@id$, 3, .@tier, "Restauré el " + .@name$;
+	}
+	attachrid(.@self);
+	return;
+}
+
+// Caravanero del refugio (etapa 3): lleva a la ciudad. Sus copias, en
+// refuges-places.txt, se ocultan hasta que el refugio tiene caravana.
+-	script	Caravanero#rf	-1,{
+	.@r = callfunc("F_Refuge_Self");
+	if (.@r < 0)
+		end;
+	.@city$ = getvariableofnpc(.city$[.@r], "refuges_data");
+	.@price = callfunc("F_ModSetting", "refuges", "caravan_price", 300);
+	mes "[Caravanero]";
+	mes "El carro sale hacia " + callfunc("F_Refuge_Place", .@city$) + " cuando quieras. Son " + .@price + " zeny.";
+	next;
+	if (select("Subir al carro:Ahora no") == 2)
+		close;
+	mes "[Caravanero]";
+	if (Zeny < .@price) {
+		mes "Sin pagar no se sube.";
+		close;
+	}
+	Zeny -= .@price;
+	mes "Agárrate, que el camino tiene baches.";
+	close2;
+	warp .@city$, getvariableofnpc(.cx[.@r], "refuges_data"), getvariableofnpc(.cy[.@r], "refuges_data") - 2;
+	end;
+}
+
+// Caravana de los Refugios, en la ciudad: lleva a los refugios de esa ciudad
+// que tienen caravana y cuenta dónde quedan ruinas por levantar.
+-	script	Caravana#rf	-1,{
+	.@city$ = strnpcinfo(4);
+	.@price = callfunc("F_ModSetting", "refuges", "caravan_price", 300);
+	.@n = getvariableofnpc(.n, "refuges_data");
+	.@c = 0;
+	.@menu$ = "";
+	mes "[Caravana de los Refugios]";
+	for (.@r = 0; .@r < .@n; .@r++) {
+		if (getvariableofnpc(.city$[.@r], "refuges_data") != .@city$)
+			continue;
+		.@st = modstore_get("r." + getvariableofnpc(.id$[.@r], "refuges_data") + ".st", 0);
+		.@where$ = callfunc("F_Refuge_Place", getvariableofnpc(.map$[.@r], "refuges_data"));
+		if (.@st >= 3) {
+			.@to[.@c] = .@r;
+			.@c++;
+			.@menu$ += getvariableofnpc(.name$[.@r], "refuges_data") + ":";
+		} else if (.@st > 0) {
+			mes "El " + getvariableofnpc(.name$[.@r], "refuges_data") + ", en " + .@where$ + ", ya da cobijo, pero aún no tiene sitio para el carro.";
+		} else {
+			mes "Dicen que en " + .@where$ + " hay unas ruinas que podrían volver a servir de refugio.";
+		}
+	}
+	if (!.@c) {
+		mes "Ningún refugio tiene todavía cobertizo para el carro.";
+		close;
+	}
+	mes "Llevo a los refugios con cobertizo por " + .@price + " zeny.";
+	next;
+	.@s = select(.@menu$ + "Nada") - 1;
+	if (.@s >= .@c)
+		close;
+	mes "[Caravana de los Refugios]";
+	if (Zeny < .@price) {
+		mes "Sin pagar no se sube.";
+		close;
+	}
+	Zeny -= .@price;
+	mes "Sube, que salimos ya.";
+	close2;
+	.@r = .@to[.@s];
+	warp getvariableofnpc(.map$[.@r], "refuges_data"), getvariableofnpc(.x[.@r], "refuges_data"), getvariableofnpc(.y[.@r], "refuges_data") - 2;
+	end;
+}

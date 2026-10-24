@@ -33,6 +33,7 @@ La planificación está repartida en estos documentos; léelos en este orden:
 | [`CONVENTIONS.md`](./CONVENTIONS.md) | rangos de IDs, prefijos, eventos públicos, regla de grupo y restricciones técnicas |
 | [`MODPACK.md`](./MODPACK.md) | qué mods y Settings forman la partida |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | límites de la plataforma: clima eventual, día y noche y presupuesto de rendimiento |
+| [`NOVEDADES.md`](./NOVEDADES.md) | funciones nuevas de la plataforma por aprovechar, con lo investigado: iconos de estado propios, logros, música |
 | [`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md) | el guion de la próxima sesión de prueba larga en el juego, con su tabla de resultados |
 
 La partida es **Renewal** (D1). Las ideas originales siguen en
@@ -198,10 +199,12 @@ contenido propio ni todas sus interacciones están implementadas. Al crear o
 modificar uno, conserva clara la diferencia entre el comportamiento actual y
 las ideas para futuras iteraciones:
 
-- **`affix-forge` y `arpg-equipments`** son mods externos que trajimos como
-  referencia para estudiar ideas de mejora del botín. Sirven para consulta y
-  para una futura extracción de datos; no los trates como código propio ni
-  asumas que `dungeon-chest` ya entrega sus objetos.
+- **`affix-forge` y `arpg-equipments`** son mods externos (MIT) que trajimos
+  como referencia. **No se activan.** Sus listas de equipo y sus afijos ya se
+  importaron a `dungeon-chest` 0.4.0, con los disfraces y el Herrero de
+  Afijos (D35–D37); lo que queda por rescatar (las Esencias y el pilar de
+  luz) está en «Otros pendientes» de `ROADMAP.md`. No los trates como código
+  propio.
 - **`clima`** genera eventos climáticos en mapas específicos. Cada evento tiene
   un efecto visual y un efecto de estado; ciertos objetos personalizados,
   definidos dentro del propio mod, permiten bloquear esos efectos. Esos
@@ -209,12 +212,14 @@ las ideas para futuras iteraciones:
   Algunos eventos también interactúan con `survival` y aceleran la pérdida de
   sed o hambre. El **Pronosticador** de Prontera dice el evento de cada mapa y
   el siguiente, ya sorteado; otros mods pueden leer lo mismo con `F_Clima_*`.
-- **`dungeon-chest`** añade cofres a mapas de dungeon. Sus cofres están
-  categorizados para entregar distintos tipos de recompensa. A futuro, el
-  botín podría incluir objetos de `clima` o equipo inspirado en los mods de
-  referencia `arpg-equipments` y `affix-forge`; no des por hecha esa integración
-  ni cambies el botín sin que lo pida el alcance del trabajo. Las comidas
-  distintas por Tier son recompensas temporales de prueba.
+- **`dungeon-chest`** añade cofres a mapas de dungeon, por Tier. Desde la
+  0.4.0 (D35) dan casi siempre una pieza de equipo **sin identificar con 1 a
+  4 afijos** del Tier, con más probabilidad de tu clase y un afijo según el
+  bioma; un 5 % de las veces, un disfraz (D36); si no, una comida del Tier
+  (de prueba). En Prontera, su **Herrero de Afijos** pasa, quita o vuelve a
+  sortear afijos por zeny (D37). Los datos son CSV propios importados de
+  `arpg-equipments` y `affix-forge`. Los objetos de `clima` y la ropa de
+  `temperature` como botín siguen pendientes.
 - **`survival`** añade barras de hambre y sed a la interfaz, además de alimentos
   y bebidas que las restauran. Ambos valores disminuyen con el tiempo, y los
   eventos de `clima` pueden acelerar esa reducción. En los mapas exteriores
@@ -262,8 +267,23 @@ las ideas para futuras iteraciones:
   (`Adventure::OnRest`). Todo con dependencias suaves. Ver
   [`tavern-rumors/README.md`](./tavern-rumors/README.md).
 
-**Planeados, sin código todavía** (ver «Mods nuevos propuestos» en
-[`PLAN.md`](./PLAN.md)): `campfire`, `refuges` y `remnants`.
+- **`campfire`** pone fogatas en el campo: la leña o un kit encienden una
+  fogata visible (un NPC, D28) donde se descansa (Descansado: más
+  regeneración y la primera muerte no deja herida de `wounds`), se cocinan
+  drops de monstruos en platos con buff (recetas en un CSV, D30) y se venda
+  una herida a la mitad (D29). Junto al fuego, `temperature` da Cómodo. No
+  cuenta los relatos de `adventure` (D10). Todo con dependencias suaves. Ver
+  [`campfire/README.md`](./campfire/README.md).
+
+- **`refuges`** pone refugios en ruinas en los campos (la Abadía y
+  `prt_fild11`) que se restauran en tres etapas con drops y zeny, para todo
+  el mundo (D32–D34): una fogata donde se descansa (Descansado de
+  `campfire`) y se cuentan los relatos de `adventure`, un intendente con
+  provisiones y una caravana a Prontera. Todo con dependencias suaves. Ver
+  [`refuges/README.md`](./refuges/README.md).
+
+**Planeado, sin código todavía** (ver «Mods nuevos propuestos» en
+[`PLAN.md`](./PLAN.md)): `remnants`, que espera a `LORE.md`.
 
 **Datos compartidos entre mods.** El mod store está aislado por mod, así que
 lo que un mod deba leer de otro va en variables de personaje con el prefijo del

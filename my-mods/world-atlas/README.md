@@ -31,8 +31,16 @@ Actualízala al cambiar el mod o al probarlo.
 - **También en 0.2.1:** el comando de GM `@atlas [mapa]`
   (`npc/atlas-command.txt`), que sustituye al mod `world-atlas-test` y su NPC
   `AtlasTest` (retirados el 2026-10-23)
-- **Sin probar:** el agua de 0.2.1 en el juego (cantimplora en
-  `prt_fild00 267,240`) y el comando `@atlas`
+- **Probado en el juego (0.2.1, 2026-10-23):** `@atlas` con y sin mapa
+  (`prontera` da `has=1 safe=1 kind=city`; `izlu2dun` `water=0`;
+  `prt_fild00` `water=1`); la cantimplora llena en `prt_fild00 267,240` y no
+  en `izlu2dun`
+- **Ojo con `water`:** en `prt_fild00` solo llena el agua clara al sur de
+  `280,241`, no la de azul oscuro. rAthena marca como agua solo las celdas
+  **caminables** bajo el nivel del agua; el agua honda es celda no caminable
+  y queda sin marca, igual que el mar de `izlu2dun`. `water=1` significa
+  «hay agua que se pisa en algún sitio del mapa», no «cualquier agua que se
+  ve». Pendiente en [`ROADMAP.md`](../ROADMAP.md#otros-pendientes-de-los-mods-existentes)
 - **Cambio de comportamiento en 0.2.0:** `F_Atlas_IsSafe` también da 1 en los
   mapas `interior`, así que `survival`, `temperature` y `wounds` los tratan
   como ciudad (no bajan hambre ni sed, no hay temperatura, morir no deja herida)

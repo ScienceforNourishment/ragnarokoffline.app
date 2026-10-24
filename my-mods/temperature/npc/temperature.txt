@@ -23,7 +23,9 @@
 //= personaje: ver CONVENTIONS.md, Temporizadores.
 //=
 //= Dependencias: world-atlas (obligatoria). clima: opcional, solo se leen las
-//= variables @clima_*_extra_loss y @clima_exposure_map$.
+//= variables @clima_*_extra_loss y @clima_exposure_map$. campfire: opcional;
+//= junto a una de sus fogatas (F_Campfire_Near) la sensacion es Comodo, sin
+//= el bono de abrigo.
 //===========================================================================
 
 // F_Temperature_Gear() -> abrigo total del equipo puesto (positivo abriga).
@@ -46,11 +48,13 @@ function	script	F_Temperature_Gear	{
 }
 
 // F_Temperature_Feel() -> sensacion -3..3 del personaje en su mapa actual.
-// Deja el desglose en @tp_env, @tp_clima y @tp_gear (0 si no hay temperatura).
+// Deja el desglose en @tp_env, @tp_clima y @tp_gear (0 si no hay temperatura),
+// y @tp_fire a 1 junto a una fogata de campfire.
 function	script	F_Temperature_Feel	{
 	@tp_env = 0;
 	@tp_clima = 0;
 	@tp_gear = 0;
+	@tp_fire = 0;
 	if (!$@wa_ready)
 		return 0;
 	.@map$ = strcharinfo(3);
@@ -64,6 +68,14 @@ function	script	F_Temperature_Feel	{
 			@tp_clima = -1;
 	}
 	@tp_gear = callfunc("F_Temperature_Gear");
+	// Junto al fuego, Comodo. $@cf_live solo es distinto de 0 con campfire
+	// cargado, asi que sin el no se llama a una funcion que no existe.
+	if ($@cf_live) {
+		if (callfunc("F_Campfire_Near")) {
+			@tp_fire = 1;
+			return 0;
+		}
+	}
 	.@feel = @tp_env + @tp_clima + @tp_gear;
 	if (.@feel > 3)
 		.@feel = 3;
@@ -118,6 +130,8 @@ OnStatus:
 	}
 	dispbottom "Temperatura: " + callfunc("F_Temperature_Name", .@feel) + " (" + .@feel + ").";
 	dispbottom "Lugar " + @tp_env + ", clima " + @tp_clima + ", ropa " + @tp_gear + ".";
+	if (@tp_fire)
+		dispbottom "Estas junto a una fogata: el fuego te mantiene a gusto.";
 	end;
 
 OnPCLoginEvent:
@@ -149,6 +163,9 @@ OnTimer4000:
 // identico + quitar al cerrar sesion. Al cambiar de estado, el penalizador
 // anterior tarda hasta 5 s en agotarse.
 S_Apply:
+	// Primer tick en este mapa (o tras entrar al juego): ver el icono, abajo.
+	.@arrived = (@tp_map$ != strcharinfo(3));
+	@tp_map$ = strcharinfo(3);
 	.@feel = callfunc("F_Temperature_Feel");
 	if (.@feel < 0)
 		@pr_temp = -.@feel;
@@ -160,7 +177,7 @@ S_Apply:
 		case -3: dispbottom "Estas congelado: el frio te cala hasta los huesos."; break;
 		case -2: dispbottom "Estas helado: necesitas abrigo o volver a un sitio mas templado."; break;
 		case -1: dispbottom "Sientes algo de fresco."; break;
-		case 0: dispbottom "Te sientes comodo."; break;
+		case 0: dispbottom (@tp_fire ? "Junto al fuego entras en calor." : "Te sientes comodo."); break;
 		case 1: dispbottom "Sientes algo de calor."; break;
 		case 2: dispbottom "Estas acalorado: necesitas ropa mas ligera o sombra."; break;
 		case 3: dispbottom "Estas sofocado: el calor te agota."; break;
@@ -168,7 +185,7 @@ S_Apply:
 	}
 	if (.@feel == 0) {
 		// Bien preparado: el lugar es extremo y tu ropa lo compensa.
-		if (@tp_env + @tp_clima != 0)
+		if (@tp_env + @tp_clima != 0 && !@tp_fire)
 			bonus_script "{ bonus bMaxHPrate,3; bonus bMaxSPrate,3; }", 5, 1032;
 		return;
 	}
@@ -180,10 +197,18 @@ S_Apply:
 	// pasar de Helado a Congelado (o subir de nivel) cambiaba el texto, el viejo
 	// vencia y apagaba el icono del nuevo. Ojo: EFST_COLD es tambien el icono de
 	// Cristalizacion (SC_CRYSTALIZE) y el cliente lo nombra asi.
-	if (.@feel < 0)
-		bonus_script "{ /* temperature: frio */ bonus bMaxHP,0; }", 5, 1032, 0, EFST_COLD;
-	else
-		bonus_script "{ /* temperature: calor */ bonus bMaxHP,0; }", 5, 1032, 0, EFST_OVERHEAT;
+	// rAthena manda el icono una sola vez, al crear la entrada: con el flag 1024
+	// (BSF_FORCE_REPLACE) renovarla solo alarga su duracion. Tras cambiar de mapa
+	// ese paquete llegaba mientras el cliente cargaba, y roBrowser lo tira porque
+	// su personaje aun no existe. Por eso el primer tick en un mapa no crea el
+	// icono: la entrada del mapa anterior (renovada hace 4 s, dura 5) vence y lo
+	// apaga, y el tick siguiente crea una nueva con el cliente ya listo.
+	if (!.@arrived) {
+		if (.@feel < 0)
+			bonus_script "{ /* temperature: frio */ bonus bMaxHP,0; }", 5, 1032, 0, EFST_COLD;
+		else
+			bonus_script "{ /* temperature: calor */ bonus bMaxHP,0; }", 5, 1032, 0, EFST_OVERHEAT;
+	}
 	// Bajo el tope de presion, el castigo se reduce en proporcion (minimo 1).
 	.@scale = callsub(S_CapScale);
 	if (.@feel == -2 || .@feel == 2) {

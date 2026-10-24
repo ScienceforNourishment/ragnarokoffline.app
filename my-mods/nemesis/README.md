@@ -23,7 +23,9 @@ Actualízala al cambiar el mod o al probarlo.
 - **Probado en el juego (0.1.0, 2026-10-23):** «Probarlo», sin fallos según
   el autor, con `wounds` 0.5.0; el log de la sesión no tiene errores del mod.
   No hay detalle paso por paso: si alguna suposición de abajo no se miró
-  (sobre todo el paso 8, fuera del atlas), sigue abierta
+  (sobre todo el paso 8, fuera del atlas), sigue abierta. Con
+  `expedition-board`, la marca de un contrato que te mata no se vuelve tu
+  némesis (2026-10-23)
 - **Suposiciones de la 0.1.0** (cubiertas por «Probarlo»):
   - que `setmapflag <mapa>, mf_loadevent` en tiempo de ejecución hace que
     `OnPCLoadMapEvent` corra en mapas que no la tenían (mapas fuera del atlas);

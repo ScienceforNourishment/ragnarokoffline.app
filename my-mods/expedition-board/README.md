@@ -19,11 +19,14 @@ se entrega»).
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.6.1 (la de `mod.json`): `OnNPCKillEvent` sale en su primera línea si nadie del servidor tiene una cacería (`$@eb_hunters`), antes de leer el mapa; importa con la población encendida, porque corre con cada monstruo que matan los bots. La 0.6.0 añadió el crédito compartido en grupo y contratos de Tier 2. La 0.5.0 añadió el Intendente y marcas de nivel acorde al mapa, la 0.4.0 las cacerías, la 0.3.0 la dificultad según el atlas y la 0.2.0 fue una reescritura de la primera versión, que no cargaba
+- **Versión:** 0.6.2 (la de `mod.json`): una cacería cuenta **todas las variantes con el mismo nombre** que el monstruo del contrato (los cinco «Goblin» 1122–1126), pero no las de nombre parecido (Goblin Archer). La comparación de nombres solo corre en el mapa de la cacería y cuando el id no coincide, así que una muerte de un bot o de alguien sin cacería cuesta lo mismo que antes. Sin probar en el juego; las cacerías aceptadas con la 0.6.1 siguen valiendo y ya cuentan las variantes. La 0.6.1: `OnNPCKillEvent` sale en su primera línea si nadie del servidor tiene una cacería (`$@eb_hunters`), antes de leer el mapa; importa con la población encendida, porque corre con cada monstruo que matan los bots. La 0.6.0 añadió el crédito compartido en grupo y contratos de Tier 2. La 0.5.0 añadió el Intendente y marcas de nivel acorde al mapa, la 0.4.0 las cacerías, la 0.3.0 la dificultad según el atlas y la 0.2.0 fue una reescritura de la primera versión, que no cargaba
 - **Probado en el juego:** el flujo completo de una marca en Prontera, y que la marca reforzada aguanta claramente más que una normal. El error de carga original (`abs()`) quedó resuelto
 - **Probado en el juego (0.6.0, 2026-10-17):** una cacería de Fabre en Prontera: cuenta solo los Fabre de su mapa (`prt_fild08`; en `prt_fild06` no cuenta, ni otros monstruos), avisa al completarla y se cobra en el tablero (el Intendente no la acepta: es lo esperado, él solo cobra marcas). Una marca de Prontera: aviso de objetivo abatido y cobro con el Intendente. El diario anota el contrato aceptado y la marca abatida
-- **Sin probar:** el crédito en grupo (necesita dos personajes), las marcas de nivel acorde al mapa, las cacerías de Tier 2 (ids 15 a 21), las otras seis ciudades (posiciones de tableros y marcas), el escalado de zeny en Tier 2 o más y los casos límite de «Probarlo»
-- **Actualizado:** 2026-10-17
+- **Probado en el juego (0.6.1, 2026-10-23):** la cacería de Tier 2 «Goblins del camino este» (12 en `prt_fild11`) se cobra con **3125 zeny**, el +25 % de `F_Expedition_Zeny`; el tablero y el Intendente de Geffen, Payon, Morocc, Alberta y Aldebaran se ven y responden (en Payon también, aunque el mapa marca sus celdas como no caminables); la marca «Rastro en el campo sur» de Prontera deja *Marca de la presa* al matarte (ver [`wounds`](../wounds/README.md#estado))
+- **Visto en esa prueba, arreglado en 0.6.2:** la cacería contaba un solo id (`.mob[15] = 1126`) y no las otras variantes que el cliente también llama «Goblin» (1122–1126)
+- **Sin probar (0.6.2):** que todas las variantes de Goblin sumen y el Goblin Archer no (paso 8 de «Probarlo»)
+- **Sin probar:** el crédito en grupo (necesita dos personajes), las marcas de nivel acorde al mapa, las otras cacerías de Tier 2 (ids 16 a 21), las marcas de las otras seis ciudades y los casos límite de «Probarlo»
+- **Actualizado:** 2026-10-23
 
 ## Qué hace
 
@@ -100,6 +103,11 @@ el juego**.
 - Cuentan **solo las muertes en el mapa del contrato** y solo de la especie
   pedida; matar el mismo monstruo en otro mapa no suma. Cada muerte avisa
   «Caceria: 7/15 Fabre».
+- **La especie es el nombre del monstruo.** Cuenta cualquier id que se llame
+  exactamente igual que el del contrato: en «Goblins del camino este»
+  (`mob` 1126) valen los cinco «Goblin» (1122–1126), pero no el Goblin
+  Archer. El nombre es el de `getmonsterinfo(id, MOB_NAME)`, el mismo que
+  enseña el cliente.
 - Se cuenta **desde que se acepta**: lo abatido antes no vale. El progreso se
   guarda en el personaje y sobrevive a un relog y a un reinicio del servidor.
 - Abandonar la caza pierde el progreso.
@@ -109,10 +117,11 @@ el juego**.
 monstruo que mata cualquier jugador (`OnNPCKillEvent`). Para que eso casi no
 cueste, lo primero que hace el evento es una sola comparación con
 `eb_hunt_mob`, una variable del personaje que vale 0 salvo mientras tiene una
-caza en curso; 0 nunca coincide con un monstruo y el evento termina al
-instante. Solo cuando la muerte es de la especie buscada se mira el mapa, y
-solo entonces se lee la tabla de contratos. Un personaje sin caza no ejecuta
-nada más. No hay temporizadores ni bucles.
+caza en curso; con 0 el evento termina al instante. Con una caza, primero se
+mira el mapa; solo en el mapa del contrato, y si el id no es el mismo, se
+comparan los nombres, y solo cuando la muerte cuenta se lee la tabla de
+contratos. Un personaje sin caza no ejecuta nada más. No hay temporizadores
+ni bucles.
 
 ## Qué cambió respecto a la primera versión
 
@@ -260,6 +269,9 @@ Cosas a tener en cuenta:
 - **No hay orden ni requisito de nivel**: se listan por `id`.
 - Una caza en un mapa donde el monstruo es muy escaso se vuelve interminable:
   prefiere especies con muchos spawns.
+- En `mob` basta **un** id de la especie: cuentan todos los que se llamen
+  igual (ver «Cacerías»). Si quieres que una variante no cuente, tiene que
+  llamarse distinto en `mob_db`.
 - La dificultad la fija el **Tier del mapa** del contrato en el atlas (ver
   «Dificultad según el atlas»). Para que se note hay que poner contratos en
   mapas de Tier 2 o más.
@@ -340,6 +352,8 @@ cuenta las muertes del propio personaje (y de su mascota). Las de Tier 3 o más
    o desconectado, no suma.
 8. **Tier 2.** Acepta una caza de las ids 15 a 21: el tablero debe mostrar «Tier 2»
    y el cobro debe ser ×1,25 del zeny base.
+   **Variantes:** en «Goblins del camino este» (`prt_fild11`) suma cualquier
+   Goblin, lleve el arma que lleve; el Goblin Archer no suma.
 9. Con una caza en curso, mata monstruos de otra especie durante un rato y
    comprueba en `ragnarok-stack logs map 100` que no aparece ningún error ni
    advertencia nueva.
@@ -367,7 +381,7 @@ cuenta las muertes del propio personaje (y de su mascota). Las de Tier 3 o más
 | `eb_qid` | personaje, permanente | id del contrato activo |
 | `eb_state` | personaje, permanente | 0 libre, 1 en curso, 2 listo para entregar |
 | `eb_prog` | personaje, permanente | caza: monstruos abatidos hasta ahora |
-| `eb_hunt_mob` | personaje, permanente | caza en curso: id del monstruo a contar; 0 si no hay |
+| `eb_hunt_mob` | personaje, permanente | caza en curso: id del monstruo a contar (y cualquier otro de su mismo nombre); 0 si no hay |
 | `eb_hunt_map$` | personaje, permanente | caza en curso: mapa donde cuenta |
 | `eb_gid` | personaje, permanente | en desuso; se pone a 0 al entrar |
 | `$@eb_mark[char_id]` | servidor, temporal | GID de la marca viva de ese personaje |

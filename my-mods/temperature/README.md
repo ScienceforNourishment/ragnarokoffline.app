@@ -7,15 +7,22 @@ Requiere `world-atlas`. Prototipo en `my-mods/`.
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.3.0 (la de `mod.json`): presión ([`BALANCE.md`](../BALANCE.md#tope-de-presión), D18). Publica `@pr_temp` (0–3, la distancia a Cómodo; 0 en ciudades e interiores) y, si la presión total de todos los mods pasa de 6, reduce sus castigos en proporción (`× 6 / total`, mínimo 1 punto); el bono de Bien abrigado no se reduce. Detalle en «Convivencia con otros mods», abajo. La 0.2.1: el icono va en su propio `bonus_script`, de texto fijo por icono, separado de la penalización. Antes iba dentro de la penalización, y cada `bonus_script` con icono lo apaga al vencer aunque otro con el mismo icono siga activo. Al pasar de Helado a Congelado, o al subir de nivel, el texto cambiaba, el viejo vencía y apagaba el icono del nuevo: la penalización seguía, pero sin icono. La 0.2.0 pasó el `addtimer` por personaje a un solo reloj del NPC (error `event queue is full`)
+- **Versión:** 0.4.1 (la de `mod.json`): arregla el icono que no salía al llegar a un mapa frío o caluroso (ver abajo). Apunta en `@tp_map$` el mapa del tick anterior. En el primer tick en un mapa nuevo, o tras entrar al juego, no crea el `bonus_script` del icono: la entrada del mapa anterior (renovada hace 4 s, dura 5) vence y apaga su icono, y el tick siguiente crea una nueva, que sí manda el icono con el cliente ya cargado. El icono tarda entre 4 y 8 s en salir tras llegar; el castigo no espera. Sin probar en el juego. La 0.4.0: junto a una fogata de [`campfire`](../campfire/README.md) (a 3 celdas o menos) la sensación es Cómodo, sin el bono de Bien abrigado; `@temperatura` lo dice y el aviso es «Junto al fuego entras en calor». Solo llama a `F_Campfire_Near` si `$@cf_live` no es 0, así que sin `campfire` no cambia nada. Sin probar en el juego (ver «Probarlo» de `campfire`). La 0.3.0: presión ([`BALANCE.md`](../BALANCE.md#tope-de-presión), D18). Publica `@pr_temp` (0–3, la distancia a Cómodo; 0 en ciudades e interiores) y, si la presión total de todos los mods pasa de 6, reduce sus castigos en proporción (`× 6 / total`, mínimo 1 punto); el bono de Bien abrigado no se reduce. Detalle en «Convivencia con otros mods», abajo. La 0.2.1: el icono va en su propio `bonus_script`, de texto fijo por icono, separado de la penalización. Antes iba dentro de la penalización, y cada `bonus_script` con icono lo apaga al vencer aunque otro con el mismo icono siga activo. Al pasar de Helado a Congelado, o al subir de nivel, el texto cambiaba, el viejo vencía y apagaba el icono del nuevo: la penalización seguía, pero sin icono. La 0.2.0 pasó el `addtimer` por personaje a un solo reloj del NPC (error `event queue is full`)
 - **Probado en el juego (0.2.0, 2026-10-17):** el Sastre aparece y vende las cuatro prendas; `@temperatura` da lugar, clima y ropa acordes al mapa y al equipo; los avisos de cambio de estado salen bien; en Prontera dice «a gusto» con o sin ropa. El icono de calor (Overheat) salió con ropa de abrigo en `moc_fild11`, que es lo esperado. El icono de frío falló: una vez se quedó puesto y otra no apareció (arreglado en 0.2.1)
-- **Sin probar:** los iconos con la 0.2.1: que el de frío salga en `xmas_fild01` sin ropa, siga al pasar de Helado a Congelado y se apague unos 5 s después de volver a la ciudad
+- **Falla en el juego (0.4.0, 2026-10-23): el icono no sale al llegar a un mapa frío o caluroso.** Sin ropa, en `xmas_fild01` (Helado) no salió el de frío, y en `moc_fild11` (Acalorado) no salió el de calor. En `mjolnir_12` sí salió el de frío cuando empezó Frío extremo con el personaje ya en el mapa. **Causa,** leída en el código del rAthena fijado y del cliente: con el flag `BSF_FORCE_REPLACE`, un `bonus_script` con el mismo texto solo alarga su temporizador (`pc_bonus_script_add`, `settick_timer`) y no vuelve a mandar el icono. El icono sale una sola vez, al crearse la entrada (`pc_bonus_script`). Tras un `@warp`, esa primera vez cae mientras el cliente carga el mapa, y roBrowser tira el paquete porque su personaje aún no está en el `EntityManager` (`onEntityStatusChange`). Nunca se repite. El castigo sí se aplica. Arreglado en 0.4.1
+- **Por diseño, no es un fallo:** la Ventisca no lleva a Congelado. Solo Frío extremo y Calor intenso suman ±1 a la sensación (`@clima_*_extra_loss` de `clima`); la Ventisca pone su propio `SC_FREEZE` y deja `xmas_fild01` en Helado (−2). El paso del guion que esperaba Congelado estaba mal. Si se quiere que la Ventisca también enfríe, es un cambio de `clima`
+- **Sin probar (0.4.1):** que el icono salga de 4 a 8 s después de llegar a `xmas_fild01` o `moc_fild11` y siga puesto; que siga al pasar de un mapa frío a otro y de Helado a Congelado; y que se apague unos 5 s después de volver a la ciudad
 - **Ojo, iconos prestados:** el de frío es `EFST_COLD`, el mismo de Cristalización (`SC_CRYSTALIZE`), y el cliente lo nombra «Crystallization»; el de calor es `EFST_OVERHEAT`, el sobrecalentamiento del Mado Gear del Mechanic, y el cliente enseña esa descripción. Si el estado real llega a la vez (un monstruo que cristaliza, un Mechanic con Mado Gear), los dos comparten icono y el primero que termine lo apaga. Pendiente en [`ROADMAP.md`](../ROADMAP.md#otros-pendientes-de-los-mods-existentes)
 - **Probado en el juego (0.3.0, 2026-10-23):** el tope en `xmas_fild01`
   (Helado cuenta 2 en `@presion`; con el tope el AGI baja algo menos; con el
   Abrigo Polar pasa a 0–1 y el tope desaparece); sin temperatura en los
   interiores del atlas, con o sin abrigo; Cómodo sin ropa en `prt_fild00`,
   `prt_monk` e `izlu2dun`
+- **Probado en el juego (0.4.0, 2026-10-23):** el icono de frío en
+  `mjolnir_12` (−1 del lugar y −1 de Frío extremo, Helado) cuando el evento
+  empieza con el personaje en el mapa
+- **Sin probar (0.4.0):** Cómodo junto a una fogata y el frío de vuelta al
+  alejarse
 - **Actualizado:** 2026-10-23
 
 No es una barra que baje: cada 4 segundos se calcula una **sensación** y se
@@ -65,6 +72,8 @@ el único punto de venta. La tabla de abrigo está en `OnInit` de `temp_mgr`.
   `@clima_exposure_map$`. Esas variables solo se activan si el personaje **no**
   está protegido por el objeto de clima, así que el calor/frío de clima no se
   cuenta dos veces.
+- `campfire` (opcional): junto a una de sus fogatas, Cómodo. Lee `$@cf_live`
+  y, si no es 0, llama a `F_Campfire_Near`. Deja `@tp_fire` a 1.
 - `survival` y `wounds`: cada uno tiene su propio `bonus_script` (texto
   distinto), así que se suman. Al cambiar de estado, el penalizador anterior
   tarda hasta 5 s en agotarse.

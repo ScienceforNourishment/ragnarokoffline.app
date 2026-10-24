@@ -99,7 +99,7 @@ descanso, cada uno desde su mod y con dependencia suave:
 | Cronista | `adventure` | hecho en 0.1 (D26) |
 | Posadero, al dormir | `wounds` | **no** en 0.1 (D26); se puede reconsiderar |
 | Tabernero | `tavern-rumors` | hecho en 0.1, solo en Prontera; gratis (D26) |
-| Fogata de un refugio restaurado | `refuges` | planeado |
+| Fogata de un refugio restaurado | `refuges` | hecho en 0.1 (la Abadía y `prt_fild11`); gratis |
 
 `adventure` 0.1 lleva su propio NPC, el **Cronista**, junto al tablero de las
 7 ciudades mientras duren las pruebas (D23), y contar es gratis (D26). Se
@@ -184,7 +184,7 @@ experiencias**.
 | `temp:extreme` | Cómodo en un mapa de temperatura ±2 gracias a la ropa | Media | `temperature` |
 | `wound:<id>` | primera vez que recibes esa herida o maldición | Media | `wounds` |
 | `nemesis:<clase>` | vencer a tu némesis (una vez por clase de monstruo) | Mayor; Hito si era de rango 3 | `nemesis` 0.1 |
-| `refuge:<id>` | restaurar un refugio | Mayor | `refuges` (planeado) |
+| `refuge:<id>` | terminar la etapa 1 de un refugio (techo y fogata) | Mayor | `refuges` 0.1 |
 | `lore:<id>` | encontrar un resto con historia | Menor | `remnants` (planeado) |
 
 Los hitos escritos a mano (cadenas, lugares especiales) van en un CSV,

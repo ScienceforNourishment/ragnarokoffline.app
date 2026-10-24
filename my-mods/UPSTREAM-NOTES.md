@@ -71,3 +71,93 @@ cualquier mod de tiendas de apariencia.
 - Pins nuevos de rAthena (Druid/Karnos/Alitea, ítems regionales, opciones
   aleatorias 255 y 256) y RemoteClient v1.0.6: confirma que `renewal-world` y
   los mapas de `world-atlas` sigan resolviendo bien tras el cambio.
+
+---
+
+# Revisión 1.6.5 → 1.7.0 (merge del 2026-10-23)
+
+181 commits; el merge entró limpio, sin tocar nada de `my-mods/` ni de
+`registry/tools/` nuestros. Lo que nos afecta, de más a menos urgente:
+
+## Prefijo de comandos configurable (1.6.8) — revisar textos
+
+Ajustes → Rates → *Command prefix* deja elegir `@`, `!`, `.` o `-`.
+`bindatcmd` sigue funcionando con cualquiera (se enlaza por nombre, sin el
+símbolo), pero **los textos que escriben `@` a mano quedan mal** si el jugador
+cambia el prefijo:
+
+- `dungeon-chest/npc/chest-command.txt` (`@cofre ...`, 4 líneas)
+- `nemesis/npc/nemesis.txt:306` (`@nemesis`)
+- `refuges/npc/refuges-core.txt:121` (`@refugio`, `@refugios`)
+
+**Hecho.** `getbattleflag("atcommand_symbol")` no sirve: en rAthena el símbolo
+es una variable aparte (`atcommand.cpp`), no un ajuste de batalla, y la app no
+lo expone a scripts. Lo que sí funciona: dentro de un handler de `bindatcmd`,
+`.@atcmd_command$` es el comando tal como se tecleó, con su símbolo, así que
+`charat(.@atcmd_command$, 0)` es el prefijo. Los tres mods lo usan así;
+`nemesis` lo guarda en `$@nm_sym$` para el aviso que sale tras una muerte
+(`@` hasta que alguien escriba el comando). Patrón para mods nuevos: nunca
+escribir `@` a mano en un texto. Ojo: `.@` no cruza un `callsub`, hay que
+leerlo en el propio handler. Además, un `atcommand "@foo"` desde script deja de funcionar con otro prefijo
+(hoy no usamos ninguno).
+
+## Iconos de estado propios, 20000–22999 (1.6.9 / 1.7.0)
+
+`temperature` reutiliza `EFST_COLD` y `EFST_OVERHEAT`; `EFST_COLD` es también
+el de Cristalización y el cliente lo nombra así. Un mod ya puede tener iconos
+propios (tablas en `data/luafiles514/lua files/stateicon/`, solo nuestras
+filas). **Pero solo desde Lua `status()`**: comprobado en el rAthena fijado
+(8aea17a), `bonus_script` descarta cualquier icono `>= EFST_MAX`, así que
+desde un NPC script no se puede. Camino posible: un `status()` en Lua con
+icono propio, que el script active/consulte a través del char store
+(compartido entre NPC y Lua). Guía: `docs/mods/CUSTOM_SKILLS.md`, «A status
+icon of your own». Aplica igual a `wounds`, `survival` (hambre/sed) y
+`campfire`. Ojo: los iconos solo se dibujan para el propio personaje.
+
+## Lua: estados, ítems y zeny
+
+- `status("<NAME>", {...})` con `tick`, `duration`, `max_stacks`, `decay`,
+  `persist = true` (sobrevive a logout/reinicio, guardado en el char store bajo
+  `_statuses`; **no usar esa ruta** en nuestros stores). Encaja con heridas que
+  sangran por tick o frío acumulado por stacks, sin bonus_script cada 5 s.
+- `item("<AegisName>", { on_attack, on_hit_taken, on_use })`: hooks por ítem
+  equipado o consumido. Útil para `survival` (comida/agua al usarse),
+  `arpg-equipments` y `affix-forge` (efectos de equipo que hoy no se pueden
+  expresar con `bonus`).
+- `c:give_zeny(amount, who)` (1.6.9), junto a `c:give_item`.
+- `stock_checks = false` en `skill()` ahora también salta las comprobaciones
+  sobre el objetivo (1.7.0).
+- Habilidades propias, pasivas y retrabajos sin perder puntos (1.6.7): ejemplos
+  `examples/mods/custom-skills` y `third-class-sampler`.
+
+## Para scripts de NPC
+
+- **`F_ClientInfo`** (1.7.0): `callfunc("F_ClientInfo", "client" | "fallback"
+  | "client_date" | "fallback_date")`. Sirve para ofrecer algo solo si el host
+  tiene el arte (p. ej. NPCs o mapas de kRO en `world-atlas`/`refuges`).
+- **`playBGM`** ya llega al cliente (1.6.7): música propia en `campfire`,
+  `refuges` o una taberna de `tavern-rumors`. Ver «Playing a track from a
+  script» en `docs/MODDING.md`.
+- **Logros propios** (1.6.7): un mod añade filas a la tabla de logros sin
+  reemplazarla. Candidato natural para `adventure` (expediciones, relatos) y
+  `nemesis`. Guía `docs/mods/CUSTOM_ACHIEVEMENTS.md`, ejemplo
+  `examples/mods/custom-achievement`.
+
+## Fusiones entre mods
+
+- Dos mods con `db/mob_skill_db.txt` ahora se **suman** en vez de pisarse
+  (1.6.8). Relevante si `nemesis` da habilidades a monstruos.
+- Un `quest_db` declarado por dos mods ya no duplica objetivos (1.6.9).
+
+## Otros
+
+- Ajustes → Rates → *Advanced*: cualquier ajuste de batalla de rAthena como
+  `clave: valor`. Útil para pruebas sin tocar mods.
+- Tasa de cartas MVP separada (1.6.9): tenlo en cuenta en el balance de
+  `dungeon-chest` si mete cartas en los cofres.
+- 105 mapas oficiales nuevos (Abyss, Biosphere, zonas seguras del capítulo 2,
+  templo de Jormungandr) y 458 monstruos (1.6.6): candidatos para `world-atlas`,
+  `loot_biomes.csv` y refugios. Y ya sueltan botín los 124 monstruos de mapas
+  nuevos que no soltaban nada (1.6.9).
+- Pins nuevos: rAthena 8aea17a, roBrowserLegacy ea3fdb6. `vendor/` no está
+  descargado en este checkout; `scripts/vendor-fetch.sh` antes de probar.

@@ -1,0 +1,419 @@
+//===== Ragnarok Offline: campfire ========================================
+//= Fogatas en el campo (D28). La Lena (10 min) o el Kit de Acampada (30 min)
+//= encienden una fogata visible en tu celda: un duplicado de "Fogata#cf". Se
+//= le habla para descansar, cocinar o vendar una herida. Cualquiera puede
+//= usarla, tambien el companero de grupo.
+//=
+//=   Junto al fuego (a $@cf_near celdas o menos): temperature te deja en
+//=     Comodo (lee F_Campfire_Near).
+//=   Descansar: Descansado durante .rest_secs: mas regeneracion de HP y SP, y
+//=     la primera muerte fuera de una ciudad no deja herida (wounds lee
+//=     @cf_ward y @cf_rest_until, y gasta @cf_ward). F_Campfire_Rest, que
+//=     tambien usa la fogata de refuges.
+//=   Cocinar: las recetas de campfire-recipes.txt, generado desde un CSV
+//=     (D30). Cada plato da un estado de comida de rAthena y sacia.
+//=   Vendar: con una Venda, una herida de wounds queda a la mitad hasta la
+//=     posada o el templo (D29; F_Wounds_Ease).
+//= Una fogata en el campo NO cuenta los relatos de adventure (D10).
+//=
+//= Las fogatas, en variables de servidor (las leen la fogata, F_Campfire_Near
+//= y temperature):
+//=   $@cf_n                         huecos usados
+//=   $@cf_live                      fogatas encendidas; 0 = nadie mira
+//=   $@cf_npc$[]                    nombre unico del duplicado
+//=   $@cf_map$[] $@cf_x[] $@cf_y[]  donde esta
+//=   $@cf_until[]                   cuando se apaga (gettimetick(2))
+//=   $@cf_owner[]                   char id de quien la encendio
+//=   $@cf_out[]                     1 ya oculta, a la espera de descargarla
+//=
+//= Sin temporizadores por personaje. campfire_mgr tiene un reloj de 5 s que
+//= solo corre mientras haya fogatas: oculta las que se apagan (hideonnpc) y
+//= las descarga (unloadnpc) .grace segundos despues. No se descargan en el
+//= acto porque rAthena no cierra el dialogo de quien este hablando con ellas,
+//= y un NPC no puede descargarse a si mismo.
+//=
+//= Verificado en el rAthena fijado (402dd11): duplicate devuelve el nombre
+//= unico y corre el OnInit del duplicado (la plantilla no tiene); los
+//= duplicados comparten las variables del original (por eso el estado va en
+//= $@cf_*); un NPC flotante tiene sprite JT_FAKENPC, asi que el sprite se
+//= pasa a duplicate. Los objetos DelayConsume no se gastan solos.
+//=
+//= Dependencias suaves: world-atlas (ciudades, Tier), survival (hambre y sed
+//= de los platos), wounds (venda y Descansado), temperature, adventure
+//= (relatos de la primera fogata y el primer plato).
+//===========================================================================
+
+// F_Campfire_IsSafe(map$) -> 1 en una ciudad o interior, donde no se enciende.
+function	script	F_Campfire_IsSafe	{
+	if ($@wa_ready)
+		return callfunc("F_Atlas_IsSafe", getarg(0));
+	return compare("|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|", "|" + getarg(0) + "|");
+}
+
+// F_Campfire_Near() -> 1 + indice de la fogata encendida mas cercana a
+// $@cf_near celdas o menos del personaje adjunto; 0 si no hay. PUBLICA: la usa
+// temperature en su reloj, por eso sale enseguida si no arde ninguna.
+function	script	F_Campfire_Near	{
+	if (!$@cf_live)
+		return 0;
+	getmapxy(.@m$, .@x, .@y, BL_PC);
+	.@now = gettimetick(2);
+	for (.@i = 0; .@i < $@cf_n; .@i++) {
+		if ($@cf_until[.@i] <= .@now || $@cf_map$[.@i] != .@m$)
+			continue;
+		if (distance(.@x, .@y, $@cf_x[.@i], $@cf_y[.@i]) <= $@cf_near)
+			return .@i + 1;
+	}
+	return 0;
+}
+
+// F_Campfire_Light(minutos) -> 1 si encendio una fogata en la celda del
+// personaje adjunto. La llaman la Lena y el Kit, que solo se gastan con un 1.
+function	script	F_Campfire_Light	{
+	.@m$ = strcharinfo(3);
+	if (callfunc("F_Campfire_IsSafe", .@m$)) {
+		dispbottom "Aquí no hace falta una fogata: busca una posada.";
+		return 0;
+	}
+	getmapxy(.@m$, .@x, .@y, BL_PC);
+	.@now = gettimetick(2);
+	for (.@i = 0; .@i < $@cf_n; .@i++) {
+		if ($@cf_until[.@i] <= .@now || $@cf_map$[.@i] != .@m$)
+			continue;
+		if (distance(.@x, .@y, $@cf_x[.@i], $@cf_y[.@i]) <= 2) {
+			dispbottom "Ya arde una fogata aquí al lado.";
+			return 0;
+		}
+	}
+	if ($@cf_n >= getvariableofnpc(.max, "campfire_mgr")) {
+		dispbottom "La leña no prende: hay demasiadas fogatas en el mundo.";
+		return 0;
+	}
+	// 10252 = 4_BONFIRE (JT_4_BONFIRE en npc.hpp). Un nombre de sprite no se
+	// puede escribir en una expresion.
+	.@npc$ = duplicate("Fogata#cf", .@m$, .@x, .@y, "Fogata", 10252);
+	if (.@npc$ == "") {
+		dispbottom "La leña no prende aquí.";
+		return 0;
+	}
+	// Una fogata por personaje: la anterior se apaga en el siguiente barrido.
+	.@cid = getcharid(0);
+	for (.@i = 0; .@i < $@cf_n; .@i++)
+		if ($@cf_owner[.@i] == .@cid && $@cf_until[.@i] > .@now)
+			$@cf_until[.@i] = .@now;
+	.@n = $@cf_n;
+	$@cf_npc$[.@n] = .@npc$;
+	$@cf_map$[.@n] = .@m$;
+	$@cf_x[.@n] = .@x;
+	$@cf_y[.@n] = .@y;
+	$@cf_until[.@n] = .@now + getarg(0) * 60;
+	$@cf_owner[.@n] = .@cid;
+	$@cf_out[.@n] = 0;
+	$@cf_n++;
+	$@cf_live++;
+	// Sin reiniciarlo si ya corre: encender seguido no debe retrasar el barrido.
+	if (!getnpctimer(1, "campfire_mgr"))
+		initnpctimer "campfire_mgr";
+	dispbottom "Enciendes una fogata. Arderá unos " + getarg(0) + " minutos.";
+	if (getnpcid(0, "Adventure")) {
+		.@tier = 0;
+		if ($@wa_ready)
+			.@tier = callfunc("F_Atlas_Tier", .@m$);
+		callfunc "F_Adv_Experience", "camp:first", 1, .@tier, "Encendí mi primera fogata";
+	}
+	return 1;
+}
+
+// F_Campfire_Rest() -> minutos de Descansado que da al personaje adjunto. PUBLICA:
+// la usa refuges en la fogata de un refugio. Un bonus_script de regeneracion
+// (flag 1032 = quitar al cerrar sesion y renovar el identico) y la proteccion
+// de una herida. No se quita al morir: dura lo mismo que @cf_rest_until, que
+// lee wounds.
+function	script	F_Campfire_Rest	{
+	.@secs = getvariableofnpc(.rest_secs, "campfire_mgr");
+	.@regen = getvariableofnpc(.rest_regen, "campfire_mgr");
+	@cf_rest_until = gettimetick(2) + .@secs;
+	@cf_ward = 1;
+	bonus_script "{ bonus bHPrecovRate," + .@regen + "; bonus bSPrecovRate," + .@regen + "; }", .@secs, 1032;
+	return .@secs / 60;
+}
+
+// F_Campfire_Eat(hambre, sed) -> sacia con un plato. Solo si survival esta.
+function	script	F_Campfire_Eat	{
+	if (!getnpcid(0, "survival_mgr"))
+		return;
+	if (getarg(0)) {
+		hm_hunger = min(hm_hunger + getarg(0), 100);
+		dispbottom "Hambre: " + hm_hunger + " / 100.";
+		dispbottom "@@event hunger update " + hm_hunger;
+	}
+	if (getarg(1)) {
+		thirst_value = min(thirst_value + getarg(1), 100);
+		dispbottom "Sed: " + thirst_value + " / 100.";
+		dispbottom "@@event thirst update " + thirst_value;
+	}
+	return;
+}
+
+-	script	campfire_mgr	-1,{
+	end;
+
+OnInit:
+	// Valores de prueba.
+	$@cf_near = 3;		// celdas: junto al fuego
+	.max = 64;			// fogatas a la vez en todo el mundo
+	.grace = 60;		// segundos entre ocultar una fogata y descargarla
+	.rest_secs = callfunc("F_ModSetting", "campfire", "rest_minutes", 20) * 60;	// BALANCE.md, Lo positivo
+	.rest_regen = callfunc("F_ModSetting", "campfire", "rest_regen", 30);	// % de regeneracion natural de HP y SP
+	// Tras recargar los scripts no queda ningun duplicado.
+	$@cf_n = 0;
+	$@cf_live = 0;
+	deletearray $@cf_npc$;
+	deletearray $@cf_map$;
+	deletearray $@cf_x;
+	deletearray $@cf_y;
+	deletearray $@cf_until;
+	deletearray $@cf_owner;
+	deletearray $@cf_out;
+	bindatcmd "fogata", "campfire_mgr::OnStatus", 0, 99;
+	end;
+
+// @fogata: Descansado y la fogata mas cercana.
+OnStatus:
+	.@now = gettimetick(2);
+	if (@cf_rest_until > .@now) {
+		.@msg$ = "Descansado: " + ((@cf_rest_until - .@now + 59) / 60) + " min";
+		if (@cf_ward)
+			.@msg$ += "; la próxima muerte fuera de una ciudad no dejará herida";
+		dispbottom .@msg$ + ".";
+	} else {
+		dispbottom "No has descansado junto a un fuego.";
+	}
+	.@i = callfunc("F_Campfire_Near") - 1;
+	if (.@i >= 0)
+		dispbottom "Estás junto a una fogata: le quedan " + (($@cf_until[.@i] - .@now + 59) / 60) + " min.";
+	end;
+
+// Barrido cada 5 s, solo mientras haya fogatas. Se rearma lo primero, para
+// que un error de script mas abajo no lo pare.
+OnTimer5000:
+	initnpctimer;
+	.@now = gettimetick(2);
+	for (.@i = $@cf_n - 1; .@i >= 0; .@i--) {
+		if ($@cf_until[.@i] > .@now)
+			continue;
+		if (!$@cf_out[.@i]) {
+			hideonnpc $@cf_npc$[.@i];
+			$@cf_out[.@i] = 1;
+			$@cf_live--;
+		}
+		if ($@cf_until[.@i] + .grace <= .@now) {
+			unloadnpc $@cf_npc$[.@i];
+			callsub S_Drop, .@i;
+		}
+	}
+	if (!$@cf_n)
+		stopnpctimer;
+	end;
+
+// Quita el hueco getarg(0) poniendo en su lugar el ultimo.
+S_Drop:
+	.@i = getarg(0);
+	$@cf_n--;
+	.@l = $@cf_n;
+	$@cf_npc$[.@i] = $@cf_npc$[.@l];
+	$@cf_map$[.@i] = $@cf_map$[.@l];
+	$@cf_x[.@i] = $@cf_x[.@l];
+	$@cf_y[.@i] = $@cf_y[.@l];
+	$@cf_until[.@i] = $@cf_until[.@l];
+	$@cf_owner[.@i] = $@cf_owner[.@l];
+	$@cf_out[.@i] = $@cf_out[.@l];
+	$@cf_npc$[.@l] = "";
+	$@cf_map$[.@l] = "";
+	$@cf_x[.@l] = 0;
+	$@cf_y[.@l] = 0;
+	$@cf_until[.@l] = 0;
+	$@cf_owner[.@l] = 0;
+	$@cf_out[.@l] = 0;
+	return;
+}
+
+// Plantilla de la fogata. Solo existe para duplicarla: flotante y sin
+// OnInit (duplicate correria el OnInit en cada copia). Sus variables las
+// comparten todas las copias, asi que no guarda nada en ellas.
+-	script	Fogata#cf	-1,{
+	.@i = callsub(S_Find);
+	if (.@i < 0) {
+		dispbottom "Solo quedan brasas.";
+		end;
+	}
+	mes "[Fogata]";
+	mes "El fuego crepita. Le quedan unos " + (($@cf_until[.@i] - gettimetick(2) + 59) / 60) + " minutos.";
+	while (1) {
+		next;
+		// Al volver de cada pregunta la fogata puede haber cambiado de hueco
+		// (S_Drop de campfire_mgr) o haberse apagado: se busca otra vez.
+		.@mine = 0;
+		.@i = callsub(S_Find);
+		if (.@i >= 0)
+			.@mine = ($@cf_owner[.@i] == getcharid(0));
+		.@s = select("Descansar junto al fuego:Cocinar:Vendar una herida:" + (.@mine ? "Apagar la fogata" : "") + ":Nada");
+		if (.@s == 5)
+			close;
+		mes "[Fogata]";
+		if (callsub(S_Find) < 0) {
+			mes "El fuego se ha apagado.";
+			close;
+		}
+		switch (.@s) {
+		case 1: callsub S_Rest; break;
+		case 2: callsub S_Cook; break;
+		case 3: callsub S_Bandage; break;
+		case 4:
+			$@cf_until[callsub(S_Find)] = gettimetick(2);
+			mes "Echas tierra al fuego hasta que se apaga.";
+			close;
+		}
+	}
+	end;
+
+// S_Find() -> hueco de esta fogata en $@cf_*, o -1 si ya no arde.
+S_Find:
+	.@me$ = strnpcinfo(3);
+	.@now = gettimetick(2);
+	for (.@j = 0; .@j < $@cf_n; .@j++)
+		if ($@cf_npc$[.@j] == .@me$)
+			return ($@cf_until[.@j] > .@now) ? .@j : -1;
+	return -1;
+
+// Descansado (F_Campfire_Rest).
+S_Rest:
+	.@min = callfunc("F_Campfire_Rest");
+	mes "Te sientas junto al fuego y recuperas el aliento.";
+	mes "Descansado durante " + .@min + " minutos.";
+	return;
+
+// Recetas de campfire_recipes (campfire-recipes.txt, generado). Un plato por
+// vez; despues vuelve a la lista.
+S_Cook:
+	.@n = getvariableofnpc(.r_n, "campfire_recipes");
+	while (1) {
+		.@menu$ = "";
+		for (.@r = 0; .@r < .@n; .@r++) {
+			.@menu$ += getitemname(getvariableofnpc(.r_out[.@r], "campfire_recipes"));
+			if (callsub(S_HasAll, .@r))
+				.@menu$ += " (listo)";
+			.@menu$ += ":";
+		}
+		.@menu$ += "Volver";
+		mes "¿Qué cocinas?";
+		next;
+		.@r = select(.@menu$) - 1;
+		if (.@r >= .@n) {
+			mes "[Fogata]";
+			mes "El fuego sigue ardiendo.";
+			return;
+		}
+		.@out = getvariableofnpc(.r_out[.@r], "campfire_recipes");
+		explode(.@in$, getvariableofnpc(.r_in$[.@r], "campfire_recipes"), "|");
+		.@k = getarraysize(.@in$);
+		mes "[Fogata]";
+		mes getitemname(.@out) + " necesita:";
+		for (.@j = 0; .@j < .@k; .@j++) {
+			explode(.@p$, .@in$[.@j], ":");
+			mes "- " + atoi(.@p$[1]) + " " + getitemname(atoi(.@p$[0])) + " (tienes " + countitem(atoi(.@p$[0])) + ")";
+		}
+		if (!callsub(S_HasAll, .@r)) {
+			mes "Te faltan ingredientes.";
+			next;
+			mes "[Fogata]";
+			continue;
+		}
+		if (!checkweight(.@out, 1)) {
+			mes "Llevas demasiado peso para cargar otro plato.";
+			next;
+			mes "[Fogata]";
+			continue;
+		}
+		next;
+		if (select("Cocinarlo:Otra receta") == 2) {
+			mes "[Fogata]";
+			continue;
+		}
+		if (callsub(S_Find) < 0) {
+			mes "[Fogata]";
+			mes "El fuego se ha apagado antes de que empezaras.";
+			close;
+		}
+		for (.@j = 0; .@j < .@k; .@j++) {
+			explode(.@p$, .@in$[.@j], ":");
+			delitem atoi(.@p$[0]), atoi(.@p$[1]);
+		}
+		getitem .@out, 1;
+		mes "[Fogata]";
+		mes "Huele bien: " + getitemname(.@out) + ".";
+		if (getnpcid(0, "Adventure")) {
+			.@tier = 0;
+			if ($@wa_ready)
+				.@tier = callfunc("F_Atlas_Tier", strcharinfo(3));
+			callfunc "F_Adv_Experience", "cook:first", 1, .@tier, "Cociné junto al fuego por primera vez";
+		}
+		next;
+		mes "[Fogata]";
+	}
+	return;
+
+// S_HasAll(receta) -> 1 si el personaje lleva todos sus ingredientes.
+S_HasAll:
+	explode(.@h$, getvariableofnpc(.r_in$[getarg(0)], "campfire_recipes"), "|");
+	.@hk = getarraysize(.@h$);
+	for (.@hj = 0; .@hj < .@hk; .@hj++) {
+		explode(.@hp$, .@h$[.@hj], ":");
+		if (countitem(atoi(.@hp$[0])) < atoi(.@hp$[1]))
+			return 0;
+	}
+	return 1;
+
+// Venda: alivia una herida (no una maldicion) de wounds hasta curarla (D29).
+S_Bandage:
+	if (!getnpcid(0, "wounds_mgr") || wd_list$ == "") {
+		mes "No tienes heridas que vendar.";
+		return;
+	}
+	explode(.@a$, wd_list$, "|");
+	.@n = getarraysize(.@a$);
+	.@c = 0;
+	.@menu$ = "";
+	for (.@j = 0; .@j < .@n; .@j++) {
+		.@id = atoi(.@a$[.@j]);
+		if (callfunc("F_Wounds_Kind", .@id) != 1 || callfunc("F_Wounds_IsEased", .@id))
+			continue;
+		.@ids[.@c] = .@id;
+		.@c++;
+		.@menu$ += callfunc("F_Wounds_Name", .@id) + ":";
+	}
+	if (.@c == 0) {
+		mes "Lo que tienes no se arregla con una venda: ya está vendado, o es una maldición para el templo.";
+		return;
+	}
+	if (!countitem(51102)) {
+		mes "Te hace falta una Venda.";
+		return;
+	}
+	mes "¿Qué herida vendas?";
+	next;
+	.@s = select(.@menu$ + "Ninguna") - 1;
+	mes "[Fogata]";
+	if (.@s >= .@c) {
+		mes "Guardas la venda.";
+		return;
+	}
+	delitem 51102, 1;
+	callfunc "F_Wounds_Ease", .@ids[.@s];
+	mes "Limpias y vendas " + callfunc("F_Wounds_Name", .@ids[.@s]) + ". Dolerá la mitad hasta que la cure una posada o el templo.";
+	return;
+}
+
+// Proveedor de Campamento: unico punto de venta de la lena, el kit y la
+// venda, junto al Sastre de temperature y las cantimploras de survival.
+prontera,151,187,4	shop	Proveedor de Campamento#cf	4_M_01,51100:300,51101:900,51102:400

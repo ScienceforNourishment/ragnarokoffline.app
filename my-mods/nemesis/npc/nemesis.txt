@@ -303,7 +303,7 @@ S_Defeat:
 // Entrega los trofeos pendientes (nm_owed, nm_owed_n) si caben.
 S_GiveOwed:
 	if (!checkweight(nm_owed, nm_owed_n)) {
-		dispbottom "No puedes cargar el trofeo de tu nemesis. Haz sitio y escribe @nemesis.";
+		dispbottom "No puedes cargar el trofeo de tu nemesis. Haz sitio y escribe " + ($@nm_sym$ == "" ? "@" : $@nm_sym$) + "nemesis.";
 		return;
 	}
 	.@item = nm_owed;
@@ -333,6 +333,11 @@ S_PartyAid:
 
 // @nemesis: quien te espera y donde; entrega un trofeo pendiente.
 OnShow:
+	// El prefijo de comandos (Ajustes -> Rates -> Command prefix puede hacerlo
+	// "!" o "."), guardado para el aviso de S_GiveOwed, que tambien sale tras
+	// una muerte. Es del servidor, no del jugador; "#" es el de otro personaje.
+	if (charat(.@atcmd_command$, 0) != "#")
+		$@nm_sym$ = charat(.@atcmd_command$, 0);
 	if (nm_owed)
 		callsub S_GiveOwed;
 	if (!nm_mob) {

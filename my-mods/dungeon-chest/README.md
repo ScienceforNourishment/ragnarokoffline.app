@@ -3,24 +3,48 @@
 El mod agrega un cofre interactivo a cada mapa de dungeon de
 [`world-atlas`](../world-atlas/README.md) (las filas `kind=dungeon` de su
 CSV): 183 mapas en total. Los mapas se agrupan por la dificultad aproximada de
-sus monstruos y cada Tier entrega una comida distinta para facilitar las
-pruebas.
+sus monstruos. Al abrirlo, lo normal es una **pieza de equipo sin identificar
+con 1 a 4 afijos** del Tier del mapa; si no, una comida del Tier.
 
 ## Estado
 
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.3.0 (la de `mod.json`): `npc/dungeon-chests.txt` se genera
+- **Versión:** 0.4.1 (la de `mod.json`): el comando de GM **`@cofre`** para
+  probar sin buscar el cofre (ver «Probarlo»); cada cofre apunta su nombre en
+  `$@dc_npc_<mapa>$` al arrancar. Sin probar en el juego; comprobado sin el
+  juego: los 183 cofres generados lo apuntan, llaves y comillas equilibradas.
+  La 0.4.0: **botín de equipo** (D35, ver
+  «Botín de equipo»). Las piezas salen de las listas de `arpg-equipments` y
+  los afijos y su sorteo de `affix-forge`, importados a CSV propios. Un 5 %
+  de las aperturas da un **disfraz** (D36). Trae el **Herrero de Afijos** en
+  Prontera (D37) y la tabla de nombres de los afijos **en español** para el
+  cliente. Declara `"era": "renewal"`. La 0.3.0: `npc/dungeon-chests.txt` se genera
   desde el CSV del atlas con `registry/tools/dungeon-chest/build_chests.cjs`.
   Los 179 cofres de antes salen idénticos; se suman los 4 retos que añadió
   `world-atlas` 0.2.0: `iz_d04_i` (T5), `iz_d05_i` (T6), `prt_mz03_i` (T6) y
   `prt_prison` (T5)
-- **Probado en el juego:** sin registro detallado; anota aquí lo que se compruebe
-- **Sin probar:** los 4 cofres nuevos (que encuentren celda y entreguen su
-  comida). Comprobado sin el juego: el generado coincide con el anterior en los
-  179 mapas, 183 nombres internos únicos, llaves y comillas equilibradas
-- **Actualizado:** 2026-10-17
+- **Probado en el juego (0.4.1, 2026-10-23),** con
+  [`SESION-DE-PRUEBA.md`](../SESION-DE-PRUEBA.md): el botín de equipo entero.
+  La pieza llega sin identificar; con la Lupa es de nivel bajo y trae de 1 a 4
+  afijos con nombre en español; la mayoría son de tu clase; en una mazmorra
+  de ruinas o de hielo el primer afijo suele ser una resistencia de su bioma;
+  con la mochila llena dice «Dentro hay algo pesado…» y el cofre no se marca
+  abierto; sale algún disfraz y cambia el aspecto. El **Herrero de Afijos**
+  entero: solo lista piezas identificadas, los cuatro precios, quitar,
+  volver a sortear, pasar uno y pasar todos sin perder el refinado, y «No te
+  alcanza» sin cobrar. Los cofres de `prt_prison` (T5) y `prt_mz03_i` (T6)
+  aparecen y se abren. La carga del 2026-10-23 a las 21:38 no tiene errores
+  de ningún archivo del mod
+- **Balance, más adelante:** la fuerza de las piezas del Tier 1 (`loot_tiers.csv`)
+  vale por ahora; se ajusta al medir el balance de H1
+- **Sin probar:** el comando `@cofre` (0.4.1); los cofres de `iz_d04_i` y
+  `iz_d05_i`, que no se encontraron en mapas tan grandes (con `@cofre` ya no
+  hace falta buscarlos); que el log, tras una sesión abriendo cofres, no se
+  queje de `getitem3` ni `getitem4` (el log de esa sesión se perdió al
+  reiniciar el servidor)
+- **Actualizado:** 2026-10-23
 
 - **Cantidad:** un cofre por mapa.
 - **Ubicación:** aleatoria dentro de cada mapa; solo se eligen celdas
@@ -29,7 +53,7 @@ Actualízala al cambiar el mod o al probarlo.
 - **Cambio de posición para pruebas:** si nadie abre un cofre durante 10
   minutos, se teleporta una vez a otra ubicación aleatoria.
 - **Botín:** solo el primer jugador que lo abra y pueda cargar el objeto recibe
-  una unidad de su comida de Tier. Después de abrirlo, el cofre reaparece en
+  algo: equipo con afijos (80 %) o una unidad de la comida de su Tier. Después de abrirlo, el cofre reaparece en
   una nueva ubicación aleatoria 10 minutos más tarde. Mientras tanto, no
   entrega más botín.
 - **Reinicio del servidor:** vuelve a colocar los cofres y reinicia sus ciclos;
@@ -86,6 +110,21 @@ tienen spawns normales en ese índice: `alb2trea`, `clock_01`, `ice_dun04`, `izl
    `prt_mz03_i` (Tier 6) con `@warp`: el cofre debe llamarse `Cofre T5` o
    `Cofre T6` y no debe salir `could not find a passable cell` en el log.
 
+**Comando de prueba `@cofre` (GM).** Los cofres están a propósito en sitios
+aleatorios y a veces tras un muro; para probar el botín no hace falta
+buscarlos (`npc/chest-command.txt`):
+
+| Comando | Qué hace |
+|---|---|
+| `@cofre` | te lleva a una celda libre al sur del cofre del mapa actual y dice si está abierto |
+| `@cofre <mapa>` | lo mismo con el cofre de otro mapa (`@cofre iz_d04_i`) |
+| `@cofre aqui` | trae el cofre del mapa actual a la celda delante de ti; el temporizador no lo vuelve a mover mientras siga cerrado |
+| `@cofre cerrar` | lo vuelve a cerrar sin moverlo, para abrirlo otra vez sin esperar los 10 minutos |
+| `@cofre mover` | lo manda a otra celda aleatoria, como hace el temporizador |
+
+Para abrir muchos seguidos: `@cofre aqui` una vez y luego, tras cada
+apertura, `@cofre cerrar`.
+
 ## Guía: agregar un cofre a otro mapa
 
 `npc/dungeon-chests.txt` es un archivo **generado**: no lo edites a mano. Un
@@ -114,8 +153,7 @@ cofre por cada fila `kind=dungeon` de
    del generador. Antes de introducir un item distinto, confirma que exista en
    la era soportada y que el personaje pueda recibirlo; `checkweight` solo
    evita exceder capacidad, no valida que el ID tenga una definición útil.
-   Armas o equipo mejorado no son la recompensa prevista: `affix-forge` y
-   `arpg-equipments` ya cubren ese tipo de loot.
+   El equipo no va aquí: está en los CSV del botín (ver «Botín de equipo»).
 5. **Las funciones globales** (`F_DungeonChest_Move`, `_Item`, `_Open`,
    `_Tick`) también salen del generador. Para cambiarlas, edita la plantilla en
    `build_chests.cjs` y conserva los tabuladores entre los campos de
@@ -142,15 +180,121 @@ cofre por cada fila `kind=dungeon` de
    encuentra el cofre en el mapa, ábrelo con espacio en inventario y vuelve a
    hablar con él para comprobar que ya no entregue otro objeto.
 
-Este mod no cambia ni requiere `affix-forge` o `arpg-equipments`.
+Este mod no requiere `affix-forge` ni `arpg-equipments`: tomó sus datos una
+vez, y no deben activarse con él (serían dos sistemas de afijos a la vez).
+
+## Botín de equipo
+
+Decidido el 2026-10-23 (D35, D36). Al abrir un cofre:
+
+0. Con la probabilidad `costume_pct` (5 %) sale un **disfraz** de
+   `costumes.csv`: una pieza de las ranuras de disfraz (cabeza alta, media o
+   baja, y capa), que solo cambia el aspecto. Llega sin identificar y sin
+   afijos. Son los 51 disfraces de `arpg-equipments`, de cualquier Tier.
+1. Si no, con la probabilidad `gear_pct` de su Tier (80 %) sale **equipo**;
+   si tampoco, la comida del Tier, como antes.
+2. **Qué pieza:** una de `loot.csv` de ese Tier. Con la probabilidad
+   `class_pct` (70 %) se elige entre las que puede equipar quien lo abre, si
+   hay alguna; si no, cualquiera del Tier, también de otra clase. La clase se
+   compara con los `Jobs` del item_db (un Lord Knight o un Rune Knight
+   cuentan como Knight); no mira las restricciones de clase alta o bebé.
+3. **Sin identificar:** llega al inventario sin identificar, y el cofre solo
+   dice si es un arma, una armadura o equipo de sombra. Una Lupa (611)
+   enseña qué es y sus afijos.
+4. **Afijos**, con el sorteo de `affix-forge`: cuántos (1 a 4, por
+   `count_weights`), de qué rareza (común, poco común, rara o épica, por
+   `rarity_weights`), una opción de esa rareza que valga para armas o
+   armaduras, sin repetir opción ni familia (MaxHP y MaxHP %), y un valor que
+   escala como el de un monstruo de nivel `level`. Los Tiers altos dan más
+   afijos, más raros y más fuertes.
+5. **Bioma:** con `world-atlas`, el primer afijo sale el 35 % de las veces de
+   las opciones del bioma del mapa: resistir agua en la nieve y la costa,
+   fuego en volcanes y desiertos, no muertos y sombra en las ruinas…
+
+| Tier | Piezas | level | Nº de afijos 1/2/3/4 (%) | Rareza común/poco común/rara/épica (%) |
+|---|---:|---:|---|---|
+| 1 | 87 | 20 | 60/30/9/1 | 70/22/7/1 |
+| 2 | 102 | 50 | 55/30/12/3 | 62/26/10/2 |
+| 3 | 50 | 75 | 50/30/15/5 | 55/28/14/3 |
+| 4 | 50 | 105 | 45/30/18/7 | 50/29/17/4 |
+| 5 | 80 | 135 | 40/32/20/8 | 45/30/20/5 |
+| 6 | 307 | 175 | 35/33/22/10 | 40/30/23/7 |
+
+Todo son valores de prueba.
+
+**Los datos** están en `registry/tools/dungeon-chest/`:
+
+| Archivo | Qué tiene |
+|---|---|
+| `loot.csv` | pieza, Tier, clases que la equipan (`*` todas), nota |
+| `costumes.csv` | los disfraces |
+| `affixes.csv` | los 214 afijos: rareza, rango, tipo de valor, armas o armaduras, tope y familia |
+| `affix_names.csv` | el nombre de cada afijo en español, como lo enseñan el cliente y el Herrero |
+| `loot_tiers.csv` | lo de la tabla de arriba y `costume_pct`, por Tier |
+| `loot_biomes.csv` | bioma, probabilidad y opciones del primer afijo |
+
+Se regenera con `node registry/tools/dungeon-chest/build_loot.cjs [carpeta
+db/re de rAthena]`, que escribe `npc/dungeon-loot-data.txt` y la tabla de
+nombres del cliente (no se editan a mano). Comprueba que cada pieza y cada
+disfraz sean equipo en las tablas Renewal, que las clases existan, que cada
+afijo tenga nombre, que las opciones de cada bioma estén en `affixes.csv` y
+que cada Tier tenga su fila. `--check` falla si alguno de los dos no está al
+día. El código del sorteo está en `npc/dungeon-loot.txt`, escrito a mano.
+
+`import_reference.cjs` hizo la importación desde los dos mods **una sola
+vez**. El Tier de cada pieza es la banda de su nivel mínimo, pero nunca menor
+del que sugiere su cofre de `arpg-equipments`; quedaron fuera los disfraces y
+lo que no es equipo (121 objetos). Desde entonces los CSV son nuestros y se
+editan a mano; el script no los pisa sin `--force`.
+
+`import_reference.cjs --costumes` sacó, también una sola vez, los disfraces.
+
+**Nombres de los afijos.** `data/luafiles514/lua files/datainfo/addrandomoptionnametable.lub`
+sale de `affix_names.csv`, traducida de la tabla de `affix-forge`. Sin ella,
+el cliente enseña las opciones con id mayor de 192 como «UNKNOWN RANDOM
+OPTION». Va **sin acentos ni eñes** a propósito: el cliente (kRO) lee esa
+tabla en su propia codificación, no en UTF-8, y un acento saldría roto
+([`docs/MODDING.md`](../../docs/MODDING.md), «Signboards»). Los atributos
+usan las abreviaturas en español de los demás mods (FUE, DES, SUE).
+
+## Herrero de Afijos
+
+En Prontera `155,187`, junto al Proveedor de Campamento (D37). Portado del de
+`affix-forge`. Trabaja piezas **identificadas y sin equipar**: una pieza sin
+identificar no sale en sus menús, porque el menú diría qué es y qué afijos
+tiene.
+
+| Servicio | Qué hace | Precio (ajuste) |
+|---|---|---:|
+| Pasar todos los afijos | los de una pieza (que se pierde) pasan a otra, que pierde los suyos | 100 000 (`smith_move_all`) |
+| Pasar un afijo | uno elegido de una pieza (que se pierde) pasa a otra: sobre el mismo afijo si ya lo tiene, a un hueco libre o al que cedas si tiene cinco | 60 000 (`smith_move_one`) |
+| Quitar un afijo | uno elegido; la pieza se queda | 30 000 (`smith_remove`) |
+| Volver a sortear | mismos afijos en número, nuevos, con el sorteo de los cofres y el Tier de la pieza (el de `loot.csv`, o la banda de su nivel), sin bioma | 50 000 (`smith_reroll`) |
+
+Cada servicio enseña antes qué se pierde y qué queda. Al rehacer la pieza
+conserva refinado, cartas, atributo, grado y si está ligada. Los precios son
+valores de prueba y se cambian en Settings → Mods; 0 lo hace gratis. Como en
+`affix-forge`, pasar un afijo no comprueba la regla de una familia por pieza:
+se puede acabar con MaxHP y MaxHP % en la misma.
+
+### Créditos
+
+- Las listas de equipo son de [ARPG Equipments Mod](https://github.com/igueradx/ARPG-Equipments-Mod)
+  (MIT, Copyright 2026 Igor / Iguera).
+- Los afijos, su sorteo, el Herrero y la tabla de nombres son de
+  [Affix Forge](https://github.com/rhewid/affix-forge) (MIT, rhwski). La forma
+  del Herrero de rehacer una pieza viene del Bonus Stat Crafter de ARPG
+  Equipments Mod. Los nombres en inglés de los que se tradujo la tabla vienen
+  de [ROenglishRE](https://github.com/llchrisll/ROenglishRE), de zackdreaver
+  y llchrisll.
 
 ## Próximos cambios propuestos (revisión 2026-10-17)
 
 Sin implementar.
 
-- **Botín por bioma además de por Tier:** equipo de abrigo en mazmorras de
-  hielo, ropa fresca y protección de calor en las de desierto, objetos de
-  `clima` y `temperature`. Las comidas por Tier son de prueba.
+- **Más botín por bioma:** además de los afijos del bioma (hecho en 0.4.0),
+  ropa de `temperature` y objetos de `clima` en sus biomas. Las comidas por
+  Tier son de prueba.
 - **Dos jugadores:** cada miembro del grupo cerca del cofre recibe su propio
   botín, no solo quien lo abre.
 - **Cofres con trampa** que un Rogue o un Hunter puede desarmar.

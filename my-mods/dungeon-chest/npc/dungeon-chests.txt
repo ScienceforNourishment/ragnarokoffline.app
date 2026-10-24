@@ -72,6 +72,45 @@ function	script	F_DungeonChest_Open	{
 		return 0;
 	}
 
+	// Un disfraz (costume_pct), equipo con afijos (gear_pct) o la comida. Todo
+	// el equipo llega sin identificar (dungeon-loot.txt).
+	if ($@dc_ready && $@dc_cosn > 0 && rand(100) < $@dc_cosp[.@tier]) {
+		.@cos = $@dc_cos[rand(0, $@dc_cosn - 1)];
+		if (!checkweight(.@cos, 1)) {
+			mes "[Cofre de Tier " + .@tier + "]";
+			mes "No tienes espacio suficiente para cargar el botín.";
+			return 0;
+		}
+		set getvariableofnpc(.opened, .@npc$), 1;
+		getitem2 .@cos, 1, 0, 0, 0, 0, 0, 0, 0;
+		mes "[Cofre de Tier " + .@tier + "]";
+		mes "Entre telas viejas encuentras una prenda vistosa, sin identificar.";
+		mes "Una Lupa dirá qué es.";
+		return 1;
+	}
+	.@gear = 0;
+	if ($@dc_ready && rand(100) < $@dc_gear[.@tier])
+		.@gear = callfunc("F_DungeonChest_PickGear", .@tier);
+	if (.@gear) {
+		if (!checkweight(.@gear, 1)) {
+			mes "[Cofre de Tier " + .@tier + "]";
+			mes "Dentro hay algo pesado y no puedes cargarlo. Aligera la mochila y vuelve.";
+			return 0;
+		}
+		set getvariableofnpc(.opened, .@npc$), 1;
+		callfunc "F_DungeonChest_GiveGear", .@gear, .@tier, strnpcinfo(4);
+		.@kind = getiteminfo(.@gear, ITEMINFO_TYPE);
+		mes "[Cofre de Tier " + .@tier + "]";
+		if (.@kind == IT_WEAPON)
+			mes "Encuentras un arma sin identificar.";
+		else if (.@kind == IT_SHADOWGEAR)
+			mes "Encuentras una pieza de equipo de sombra sin identificar.";
+		else
+			mes "Encuentras una pieza de armadura sin identificar.";
+		mes "Una Lupa dirá qué es y qué guarda.";
+		return 1;
+	}
+
 	if (!checkweight(.@item, 1)) {
 		mes "[Cofre de Tier " + .@tier + "]";
 		mes "No tienes espacio suficiente para cargar el botín.";
@@ -113,6 +152,7 @@ abbey01,0,0,4	script	Cofre T4#dcp_abbey01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_abbey01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abbey01");
 	initnpctimer;
 	end;
@@ -134,6 +174,7 @@ abbey02,0,0,4	script	Cofre T5#dcp_abbey02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_abbey02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abbey02");
 	initnpctimer;
 	end;
@@ -155,6 +196,7 @@ abbey03,0,0,4	script	Cofre T5#dcp_abbey03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_abbey03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abbey03");
 	initnpctimer;
 	end;
@@ -176,6 +218,7 @@ abyss_01,0,0,4	script	Cofre T4#dcp_abyss_01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_abyss_01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abyss_01");
 	initnpctimer;
 	end;
@@ -197,6 +240,7 @@ abyss_02,0,0,4	script	Cofre T4#dcp_abyss_02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_abyss_02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abyss_02");
 	initnpctimer;
 	end;
@@ -218,6 +262,7 @@ abyss_03,0,0,4	script	Cofre T5#dcp_abyss_03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_abyss_03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abyss_03");
 	initnpctimer;
 	end;
@@ -239,6 +284,7 @@ abyss_04,0,0,4	script	Cofre T6#dcp_abyss_04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_abyss_04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "abyss_04");
 	initnpctimer;
 	end;
@@ -260,6 +306,7 @@ alde_dun01,0,0,4	script	Cofre T3#dcp_alde_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_alde_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "alde_dun01");
 	initnpctimer;
 	end;
@@ -281,6 +328,7 @@ alde_dun02,0,0,4	script	Cofre T3#dcp_alde_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_alde_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "alde_dun02");
 	initnpctimer;
 	end;
@@ -302,6 +350,7 @@ alde_dun03,0,0,4	script	Cofre T3#dcp_alde_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_alde_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "alde_dun03");
 	initnpctimer;
 	end;
@@ -323,6 +372,7 @@ alde_dun04,0,0,4	script	Cofre T3#dcp_alde_dun04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_alde_dun04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "alde_dun04");
 	initnpctimer;
 	end;
@@ -344,6 +394,7 @@ ama_dun01,0,0,4	script	Cofre T3#dcp_ama_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ama_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ama_dun01");
 	initnpctimer;
 	end;
@@ -365,6 +416,7 @@ ama_dun02,0,0,4	script	Cofre T3#dcp_ama_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ama_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ama_dun02");
 	initnpctimer;
 	end;
@@ -386,6 +438,7 @@ ama_dun03,0,0,4	script	Cofre T4#dcp_ama_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ama_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ama_dun03");
 	initnpctimer;
 	end;
@@ -407,6 +460,7 @@ anthell01,0,0,4	script	Cofre T1#dcp_anthell01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_anthell01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "anthell01");
 	initnpctimer;
 	end;
@@ -428,6 +482,7 @@ anthell02,0,0,4	script	Cofre T1#dcp_anthell02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_anthell02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "anthell02");
 	initnpctimer;
 	end;
@@ -449,6 +504,7 @@ arug_dun01,0,0,4	script	Cofre T4#dcp_arug_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_arug_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "arug_dun01");
 	initnpctimer;
 	end;
@@ -470,6 +526,7 @@ ayo_dun01,0,0,4	script	Cofre T3#dcp_ayo_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ayo_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ayo_dun01");
 	initnpctimer;
 	end;
@@ -491,6 +548,7 @@ ayo_dun02,0,0,4	script	Cofre T3#dcp_ayo_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ayo_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ayo_dun02");
 	initnpctimer;
 	end;
@@ -512,6 +570,7 @@ beach_dun,0,0,4	script	Cofre T4#dcp_beach_dun	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_beach_dun$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "beach_dun");
 	initnpctimer;
 	end;
@@ -533,6 +592,7 @@ beach_dun2,0,0,4	script	Cofre T3#dcp_beach_dun2	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_beach_dun2$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "beach_dun2");
 	initnpctimer;
 	end;
@@ -554,6 +614,7 @@ beach_dun3,0,0,4	script	Cofre T2#dcp_beach_dun3	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_beach_dun3$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "beach_dun3");
 	initnpctimer;
 	end;
@@ -575,6 +636,7 @@ bossnia_01,0,0,4	script	Cofre T5#dcp_bossnia_01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_bossnia_01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bossnia_01");
 	initnpctimer;
 	end;
@@ -596,6 +658,7 @@ bossnia_02,0,0,4	script	Cofre T5#dcp_bossnia_02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_bossnia_02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bossnia_02");
 	initnpctimer;
 	end;
@@ -617,6 +680,7 @@ bossnia_03,0,0,4	script	Cofre T5#dcp_bossnia_03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_bossnia_03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bossnia_03");
 	initnpctimer;
 	end;
@@ -638,6 +702,7 @@ bossnia_04,0,0,4	script	Cofre T5#dcp_bossnia_04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_bossnia_04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bossnia_04");
 	initnpctimer;
 	end;
@@ -659,6 +724,7 @@ bra_dun01,0,0,4	script	Cofre T3#dcp_bra_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_bra_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bra_dun01");
 	initnpctimer;
 	end;
@@ -680,6 +746,7 @@ bra_dun02,0,0,4	script	Cofre T3#dcp_bra_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_bra_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "bra_dun02");
 	initnpctimer;
 	end;
@@ -701,6 +768,7 @@ c_tower1,0,0,4	script	Cofre T3#dcp_c_tower1	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_c_tower1$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower1");
 	initnpctimer;
 	end;
@@ -722,6 +790,7 @@ c_tower2,0,0,4	script	Cofre T3#dcp_c_tower2	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_c_tower2$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower2");
 	initnpctimer;
 	end;
@@ -743,6 +812,7 @@ c_tower2_,0,0,4	script	Cofre T6#dcp_c_tower2_	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_c_tower2_$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower2_");
 	initnpctimer;
 	end;
@@ -764,6 +834,7 @@ c_tower3,0,0,4	script	Cofre T3#dcp_c_tower3	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_c_tower3$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower3");
 	initnpctimer;
 	end;
@@ -785,6 +856,7 @@ c_tower3_,0,0,4	script	Cofre T6#dcp_c_tower3_	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_c_tower3_$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower3_");
 	initnpctimer;
 	end;
@@ -806,6 +878,7 @@ c_tower4,0,0,4	script	Cofre T3#dcp_c_tower4	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_c_tower4$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "c_tower4");
 	initnpctimer;
 	end;
@@ -827,6 +900,7 @@ dew_dun01,0,0,4	script	Cofre T3#dcp_dew_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_dew_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "dew_dun01");
 	initnpctimer;
 	end;
@@ -848,6 +922,7 @@ dew_dun02,0,0,4	script	Cofre T3#dcp_dew_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_dew_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "dew_dun02");
 	initnpctimer;
 	end;
@@ -869,6 +944,7 @@ dic_dun01,0,0,4	script	Cofre T5#dcp_dic_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_dic_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "dic_dun01");
 	initnpctimer;
 	end;
@@ -890,6 +966,7 @@ dic_dun02,0,0,4	script	Cofre T5#dcp_dic_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_dic_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "dic_dun02");
 	initnpctimer;
 	end;
@@ -911,6 +988,7 @@ dic_dun03,0,0,4	script	Cofre T5#dcp_dic_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_dic_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "dic_dun03");
 	initnpctimer;
 	end;
@@ -932,6 +1010,7 @@ ein_dun01,0,0,4	script	Cofre T3#dcp_ein_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ein_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ein_dun01");
 	initnpctimer;
 	end;
@@ -953,6 +1032,7 @@ ein_dun02,0,0,4	script	Cofre T4#dcp_ein_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ein_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ein_dun02");
 	initnpctimer;
 	end;
@@ -974,6 +1054,7 @@ ein_dun03,0,0,4	script	Cofre T6#dcp_ein_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ein_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ein_dun03");
 	initnpctimer;
 	end;
@@ -995,6 +1076,7 @@ gef_dun00,0,0,4	script	Cofre T1#dcp_gef_dun00	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gef_dun00$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gef_dun00");
 	initnpctimer;
 	end;
@@ -1016,6 +1098,7 @@ gef_dun01,0,0,4	script	Cofre T2#dcp_gef_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gef_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gef_dun01");
 	initnpctimer;
 	end;
@@ -1037,6 +1120,7 @@ gef_dun02,0,0,4	script	Cofre T3#dcp_gef_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gef_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gef_dun02");
 	initnpctimer;
 	end;
@@ -1058,6 +1142,7 @@ gef_dun03,0,0,4	script	Cofre T1#dcp_gef_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gef_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gef_dun03");
 	initnpctimer;
 	end;
@@ -1079,6 +1164,7 @@ gefenia01,0,0,4	script	Cofre T4#dcp_gefenia01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gefenia01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gefenia01");
 	initnpctimer;
 	end;
@@ -1100,6 +1186,7 @@ gefenia02,0,0,4	script	Cofre T4#dcp_gefenia02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gefenia02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gefenia02");
 	initnpctimer;
 	end;
@@ -1121,6 +1208,7 @@ gefenia03,0,0,4	script	Cofre T4#dcp_gefenia03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gefenia03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gefenia03");
 	initnpctimer;
 	end;
@@ -1142,6 +1230,7 @@ gefenia04,0,0,4	script	Cofre T4#dcp_gefenia04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gefenia04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gefenia04");
 	initnpctimer;
 	end;
@@ -1163,6 +1252,7 @@ gl_cas01,0,0,4	script	Cofre T3#dcp_gl_cas01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_cas01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_cas01");
 	initnpctimer;
 	end;
@@ -1184,6 +1274,7 @@ gl_cas01_,0,0,4	script	Cofre T6#dcp_gl_cas01_	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_cas01_$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_cas01_");
 	initnpctimer;
 	end;
@@ -1205,6 +1296,7 @@ gl_cas02,0,0,4	script	Cofre T4#dcp_gl_cas02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_cas02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_cas02");
 	initnpctimer;
 	end;
@@ -1226,6 +1318,7 @@ gl_cas02_,0,0,4	script	Cofre T5#dcp_gl_cas02_	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_cas02_$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_cas02_");
 	initnpctimer;
 	end;
@@ -1247,6 +1340,7 @@ gl_church,0,0,4	script	Cofre T3#dcp_gl_church	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_church$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_church");
 	initnpctimer;
 	end;
@@ -1268,6 +1362,7 @@ gl_chyard,0,0,4	script	Cofre T3#dcp_gl_chyard	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_chyard$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_chyard");
 	initnpctimer;
 	end;
@@ -1289,6 +1384,7 @@ gl_chyard_,0,0,4	script	Cofre T5#dcp_gl_chyard_	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_chyard_$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_chyard_");
 	initnpctimer;
 	end;
@@ -1310,6 +1406,7 @@ gl_dun01,0,0,4	script	Cofre T4#dcp_gl_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_dun01");
 	initnpctimer;
 	end;
@@ -1331,6 +1428,7 @@ gl_dun02,0,0,4	script	Cofre T4#dcp_gl_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_dun02");
 	initnpctimer;
 	end;
@@ -1352,6 +1450,7 @@ gl_in01,0,0,4	script	Cofre T3#dcp_gl_in01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_in01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_in01");
 	initnpctimer;
 	end;
@@ -1373,6 +1472,7 @@ gl_knt01,0,0,4	script	Cofre T4#dcp_gl_knt01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_knt01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_knt01");
 	initnpctimer;
 	end;
@@ -1394,6 +1494,7 @@ gl_knt02,0,0,4	script	Cofre T4#dcp_gl_knt02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_knt02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_knt02");
 	initnpctimer;
 	end;
@@ -1415,6 +1516,7 @@ gl_prison,0,0,4	script	Cofre T3#dcp_gl_prison	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_prison$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_prison");
 	initnpctimer;
 	end;
@@ -1436,6 +1538,7 @@ gl_prison1,0,0,4	script	Cofre T4#dcp_gl_prison1	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_prison1$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_prison1");
 	initnpctimer;
 	end;
@@ -1457,6 +1560,7 @@ gl_sew01,0,0,4	script	Cofre T3#dcp_gl_sew01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_sew01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_sew01");
 	initnpctimer;
 	end;
@@ -1478,6 +1582,7 @@ gl_sew02,0,0,4	script	Cofre T4#dcp_gl_sew02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_sew02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_sew02");
 	initnpctimer;
 	end;
@@ -1499,6 +1604,7 @@ gl_sew03,0,0,4	script	Cofre T4#dcp_gl_sew03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_sew03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_sew03");
 	initnpctimer;
 	end;
@@ -1520,6 +1626,7 @@ gl_sew04,0,0,4	script	Cofre T4#dcp_gl_sew04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_sew04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_sew04");
 	initnpctimer;
 	end;
@@ -1541,6 +1648,7 @@ gl_step,0,0,4	script	Cofre T3#dcp_gl_step	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gl_step$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gl_step");
 	initnpctimer;
 	end;
@@ -1562,6 +1670,7 @@ glast_01,0,0,4	script	Cofre T1#dcp_glast_01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_glast_01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "glast_01");
 	initnpctimer;
 	end;
@@ -1583,6 +1692,7 @@ gld2_ald,0,0,4	script	Cofre T5#dcp_gld2_ald	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld2_ald$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld2_ald");
 	initnpctimer;
 	end;
@@ -1604,6 +1714,7 @@ gld2_gef,0,0,4	script	Cofre T5#dcp_gld2_gef	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld2_gef$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld2_gef");
 	initnpctimer;
 	end;
@@ -1625,6 +1736,7 @@ gld2_pay,0,0,4	script	Cofre T5#dcp_gld2_pay	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld2_pay$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld2_pay");
 	initnpctimer;
 	end;
@@ -1646,6 +1758,7 @@ gld2_prt,0,0,4	script	Cofre T5#dcp_gld2_prt	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld2_prt$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld2_prt");
 	initnpctimer;
 	end;
@@ -1667,6 +1780,7 @@ gld_dun01,0,0,4	script	Cofre T5#dcp_gld_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun01");
 	initnpctimer;
 	end;
@@ -1688,6 +1802,7 @@ gld_dun01_2,0,0,4	script	Cofre T5#dcp_gld_dun01_2	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld_dun01_2$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun01_2");
 	initnpctimer;
 	end;
@@ -1709,6 +1824,7 @@ gld_dun02,0,0,4	script	Cofre T5#dcp_gld_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun02");
 	initnpctimer;
 	end;
@@ -1730,6 +1846,7 @@ gld_dun02_2,0,0,4	script	Cofre T5#dcp_gld_dun02_2	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld_dun02_2$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun02_2");
 	initnpctimer;
 	end;
@@ -1751,6 +1868,7 @@ gld_dun03,0,0,4	script	Cofre T4#dcp_gld_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun03");
 	initnpctimer;
 	end;
@@ -1772,6 +1890,7 @@ gld_dun03_2,0,0,4	script	Cofre T5#dcp_gld_dun03_2	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld_dun03_2$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun03_2");
 	initnpctimer;
 	end;
@@ -1793,6 +1912,7 @@ gld_dun04,0,0,4	script	Cofre T4#dcp_gld_dun04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld_dun04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun04");
 	initnpctimer;
 	end;
@@ -1814,6 +1934,7 @@ gld_dun04_2,0,0,4	script	Cofre T5#dcp_gld_dun04_2	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gld_dun04_2$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gld_dun04_2");
 	initnpctimer;
 	end;
@@ -1835,6 +1956,7 @@ gon_dun01,0,0,4	script	Cofre T3#dcp_gon_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gon_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gon_dun01");
 	initnpctimer;
 	end;
@@ -1856,6 +1978,7 @@ gon_dun02,0,0,4	script	Cofre T3#dcp_gon_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gon_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gon_dun02");
 	initnpctimer;
 	end;
@@ -1877,6 +2000,7 @@ gon_dun03,0,0,4	script	Cofre T3#dcp_gon_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_gon_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "gon_dun03");
 	initnpctimer;
 	end;
@@ -1898,6 +2022,7 @@ ice_dun01,0,0,4	script	Cofre T4#dcp_ice_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ice_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ice_dun01");
 	initnpctimer;
 	end;
@@ -1919,6 +2044,7 @@ ice_dun02,0,0,4	script	Cofre T4#dcp_ice_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ice_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ice_dun02");
 	initnpctimer;
 	end;
@@ -1940,6 +2066,7 @@ ice_dun03,0,0,4	script	Cofre T4#dcp_ice_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ice_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ice_dun03");
 	initnpctimer;
 	end;
@@ -1961,6 +2088,7 @@ in_sphinx1,0,0,4	script	Cofre T2#dcp_in_sphinx1	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_in_sphinx1$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "in_sphinx1");
 	initnpctimer;
 	end;
@@ -1982,6 +2110,7 @@ in_sphinx2,0,0,4	script	Cofre T3#dcp_in_sphinx2	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_in_sphinx2$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "in_sphinx2");
 	initnpctimer;
 	end;
@@ -2003,6 +2132,7 @@ in_sphinx3,0,0,4	script	Cofre T3#dcp_in_sphinx3	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_in_sphinx3$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "in_sphinx3");
 	initnpctimer;
 	end;
@@ -2024,6 +2154,7 @@ in_sphinx4,0,0,4	script	Cofre T3#dcp_in_sphinx4	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_in_sphinx4$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "in_sphinx4");
 	initnpctimer;
 	end;
@@ -2045,6 +2176,7 @@ in_sphinx5,0,0,4	script	Cofre T3#dcp_in_sphinx5	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_in_sphinx5$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "in_sphinx5");
 	initnpctimer;
 	end;
@@ -2066,6 +2198,7 @@ iz_d04_i,0,0,4	script	Cofre T5#dcp_iz_d04_i	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_iz_d04_i$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_d04_i");
 	initnpctimer;
 	end;
@@ -2087,6 +2220,7 @@ iz_d05_i,0,0,4	script	Cofre T6#dcp_iz_d05_i	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_iz_d05_i$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_d05_i");
 	initnpctimer;
 	end;
@@ -2108,6 +2242,7 @@ iz_dun00,0,0,4	script	Cofre T1#dcp_iz_dun00	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_iz_dun00$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun00");
 	initnpctimer;
 	end;
@@ -2129,6 +2264,7 @@ iz_dun01,0,0,4	script	Cofre T1#dcp_iz_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_iz_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun01");
 	initnpctimer;
 	end;
@@ -2150,6 +2286,7 @@ iz_dun02,0,0,4	script	Cofre T2#dcp_iz_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_iz_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun02");
 	initnpctimer;
 	end;
@@ -2171,6 +2308,7 @@ iz_dun03,0,0,4	script	Cofre T2#dcp_iz_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_iz_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun03");
 	initnpctimer;
 	end;
@@ -2192,6 +2330,7 @@ iz_dun04,0,0,4	script	Cofre T2#dcp_iz_dun04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_iz_dun04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun04");
 	initnpctimer;
 	end;
@@ -2213,6 +2352,7 @@ iz_dun05,0,0,4	script	Cofre T4#dcp_iz_dun05	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_iz_dun05$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "iz_dun05");
 	initnpctimer;
 	end;
@@ -2234,6 +2374,7 @@ jupe_core,0,0,4	script	Cofre T4#dcp_jupe_core	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_jupe_core$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "jupe_core");
 	initnpctimer;
 	end;
@@ -2255,6 +2396,7 @@ juperos_01,0,0,4	script	Cofre T4#dcp_juperos_01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_juperos_01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "juperos_01");
 	initnpctimer;
 	end;
@@ -2276,6 +2418,7 @@ juperos_02,0,0,4	script	Cofre T4#dcp_juperos_02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_juperos_02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "juperos_02");
 	initnpctimer;
 	end;
@@ -2297,6 +2440,7 @@ kh_dun01,0,0,4	script	Cofre T4#dcp_kh_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_kh_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "kh_dun01");
 	initnpctimer;
 	end;
@@ -2318,6 +2462,7 @@ kh_dun02,0,0,4	script	Cofre T4#dcp_kh_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_kh_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "kh_dun02");
 	initnpctimer;
 	end;
@@ -2339,6 +2484,7 @@ lhz_dun01,0,0,4	script	Cofre T4#dcp_lhz_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_lhz_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lhz_dun01");
 	initnpctimer;
 	end;
@@ -2360,6 +2506,7 @@ lhz_dun02,0,0,4	script	Cofre T5#dcp_lhz_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_lhz_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lhz_dun02");
 	initnpctimer;
 	end;
@@ -2381,6 +2528,7 @@ lhz_dun03,0,0,4	script	Cofre T5#dcp_lhz_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_lhz_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lhz_dun03");
 	initnpctimer;
 	end;
@@ -2402,6 +2550,7 @@ lhz_dun04,0,0,4	script	Cofre T5#dcp_lhz_dun04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_lhz_dun04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lhz_dun04");
 	initnpctimer;
 	end;
@@ -2423,6 +2572,7 @@ lou_dun01,0,0,4	script	Cofre T3#dcp_lou_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_lou_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lou_dun01");
 	initnpctimer;
 	end;
@@ -2444,6 +2594,7 @@ lou_dun02,0,0,4	script	Cofre T3#dcp_lou_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_lou_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lou_dun02");
 	initnpctimer;
 	end;
@@ -2465,6 +2616,7 @@ lou_dun03,0,0,4	script	Cofre T3#dcp_lou_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_lou_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "lou_dun03");
 	initnpctimer;
 	end;
@@ -2486,6 +2638,7 @@ mag_dun01,0,0,4	script	Cofre T4#dcp_mag_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_mag_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mag_dun01");
 	initnpctimer;
 	end;
@@ -2507,6 +2660,7 @@ mag_dun02,0,0,4	script	Cofre T4#dcp_mag_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_mag_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mag_dun02");
 	initnpctimer;
 	end;
@@ -2528,6 +2682,7 @@ mag_dun03,0,0,4	script	Cofre T6#dcp_mag_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_mag_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mag_dun03");
 	initnpctimer;
 	end;
@@ -2549,6 +2704,7 @@ mal_dun01,0,0,4	script	Cofre T3#dcp_mal_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_mal_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mal_dun01");
 	initnpctimer;
 	end;
@@ -2570,6 +2726,7 @@ mjo_dun01,0,0,4	script	Cofre T1#dcp_mjo_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_mjo_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mjo_dun01");
 	initnpctimer;
 	end;
@@ -2591,6 +2748,7 @@ mjo_dun02,0,0,4	script	Cofre T2#dcp_mjo_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_mjo_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mjo_dun02");
 	initnpctimer;
 	end;
@@ -2612,6 +2770,7 @@ mjo_dun03,0,0,4	script	Cofre T2#dcp_mjo_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_mjo_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mjo_dun03");
 	initnpctimer;
 	end;
@@ -2633,6 +2792,7 @@ moc_pryd01,0,0,4	script	Cofre T1#dcp_moc_pryd01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_moc_pryd01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd01");
 	initnpctimer;
 	end;
@@ -2654,6 +2814,7 @@ moc_pryd02,0,0,4	script	Cofre T2#dcp_moc_pryd02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_moc_pryd02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd02");
 	initnpctimer;
 	end;
@@ -2675,6 +2836,7 @@ moc_pryd03,0,0,4	script	Cofre T2#dcp_moc_pryd03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_moc_pryd03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd03");
 	initnpctimer;
 	end;
@@ -2696,6 +2858,7 @@ moc_pryd04,0,0,4	script	Cofre T2#dcp_moc_pryd04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_moc_pryd04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd04");
 	initnpctimer;
 	end;
@@ -2717,6 +2880,7 @@ moc_pryd05,0,0,4	script	Cofre T2#dcp_moc_pryd05	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_moc_pryd05$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd05");
 	initnpctimer;
 	end;
@@ -2738,6 +2902,7 @@ moc_pryd06,0,0,4	script	Cofre T3#dcp_moc_pryd06	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_moc_pryd06$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_pryd06");
 	initnpctimer;
 	end;
@@ -2759,6 +2924,7 @@ moc_prydn1,0,0,4	script	Cofre T4#dcp_moc_prydn1	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_moc_prydn1$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_prydn1");
 	initnpctimer;
 	end;
@@ -2780,6 +2946,7 @@ moc_prydn2,0,0,4	script	Cofre T5#dcp_moc_prydn2	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_moc_prydn2$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "moc_prydn2");
 	initnpctimer;
 	end;
@@ -2801,6 +2968,7 @@ mosk_dun01,0,0,4	script	Cofre T3#dcp_mosk_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_mosk_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mosk_dun01");
 	initnpctimer;
 	end;
@@ -2822,6 +2990,7 @@ mosk_dun02,0,0,4	script	Cofre T3#dcp_mosk_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_mosk_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mosk_dun02");
 	initnpctimer;
 	end;
@@ -2843,6 +3012,7 @@ mosk_dun03,0,0,4	script	Cofre T3#dcp_mosk_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_mosk_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "mosk_dun03");
 	initnpctimer;
 	end;
@@ -2864,6 +3034,7 @@ nameless_n,0,0,4	script	Cofre T4#dcp_nameless_n	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_nameless_n$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "nameless_n");
 	initnpctimer;
 	end;
@@ -2885,6 +3056,7 @@ nyd_dun01,0,0,4	script	Cofre T4#dcp_nyd_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_nyd_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "nyd_dun01");
 	initnpctimer;
 	end;
@@ -2906,6 +3078,7 @@ odin_tem01,0,0,4	script	Cofre T3#dcp_odin_tem01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_odin_tem01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "odin_tem01");
 	initnpctimer;
 	end;
@@ -2927,6 +3100,7 @@ odin_tem02,0,0,4	script	Cofre T4#dcp_odin_tem02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_odin_tem02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "odin_tem02");
 	initnpctimer;
 	end;
@@ -2948,6 +3122,7 @@ odin_tem03,0,0,4	script	Cofre T3#dcp_odin_tem03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_odin_tem03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "odin_tem03");
 	initnpctimer;
 	end;
@@ -2969,6 +3144,7 @@ orcsdun01,0,0,4	script	Cofre T2#dcp_orcsdun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_orcsdun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "orcsdun01");
 	initnpctimer;
 	end;
@@ -2990,6 +3166,7 @@ orcsdun02,0,0,4	script	Cofre T2#dcp_orcsdun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_orcsdun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "orcsdun02");
 	initnpctimer;
 	end;
@@ -3011,6 +3188,7 @@ pay_dun00,0,0,4	script	Cofre T1#dcp_pay_dun00	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_pay_dun00$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "pay_dun00");
 	initnpctimer;
 	end;
@@ -3032,6 +3210,7 @@ pay_dun01,0,0,4	script	Cofre T1#dcp_pay_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_pay_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "pay_dun01");
 	initnpctimer;
 	end;
@@ -3053,6 +3232,7 @@ pay_dun02,0,0,4	script	Cofre T2#dcp_pay_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_pay_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "pay_dun02");
 	initnpctimer;
 	end;
@@ -3074,6 +3254,7 @@ pay_dun03,0,0,4	script	Cofre T2#dcp_pay_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_pay_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "pay_dun03");
 	initnpctimer;
 	end;
@@ -3095,6 +3276,7 @@ pay_dun04,0,0,4	script	Cofre T2#dcp_pay_dun04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_pay_dun04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "pay_dun04");
 	initnpctimer;
 	end;
@@ -3116,6 +3298,7 @@ prt_maze01,0,0,4	script	Cofre T1#dcp_prt_maze01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_prt_maze01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_maze01");
 	initnpctimer;
 	end;
@@ -3137,6 +3320,7 @@ prt_maze02,0,0,4	script	Cofre T1#dcp_prt_maze02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_prt_maze02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_maze02");
 	initnpctimer;
 	end;
@@ -3158,6 +3342,7 @@ prt_maze03,0,0,4	script	Cofre T2#dcp_prt_maze03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_prt_maze03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_maze03");
 	initnpctimer;
 	end;
@@ -3179,6 +3364,7 @@ prt_mz03_i,0,0,4	script	Cofre T6#dcp_prt_mz03_i	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_prt_mz03_i$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_mz03_i");
 	initnpctimer;
 	end;
@@ -3200,6 +3386,7 @@ prt_prison,0,0,4	script	Cofre T5#dcp_prt_prison	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_prt_prison$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_prison");
 	initnpctimer;
 	end;
@@ -3221,6 +3408,7 @@ prt_sewb1,0,0,4	script	Cofre T1#dcp_prt_sewb1	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_prt_sewb1$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_sewb1");
 	initnpctimer;
 	end;
@@ -3242,6 +3430,7 @@ prt_sewb2,0,0,4	script	Cofre T1#dcp_prt_sewb2	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_prt_sewb2$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_sewb2");
 	initnpctimer;
 	end;
@@ -3263,6 +3452,7 @@ prt_sewb3,0,0,4	script	Cofre T1#dcp_prt_sewb3	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_prt_sewb3$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_sewb3");
 	initnpctimer;
 	end;
@@ -3284,6 +3474,7 @@ prt_sewb4,0,0,4	script	Cofre T1#dcp_prt_sewb4	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_prt_sewb4$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "prt_sewb4");
 	initnpctimer;
 	end;
@@ -3305,6 +3496,7 @@ ra_san01,0,0,4	script	Cofre T5#dcp_ra_san01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ra_san01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ra_san01");
 	initnpctimer;
 	end;
@@ -3326,6 +3518,7 @@ ra_san02,0,0,4	script	Cofre T5#dcp_ra_san02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ra_san02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ra_san02");
 	initnpctimer;
 	end;
@@ -3347,6 +3540,7 @@ ra_san03,0,0,4	script	Cofre T5#dcp_ra_san03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ra_san03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ra_san03");
 	initnpctimer;
 	end;
@@ -3368,6 +3562,7 @@ ra_san04,0,0,4	script	Cofre T5#dcp_ra_san04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ra_san04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ra_san04");
 	initnpctimer;
 	end;
@@ -3389,6 +3584,7 @@ ra_san05,0,0,4	script	Cofre T5#dcp_ra_san05	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_ra_san05$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "ra_san05");
 	initnpctimer;
 	end;
@@ -3410,6 +3606,7 @@ schg_dun01,0,0,4	script	Cofre T4#dcp_schg_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_schg_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "schg_dun01");
 	initnpctimer;
 	end;
@@ -3431,6 +3628,7 @@ tha_t01,0,0,4	script	Cofre T3#dcp_tha_t01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t01");
 	initnpctimer;
 	end;
@@ -3452,6 +3650,7 @@ tha_t02,0,0,4	script	Cofre T4#dcp_tha_t02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t02");
 	initnpctimer;
 	end;
@@ -3473,6 +3672,7 @@ tha_t03,0,0,4	script	Cofre T4#dcp_tha_t03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t03");
 	initnpctimer;
 	end;
@@ -3494,6 +3694,7 @@ tha_t04,0,0,4	script	Cofre T4#dcp_tha_t04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t04");
 	initnpctimer;
 	end;
@@ -3515,6 +3716,7 @@ tha_t05,0,0,4	script	Cofre T4#dcp_tha_t05	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t05$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t05");
 	initnpctimer;
 	end;
@@ -3536,6 +3738,7 @@ tha_t06,0,0,4	script	Cofre T4#dcp_tha_t06	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t06$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t06");
 	initnpctimer;
 	end;
@@ -3557,6 +3760,7 @@ tha_t07,0,0,4	script	Cofre T4#dcp_tha_t07	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t07$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t07");
 	initnpctimer;
 	end;
@@ -3578,6 +3782,7 @@ tha_t08,0,0,4	script	Cofre T4#dcp_tha_t08	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t08$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t08");
 	initnpctimer;
 	end;
@@ -3599,6 +3804,7 @@ tha_t09,0,0,4	script	Cofre T5#dcp_tha_t09	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t09$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t09");
 	initnpctimer;
 	end;
@@ -3620,6 +3826,7 @@ tha_t10,0,0,4	script	Cofre T5#dcp_tha_t10	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t10$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t10");
 	initnpctimer;
 	end;
@@ -3641,6 +3848,7 @@ tha_t11,0,0,4	script	Cofre T5#dcp_tha_t11	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t11$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t11");
 	initnpctimer;
 	end;
@@ -3662,6 +3870,7 @@ tha_t12,0,0,4	script	Cofre T5#dcp_tha_t12	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tha_t12$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tha_t12");
 	initnpctimer;
 	end;
@@ -3683,6 +3892,7 @@ thor_v01,0,0,4	script	Cofre T5#dcp_thor_v01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_thor_v01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "thor_v01");
 	initnpctimer;
 	end;
@@ -3704,6 +3914,7 @@ thor_v02,0,0,4	script	Cofre T5#dcp_thor_v02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_thor_v02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "thor_v02");
 	initnpctimer;
 	end;
@@ -3725,6 +3936,7 @@ thor_v03,0,0,4	script	Cofre T5#dcp_thor_v03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_thor_v03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "thor_v03");
 	initnpctimer;
 	end;
@@ -3746,6 +3958,7 @@ treasure01,0,0,4	script	Cofre T1#dcp_treasure01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_treasure01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "treasure01");
 	initnpctimer;
 	end;
@@ -3767,6 +3980,7 @@ treasure02,0,0,4	script	Cofre T2#dcp_treasure02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_treasure02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "treasure02");
 	initnpctimer;
 	end;
@@ -3788,6 +4002,7 @@ tur_dun01,0,0,4	script	Cofre T3#dcp_tur_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tur_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tur_dun01");
 	initnpctimer;
 	end;
@@ -3809,6 +4024,7 @@ tur_dun02,0,0,4	script	Cofre T4#dcp_tur_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tur_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tur_dun02");
 	initnpctimer;
 	end;
@@ -3830,6 +4046,7 @@ tur_dun03,0,0,4	script	Cofre T4#dcp_tur_dun03	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tur_dun03$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tur_dun03");
 	initnpctimer;
 	end;
@@ -3851,6 +4068,7 @@ tur_dun04,0,0,4	script	Cofre T4#dcp_tur_dun04	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_tur_dun04$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "tur_dun04");
 	initnpctimer;
 	end;
@@ -3872,6 +4090,7 @@ um_dun01,0,0,4	script	Cofre T2#dcp_um_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_um_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "um_dun01");
 	initnpctimer;
 	end;
@@ -3893,6 +4112,7 @@ um_dun02,0,0,4	script	Cofre T3#dcp_um_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_um_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "um_dun02");
 	initnpctimer;
 	end;
@@ -3914,6 +4134,7 @@ xmas_dun01,0,0,4	script	Cofre T1#dcp_xmas_dun01	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_xmas_dun01$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "xmas_dun01");
 	initnpctimer;
 	end;
@@ -3935,6 +4156,7 @@ xmas_dun02,0,0,4	script	Cofre T1#dcp_xmas_dun02	3075,{
 OnInit:
 	.opened = 0;
 	.relocated = 0;
+	set $@dc_npc_xmas_dun02$, strnpcinfo(3);
 	callfunc("F_DungeonChest_Move", strnpcinfo(3), "xmas_dun02");
 	initnpctimer;
 	end;

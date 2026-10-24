@@ -7,7 +7,7 @@ Prototipo en `my-mods/`.
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.5.0 (la de `mod.json`): anota qué monstruo dejó cada herida (`wd_src$`, solo las de un monstruo) y expone `F_Wounds_CureFrom(clase)`, que quita todas las que dejó esa clase; la usa [`nemesis`](../nemesis/README.md) al vencerlo. Sin `nemesis` no cambia nada. Las heridas recibidas con una versión anterior no tienen origen y no se curan así. La 0.4.1: la primera vez que el personaje recibe cada herida o maldición publica un relato Medio en [`adventure`](../adventure/README.md) con `F_Adv_Experience` (clave `wound:<id>`, Tier del mapa), si `adventure` está activo; sin él no cambia nada. La 0.4.0: presión ([`BALANCE.md`](../BALANCE.md#tope-de-presión), D18). Publica `@pr_wounds` (número de heridas activas) y, si la presión total de todos los mods pasa de 6, reduce el efecto de cada herida en proporción (`× 6 / total`, mínimo 1 punto). La 0.3.1: El arreglo de `rand(1)` de la 0.3.0 no bastó: lo protegía `if (.@free == 1 || rand(.@free) == 0)`, pero en rAthena `||` evalúa los dos lados y `rand(1)` se seguía llamando. La 0.3.1 lo separa en dos `if`. La 0.3.0: el `addtimer` por personaje (`OnTick`) pasa a un solo reloj del NPC con `attachrid` (error `event queue is full`). Además arregla dos fallos que impedían recibir la herida al morir con la 0.2.2. El primero: `getnpcid("Clima#clima")` se llamaba sin el tipo y rAthena pide `getnpcid(0, "<nombre>")`. El segundo: `rand(1)` falla en rAthena («range (0) is too small») y cortaba el sorteo cuando quedaba una sola candidata libre. La 0.2.1 **tumbaba el map-server** al morir a manos de un monstruo: llamaba `getunitdata(gid, UDT_CLASS)`, pero `getunitdata` recibe un array donde escribe, y rAthena intentó escribir en la constante (crash en `pc_setregistry`, desde `buildin_getunitdata`). La 0.2.2 llena un array y lee `UMOB_CLASS`, y comprueba con `getunittype(...) == BL_MOB` que el asesino es un monstruo, en vez de adivinarlo por el tamaño del GID. La 0.2.0 usaba el resultado de `explode` como número de partes, pero en rAthena `explode` no devuelve nada (`.@n` quedaba vacío; log: `op_2: invalid data for operator C_GE`, `Data: nothing`). Por eso `@heridas` no listaba nada, morir no daba heridas, el Posadero decía «no se cura con una cama» y el Sacerdote solo ofrecía «Nada por ahora». La 0.2.1 cuenta con `getarraysize`. La 0.1.0 no cargó por un `switch` con cadenas
+- **Versión:** 0.6.1 (la de `mod.json`): lee el clima activo con `F_Clima_Now` de `clima` (0.4.0 o posterior) en vez de las matrices internas de `Clima#clima`; mismo resultado. Y dos valores de prueba pasan a Settings (ver «Ajustes»); por defecto, igual que antes. La 0.6.0: dos enganches para [`campfire`](../campfire/README.md), sin efecto si no está. **Venda** (D29): `F_Wounds_Ease(id)` marca una herida (no una maldición) como vendada en `wd_eased$`, y su castigo queda a la mitad (mínimo 1) hasta curarla; `@heridas` la marca «(vendada)». **Descansado:** si `@cf_ward` es 1 y `@cf_rest_until` no ha pasado, la primera muerte fuera de una ciudad no deja herida y gasta `@cf_ward`. La 0.5.0: anota qué monstruo dejó cada herida (`wd_src$`, solo las de un monstruo) y expone `F_Wounds_CureFrom(clase)`, que quita todas las que dejó esa clase; la usa [`nemesis`](../nemesis/README.md) al vencerlo. Sin `nemesis` no cambia nada. Las heridas recibidas con una versión anterior no tienen origen y no se curan así. La 0.4.1: la primera vez que el personaje recibe cada herida o maldición publica un relato Medio en [`adventure`](../adventure/README.md) con `F_Adv_Experience` (clave `wound:<id>`, Tier del mapa), si `adventure` está activo; sin él no cambia nada. La 0.4.0: presión ([`BALANCE.md`](../BALANCE.md#tope-de-presión), D18). Publica `@pr_wounds` (número de heridas activas) y, si la presión total de todos los mods pasa de 6, reduce el efecto de cada herida en proporción (`× 6 / total`, mínimo 1 punto). La 0.3.1: El arreglo de `rand(1)` de la 0.3.0 no bastó: lo protegía `if (.@free == 1 || rand(.@free) == 0)`, pero en rAthena `||` evalúa los dos lados y `rand(1)` se seguía llamando. La 0.3.1 lo separa en dos `if`. La 0.3.0: el `addtimer` por personaje (`OnTick`) pasa a un solo reloj del NPC con `attachrid` (error `event queue is full`). Además arregla dos fallos que impedían recibir la herida al morir con la 0.2.2. El primero: `getnpcid("Clima#clima")` se llamaba sin el tipo y rAthena pide `getnpcid(0, "<nombre>")`. El segundo: `rand(1)` falla en rAthena («range (0) is too small») y cortaba el sorteo cuando quedaba una sola candidata libre. La 0.2.1 **tumbaba el map-server** al morir a manos de un monstruo: llamaba `getunitdata(gid, UDT_CLASS)`, pero `getunitdata` recibe un array donde escribe, y rAthena intentó escribir en la constante (crash en `pc_setregistry`, desde `buildin_getunitdata`). La 0.2.2 llena un array y lee `UMOB_CLASS`, y comprueba con `getunittype(...) == BL_MOB` que el asesino es un monstruo, en vez de adivinarlo por el tamaño del GID. La 0.2.0 usaba el resultado de `explode` como número de partes, pero en rAthena `explode` no devuelve nada (`.@n` quedaba vacío; log: `op_2: invalid data for operator C_GE`, `Data: nothing`). Por eso `@heridas` no listaba nada, morir no daba heridas, el Posadero decía «no se cura con una cama» y el Sacerdote solo ofrecía «Nada por ahora». La 0.2.1 cuenta con `getarraysize`. La 0.1.0 no cargó por un `switch` con cadenas
 - **Probado en el juego (0.2.0, 2026-10-17):** el archivo carga; Posadero y Sacerdote aparecen en Prontera; `@heridas` sin heridas responde; `@herida 1` anota la herida
 - **Probado en el juego (0.2.1, 2026-10-17):** la herida se guarda entre sesiones; `@heridas` la lista; *Cicatriz del lobo* resta AGI (unos 8) y se recupera al curarla; el Posadero y el Sacerdote curan y cobran zeny. Morir en `ice_dun02` tumbó el servidor (arreglado en 0.2.2)
 - **Probado en el juego (0.2.2, 2026-10-17):** morir en `ice_dun02` ya no tumba el servidor; `killerrid` funciona (log: `killerrid 110028467 clase 1775 raza 0 nombre Snowier`, candidatas `5|2` de la raza informe). No dio herida por los dos fallos arreglados en 0.3.0
@@ -15,8 +15,9 @@ Actualízala al cambiar el mod o al probarlo.
 - **Probado en el juego (0.3.1, 2026-10-17):** morir en `ice_dun02` a manos de un monstruo da una de las heridas de su raza
 - **Probado en el juego (0.3.1, 2026-10-17):** con 3 heridas, morir no da una cuarta; las notas del diario salen al recibir una herida y al curarla (posada y templo); morir en `prt_fild11` con un evento de clima activo, a manos de un Elusive Goblin, dio herida; el log muestra `candidatas 8|4|2 clima 2`: la herida del clima (Veneno latente, por Lluvia tóxica) entra en el sorteo
 - **Probado en el juego (0.4.1, 2026-10-23),** con [`SESION-DE-PRUEBA.md`](../SESION-DE-PRUEBA.md): la herida por bioma (`@die` en `prt_fild08`, sin asesino; log `candidatas 5|2 clima 0`); el relato «Primera vez con …» de `adventure` justo después de «Has quedado marcado»; el Posadero cura sin contar los relatos (D26); el tope (dos heridas cuentan 2 en `@presion`, y la *Cicatriz del lobo* resta menos AGI con el tope)
-- **Sin probar:** la herida de la marca de `expedition-board`; ver «Cómo probarlo» y «Suposiciones que hay que comprobar en el juego»
+- **Probado en el juego (0.6.1, 2026-10-23):** la herida de la marca: si la marca de `expedition-board` te mata, siempre deja *Marca de la presa* (log `marca 9`), y la marca no se vuelve tu némesis. El Posadero y el Sacerdote de Geffen, Payon, Morocc, Alberta y Aldebaran se ven y responden
 - **Probado en el juego (0.5.0, 2026-10-23):** con «Probarlo» de [`nemesis`](../nemesis/README.md#probarlo): el origen de cada herida (`wd_src$`) y `F_Wounds_CureFrom`, que cierra las heridas del némesis vencido
+- **Sin probar (0.6.0):** la venda y la protección de Descansado; ver «Probarlo» de [`campfire`](../campfire/README.md#probarlo)
 - **Actualizado:** 2026-10-23
 
 Morir fuera de una ciudad puede dejar una secuela con nombre ("Cicatriz del
@@ -105,6 +106,16 @@ que entra en cada uno con `attachrid` y solo hace algo si tiene heridas. No usa
 `addtimer` por personaje: esas cadenas morían durante los diálogos (ver
 [`CONVENTIONS.md`](../CONVENTIONS.md#temporizadores)).
 
+## Ajustes
+
+En Settings → Mods → `wounds`; cambian al pulsar **Apply**. Son valores de
+prueba.
+
+| Ajuste | Por defecto | Qué cambia |
+|---|---:|---|
+| `death_chance` | 100 | % de que una muerte fuera de una ciudad deje herida |
+| `price_pct` | 100 | escala lo que cobran el Posadero y el Sacerdote (mínimo 10) |
+
 ## Comandos
 
 - `@heridas`: lista las heridas del personaje.
@@ -117,6 +128,13 @@ que entra en cada uno con `attachrid` y solo hace algo si tiene heridas. No usa
 y maldiciones que dejó un monstruo de esa clase y devuelve cuántas. Comprueba
 antes `getnpcid(0, "wounds_mgr")`. Las demás `F_Wounds_*` también son
 globales; `wd_src$` (`id:clase|…`) es interna.
+
+`F_Wounds_Ease(id)` (0.6.0) venda una herida, que penaliza la mitad hasta
+curarla, y devuelve 1 si lo hizo; `F_Wounds_IsEased(id)` dice si ya lo está.
+La usa `campfire`. `wd_eased$` (`id|…`) es interna.
+
+Descansado de `campfire`: `wounds` lee `@cf_ward` y `@cf_rest_until` en
+`OnPCDieEvent` y pone `@cf_ward` a 0 al gastarlo.
 
 ## Qué falta (en este orden)
 
@@ -168,9 +186,9 @@ Sin implementar. El porqué está en [`BALANCE.md`](../BALANCE.md) y
   `[wddebug]` con `killerrid`, clase y raza. Si `killerrid` sale siempre 0 o la
   clase/raza no cuadra, el origen "quién mató" no funciona y cae en el bioma;
   no rompe nada.
-- **Clima**: lee las matrices de `Clima#clima` (`.map$`, `.event_active`,
-  `.combination`) con `getvariableofnpc`. Si `clima` reordena sus eventos, hay que
-  actualizar `.clima_wound[]`.
+- **Clima**: lee el evento activo del mapa con `F_Clima_Now` (`clima` 0.4.0 o
+  posterior). Los ids de combinación son los de `clima`: si los reordena, hay
+  que actualizar `.clima_wound[]`.
 - **expedition-board**: lee `$@eb_mark[char_id]`, la variable de servidor que ese
   mod documenta.
 - `@herida` usa `bindatcmd` con nivel de grupo mínimo 1: ajusta si tu cuenta de

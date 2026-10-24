@@ -1,10 +1,14 @@
 {
   "name": "wounds",
-  "version": "0.5.0",
+  "version": "0.6.1",
   "author": "Alejandro",
   "description": "Heridas y maldiciones con nombre: morir fuera de una ciudad deja una secuela que debilita al personaje hasta curarla en una posada (zeny) o en el templo (donación).",
   "requires": {
     "app": ">=1.5.2",
     "era": "any"
-  }
+  },
+  "settings": [
+    { "key": "death_chance", "type": "number", "default": 100, "min": 0, "max": 100, "label": "Probabilidad de herida al morir (%)", "description": "Valor de prueba. Por cada muerte fuera de una ciudad." },
+    { "key": "price_pct", "type": "number", "default": 100, "min": 10, "max": 1000, "label": "Precio de las curas (%)", "description": "Valor de prueba. Escala lo que cobran el Posadero y el Sacerdote; 100 = los precios del README." }
+  ]
 }

@@ -42,8 +42,8 @@ Todos los de `my-mods/` salvo los de referencia. El estado de cada uno, en la
 sección «Estado» de su README.
 
 `world-atlas`, `survival`, `clima`, `temperature`, `wounds`,
-`adventure`, `expedition-board`, `dungeon-chest`, `nemesis` y
-`tavern-rumors`. **No se activan:** `affix-forge` y `arpg-equipments`
+`adventure`, `expedition-board`, `dungeon-chest`, `nemesis`,
+`tavern-rumors`, `campfire` y `refuges`. **No se activan:** `affix-forge` y `arpg-equipments`
 (referencia). Retirados el 2026-10-23: `travel-journal` (lo sustituye
 `adventure`, D12) y `world-atlas-test` (ahora es `@atlas`, de
 `world-atlas`).

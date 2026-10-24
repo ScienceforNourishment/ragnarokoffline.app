@@ -27,9 +27,13 @@ Actualízala al cambiar el mod o al probarlo.
   seguras ni en los interiores del atlas; que todo sigue tras un diálogo de un
   minuto. Los tres bonos dudosos (`bNoRegen,3`, `bAtkRate` y `bSpeedRate`
   negativos) funcionan
-- **Sin probar:** la integración con `clima` tras su paso a biomas (pérdida
-  doble con Calor intenso o Frío extremo); llenar la cantimplora en el agua
-  medida del atlas 0.2.1 (`prt_fild00 267,240`)
+- **Probado en el juego (1.2.0, 2026-10-23):** la sed baja el doble con
+  Calor intenso en `moc_fild11` y normal sin el evento; la cantimplora llena
+  en `prt_fild00 267,240` y no en `izlu2dun`. Solo llena junto a agua que se
+  pisa (`cell_chkwater`): el agua honda, no caminable, no cuenta. Ver «Ojo
+  con `water`» en [`world-atlas`](../world-atlas/README.md#estado)
+- **Sin probar:** el hambre doble con Frío extremo en `mjolnir_12` (en esa
+  prueba no se apuntó)
 - **Actualizado:** 2026-10-23
 
 ## Qué incluye

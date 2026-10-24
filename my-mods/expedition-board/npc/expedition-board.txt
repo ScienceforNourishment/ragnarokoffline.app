@@ -16,7 +16,8 @@
 //   eb_qid       id del contrato activo, 0 si no hay
 //   eb_state     0 libre, 1 en curso, 2 cumplido, listo para entregar
 //   eb_prog      caceria: monstruos abatidos hasta ahora
-//   eb_hunt_mob  caceria en curso: id del monstruo a contar; 0 si no hay. Es lo
+//   eb_hunt_mob  caceria en curso: id del monstruo a contar; 0 si no hay. Cuenta
+//                tambien cualquier otro id con su mismo nombre (S_Hunt). Es lo
 //                primero que mira OnNPCKillEvent, que corre con CADA muerte
 //   eb_hunt_map$ caceria en curso: el mapa donde cuenta
 //   eb_gid       en desuso (la primera version guardaba aqui el GID); se pone a 0
@@ -292,16 +293,16 @@ OnMarkDead:
 // comparacion: sin nadie cazando en el servidor ($@eb_hunters 0) termina sin
 // mirar nada mas. Quien tiene caceria propia ya cuenta en $@eb_hunters, asi que
 // esa salida no le quita ninguna muerte. Si alguien caza, cuenta la del que
-// mata (eb_hunt_mob es 0 sin caceria, y nunca coincide) y, si tiene grupo, se
-// repasa a sus companeros conectados: cada uno cuenta si tiene esa misma
-// caceria y esta en el mismo mapa. Las lecturas de la tabla de contratos solo
+// mata (eb_hunt_mob es 0 sin caceria, y se salta) y, si tiene grupo, se
+// repasa a sus companeros conectados: cada uno cuenta si tiene caceria de esa
+// especie y esta en el mismo mapa. Las lecturas de la tabla de contratos solo
 // ocurren cuando una muerte cuenta.
 OnNPCKillEvent:
 	if ($@eb_hunters < 1)
 		end;
 	.@mob = killedrid;
 	.@map$ = strcharinfo(3);
-	if (.@mob == eb_hunt_mob)
+	if (eb_hunt_mob)
 		callsub S_Hunt, .@mob, .@map$;
 	.@pid = getcharid(1);
 	if (!.@pid)
@@ -315,7 +316,7 @@ OnNPCKillEvent:
 			continue;
 		if (!attachrid(.@aid[.@i]))
 			continue;
-		if (.@mob == eb_hunt_mob)
+		if (eb_hunt_mob)
 			callsub S_Hunt, .@mob, .@map$;
 	}
 	attachrid(.@self);
@@ -323,12 +324,19 @@ OnNPCKillEvent:
 
 // S_Hunt(mob id, map): suma una muerte a la caceria del personaje adjunto si es
 // de esa especie, en ese mapa y el esta en el. Avisa y completa al llegar al total.
+// La especie es el nombre: cuenta cualquier id que se llame exactamente igual que
+// eb_hunt_mob (Goblin 1122-1126), no uno de nombre parecido (Goblin Archer). Los
+// nombres solo se leen en el mapa de la caceria y si el id no coincide.
 S_Hunt:
 	if (eb_state != 1 || strcharinfo(3) != eb_hunt_map$ || strcharinfo(3) != getarg(1))
 		return;
+	.@name$ = getmonsterinfo(eb_hunt_mob, MOB_NAME);
+	if (getarg(0) != eb_hunt_mob) {
+		if (getmonsterinfo(getarg(0), MOB_NAME) != .@name$)
+			return;
+	}
 	eb_prog++;
 	.@need = getvariableofnpc(.count[eb_qid], "ExpeditionData");
-	.@name$ = getmonsterinfo(getarg(0), MOB_NAME);
 	if (eb_prog < .@need) {
 		dispbottom "Caceria: " + eb_prog + "/" + .@need + " " + .@name$ + ".";
 		return;

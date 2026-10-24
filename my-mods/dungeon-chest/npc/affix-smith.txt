@@ -1,0 +1,516 @@
+//===== Ragnarok Offline: dungeon-chest, Herrero de Afijos ==================
+//= Trabaja los afijos (random options) del equipo. Cuatro servicios, por
+//= zeny (ajustes smith_* del mod):
+//=   - pasar TODOS los afijos de una pieza a otra (la de origen se pierde),
+//=   - pasar UNO de los afijos a otra pieza (la de origen se pierde),
+//=   - quitar un afijo,
+//=   - volver a sortear los afijos de una pieza.
+//= Volver a sortear usa F_DungeonChest_Roll (dungeon-loot.txt): las mismas
+//= reglas que los cofres, con el Tier de la pieza y sin bioma.
+//=
+//= Portado del Affix Smith de affix-forge (MIT, Copyright rhwski; su forma de
+//= rehacer una pieza viene del Bonus Stat Crafter de ARPG Equipments Mod, MIT,
+//= Copyright 2026 Igor / Iguera). Ver «Créditos» en el README.
+//=
+//= Solo toca equipo sin equipar e identificado. Al rehacer una pieza conserva refinado,
+//= cartas, atributo, encantamientos, grado y si esta ligada. Variables
+//= temporales del personaje: @dc_sm_*.
+//===========================================================================
+
+prontera,155,187,4	script	Herrero de Afijos#dc	4_M_DWARF,{
+	// 0 pasar todos, 1 volver a sortear, 2 pasar uno, 3 quitar.
+	.@price[0] = callfunc("F_ModSetting", "dungeon-chest", "smith_move_all", 100000);
+	.@price[1] = callfunc("F_ModSetting", "dungeon-chest", "smith_reroll", 50000);
+	.@price[2] = callfunc("F_ModSetting", "dungeon-chest", "smith_move_one", 60000);
+	.@price[3] = callfunc("F_ModSetting", "dungeon-chest", "smith_remove", 30000);
+	mes "[Herrero de Afijos]";
+	mes "Puedo pasar afijos de una pieza a otra, quitar uno o volver a sortearlos.";
+	mes "Cada trabajo se paga en zeny.";
+	next;
+
+L_Main:
+	.@sel = select("Pasar TODOS los afijos a otra pieza:Pasar UN afijo a otra pieza:Quitar un afijo:Volver a sortear los afijos:¿Cuánto cuesta?:Irse");
+	if (.@sel == 6)
+		close;
+
+	if (.@sel == 5) {
+		mes "[Herrero de Afijos]";
+		mes "^0000FFPasar todos los afijos^000000";
+		mes callsub(L_CostLine, .@price[0]);
+		mes " ";
+		mes "^0000FFPasar un afijo^000000";
+		mes callsub(L_CostLine, .@price[2]);
+		mes " ";
+		mes "^0000FFQuitar un afijo^000000";
+		mes callsub(L_CostLine, .@price[3]);
+		mes " ";
+		mes "^0000FFVolver a sortear^000000";
+		mes callsub(L_CostLine, .@price[1]);
+		next;
+		goto L_Main;
+	}
+
+	// ------------------------------------------------------- pasar todos
+	if (.@sel == 1) {
+		getinventorylist;
+		.@n = callsub(L_Collect, 1, -1);
+		if (.@n < 1) {
+			mes "[Herrero de Afijos]";
+			mes "No llevas ninguna pieza identificada y sin equipar con afijos de donde sacarlos.";
+			close;
+		}
+		.@s = callsub(L_Choose, "¿De qué pieza saco los afijos? Se pierde.", .@n);
+		if (.@s < 0)
+			goto L_Main;
+		.@n = callsub(L_Collect, 2, .@s);
+		if (.@n < 1) {
+			mes "[Herrero de Afijos]";
+			mes "No llevas otra pieza identificada y sin equipar donde ponerlos.";
+			close;
+		}
+		.@t = callsub(L_Choose, "¿En qué pieza los pongo? Pierde los suyos.", .@n);
+		if (.@t < 0)
+			goto L_Main;
+		callsub L_ReadOpts, .@s, 0;
+		callsub L_ReadOpts, .@t, 5;
+
+		mes "[Herrero de Afijos]";
+		mes "^0000FFDe^000000 " + callsub(L_ItemLine, .@s) + " (se pierde)";
+		callsub L_OptLines, 0;
+		mes "^0000FFA^000000 " + callsub(L_ItemLine, .@t);
+		if (callsub(L_OptCount, .@t)) {
+			mes "Pierde los que tiene:";
+			callsub L_OptLines, 5;
+		}
+		mes " ";
+		mes callsub(L_CostLine, .@price[0]);
+		next;
+		if (Zeny < .@price[0]) {
+			mes "[Herrero de Afijos]";
+			mes "No te alcanza. Vuelve con el precio completo.";
+			close;
+		}
+		if (select("Hazlo:Ahora no") == 2)
+			goto L_Main;
+		// Se comprueba todo otra vez, y se cobra y se hace.
+		getinventorylist;
+		if (Zeny < .@price[0]) {
+			mes "[Herrero de Afijos]";
+			mes "Algo cambió en tu mochila. Prueba otra vez.";
+			close;
+		}
+		Zeny -= .@price[0];
+		cleararray @dc_sm_goid[0], 0, 5;
+		cleararray @dc_sm_goval[0], 0, 5;
+		cleararray @dc_sm_gopar[0], 0, 5;
+		for (.@k = 0; .@k < 5; .@k++) {
+			@dc_sm_goid[.@k] = @dc_sm_oid[.@k];
+			@dc_sm_goval[.@k] = @dc_sm_oval[.@k];
+			@dc_sm_gopar[.@k] = @dc_sm_opar[.@k];
+		}
+		callsub L_Swap, .@t, .@s;
+		specialeffect2 154;
+		mes "[Herrero de Afijos]";
+		mes "Listo. Los afijos están ahora en tu ^0000FF" + getitemname(@dc_sm_given) + "^000000.";
+		close;
+	}
+
+	// ---------------------------------------------------------- pasar uno
+	if (.@sel == 2) {
+		getinventorylist;
+		.@n = callsub(L_Collect, 1, -1);
+		if (.@n < 1) {
+			mes "[Herrero de Afijos]";
+			mes "No llevas ninguna pieza identificada y sin equipar con afijos de donde sacar uno.";
+			close;
+		}
+		.@s = callsub(L_Choose, "¿De qué pieza saco el afijo? La pieza se pierde.", .@n);
+		if (.@s < 0)
+			goto L_Main;
+		callsub L_ReadOpts, .@s, 0;
+		.@k = callsub(L_ChooseAffix, 0, "¿Qué afijo quieres llevarte?");
+		if (.@k < 0)
+			goto L_Main;
+		.@n = callsub(L_Collect, 2, .@s);
+		if (.@n < 1) {
+			mes "[Herrero de Afijos]";
+			mes "No llevas otra pieza identificada y sin equipar donde ponerlo.";
+			close;
+		}
+		.@t = callsub(L_Choose, "¿En qué pieza lo pongo?", .@n);
+		if (.@t < 0)
+			goto L_Main;
+		callsub L_ReadOpts, .@t, 5;
+
+		// Donde cae: sobre el mismo afijo si la pieza ya lo tiene; si no, en un
+		// hueco libre; si no hay, en el que el jugador ceda.
+		.@slot = -1;
+		for (.@j = 0; .@j < 5; .@j++)
+			if (@dc_sm_oid[5 + .@j] == @dc_sm_oid[.@k])
+				.@slot = .@j;
+		.@same = (.@slot >= 0);
+		for (.@j = 0; .@j < 5 && .@slot < 0; .@j++)
+			if (@dc_sm_oid[5 + .@j] < 1)
+				.@slot = .@j;
+		if (.@slot < 0) {
+			.@slot = callsub(L_ChooseAffix, 5, "Esa pieza ya tiene cinco afijos. ¿Cuál reemplaza el nuevo?");
+			if (.@slot < 0)
+				goto L_Main;
+		}
+
+		mes "[Herrero de Afijos]";
+		mes "^0000FFLlevar^000000 " + callsub(L_OptText, @dc_sm_oid[.@k], @dc_sm_oval[.@k]);
+		mes "^0000FFDe^000000 " + callsub(L_ItemLine, .@s) + " (se pierde)";
+		mes "^0000FFA^000000 " + callsub(L_ItemLine, .@t);
+		if (.@same)
+			mes "Ya tiene ese afijo: se cambia su valor.";
+		else if (@dc_sm_oid[5 + .@slot] > 0)
+			mes "Reemplaza a: " + callsub(L_OptText, @dc_sm_oid[5 + .@slot], @dc_sm_oval[5 + .@slot]);
+		mes " ";
+		mes callsub(L_CostLine, .@price[2]);
+		next;
+		if (Zeny < .@price[2]) {
+			mes "[Herrero de Afijos]";
+			mes "No te alcanza. Vuelve con el precio completo.";
+			close;
+		}
+		if (select("Hazlo:Ahora no") == 2)
+			goto L_Main;
+		getinventorylist;
+		if (Zeny < .@price[2]) {
+			mes "[Herrero de Afijos]";
+			mes "Algo cambió en tu mochila. Prueba otra vez.";
+			close;
+		}
+		Zeny -= .@price[2];
+		for (.@j = 0; .@j < 5; .@j++) {
+			@dc_sm_goid[.@j] = @dc_sm_oid[5 + .@j];
+			@dc_sm_goval[.@j] = @dc_sm_oval[5 + .@j];
+			@dc_sm_gopar[.@j] = @dc_sm_opar[5 + .@j];
+		}
+		@dc_sm_goid[.@slot] = @dc_sm_oid[.@k];
+		@dc_sm_goval[.@slot] = @dc_sm_oval[.@k];
+		@dc_sm_gopar[.@slot] = @dc_sm_opar[.@k];
+		callsub L_Compact;
+		callsub L_Swap, .@t, .@s;
+		specialeffect2 154;
+		mes "[Herrero de Afijos]";
+		mes "Listo. Tu ^0000FF" + getitemname(@dc_sm_given) + "^000000 lleva ahora:";
+		for (.@j = 0; .@j < 5; .@j++)
+			if (@dc_sm_goid[.@j] > 0)
+				mes "- " + callsub(L_OptText, @dc_sm_goid[.@j], @dc_sm_goval[.@j]);
+		close;
+	}
+
+	// ------------------------------------------------------------- quitar
+	if (.@sel == 3) {
+		getinventorylist;
+		.@n = callsub(L_Collect, 1, -1);
+		if (.@n < 1) {
+			mes "[Herrero de Afijos]";
+			mes "No llevas ninguna pieza identificada y sin equipar con afijos.";
+			close;
+		}
+		.@t = callsub(L_Choose, "¿De qué pieza quito un afijo?", .@n);
+		if (.@t < 0)
+			goto L_Main;
+		callsub L_ReadOpts, .@t, 5;
+		.@k = callsub(L_ChooseAffix, 5, "¿Qué afijo quito?");
+		if (.@k < 0)
+			goto L_Main;
+
+		mes "[Herrero de Afijos]";
+		mes "^0000FFQuitar^000000 " + callsub(L_OptText, @dc_sm_oid[5 + .@k], @dc_sm_oval[5 + .@k]);
+		mes "^0000FFDe^000000 " + callsub(L_ItemLine, .@t);
+		mes "Se queda con:";
+		.@left = 0;
+		for (.@j = 0; .@j < 5; .@j++) {
+			if (.@j == .@k || @dc_sm_oid[5 + .@j] < 1)
+				continue;
+			mes "  - " + callsub(L_OptText, @dc_sm_oid[5 + .@j], @dc_sm_oval[5 + .@j]);
+			.@left++;
+		}
+		if (!.@left)
+			mes "  (ninguno)";
+		mes " ";
+		mes callsub(L_CostLine, .@price[3]);
+		next;
+		if (Zeny < .@price[3]) {
+			mes "[Herrero de Afijos]";
+			mes "No te alcanza. Vuelve con el precio completo.";
+			close;
+		}
+		if (select("Quítalo:Ahora no") == 2)
+			goto L_Main;
+		getinventorylist;
+		if (Zeny < .@price[3]) {
+			mes "[Herrero de Afijos]";
+			mes "Algo cambió en tu mochila. Prueba otra vez.";
+			close;
+		}
+		Zeny -= .@price[3];
+		for (.@j = 0; .@j < 5; .@j++) {
+			@dc_sm_goid[.@j] = @dc_sm_oid[5 + .@j];
+			@dc_sm_goval[.@j] = @dc_sm_oval[5 + .@j];
+			@dc_sm_gopar[.@j] = @dc_sm_opar[5 + .@j];
+		}
+		@dc_sm_goid[.@k] = 0;
+		@dc_sm_goval[.@k] = 0;
+		@dc_sm_gopar[.@k] = 0;
+		callsub L_Compact;
+		callsub L_Swap, .@t, -1;
+		specialeffect2 154;
+		mes "[Herrero de Afijos]";
+		mes "Listo. El afijo ya no está en tu ^0000FF" + getitemname(@dc_sm_given) + "^000000.";
+		close;
+	}
+
+	// ------------------------------------------------------ volver a sortear
+	if (!$@dc_ready) {
+		mes "[Herrero de Afijos]";
+		mes "Aún no tengo mis tablas a mano. Vuelve en un momento.";
+		close;
+	}
+	getinventorylist;
+	.@n = callsub(L_Collect, 1, -1);
+	if (.@n < 1) {
+		mes "[Herrero de Afijos]";
+		mes "No llevas ninguna pieza identificada y sin equipar con afijos.";
+		close;
+	}
+	.@t = callsub(L_Choose, "¿A qué pieza le sorteo otra vez los afijos?", .@n);
+	if (.@t < 0)
+		goto L_Main;
+	callsub L_ReadOpts, .@t, 5;
+	.@oc = callsub(L_OptCount, .@t);
+
+	mes "[Herrero de Afijos]";
+	mes callsub(L_ItemLine, .@t);
+	mes "Sus " + .@oc + " afijos de ahora se cambian por otros " + .@oc + " al azar:";
+	callsub L_OptLines, 5;
+	mes " ";
+	mes callsub(L_CostLine, .@price[1]);
+	next;
+	if (Zeny < .@price[1]) {
+		mes "[Herrero de Afijos]";
+		mes "No te alcanza. Vuelve con el precio completo.";
+		close;
+	}
+	if (select("Sortéalos:Ahora no") == 2)
+		goto L_Main;
+	getinventorylist;
+	.@id = @inventorylist_id[.@t];
+	.@got = callfunc("F_DungeonChest_Roll", .@id, callfunc("F_DungeonChest_TierOf", .@id), "", .@oc);
+	if (.@got < 1 || Zeny < .@price[1]) {
+		mes "[Herrero de Afijos]";
+		mes "Algo salió mal y no te he cobrado nada. Prueba otra vez.";
+		close;
+	}
+	Zeny -= .@price[1];
+	cleararray @dc_sm_goid[0], 0, 5;
+	cleararray @dc_sm_goval[0], 0, 5;
+	cleararray @dc_sm_gopar[0], 0, 5;
+	for (.@k = 0; .@k < 5; .@k++) {
+		@dc_sm_goid[.@k] = @dc_ro_id[.@k];
+		@dc_sm_goval[.@k] = @dc_ro_val[.@k];
+	}
+	callsub L_Swap, .@t, -1;
+	specialeffect2 154;
+	mes "[Herrero de Afijos]";
+	mes "Tu ^0000FF" + getitemname(@dc_sm_given) + "^000000 lleva ahora:";
+	for (.@k = 0; .@k < 5; .@k++)
+		if (@dc_sm_goid[.@k] > 0)
+			mes "- " + callsub(L_OptText, @dc_sm_goid[.@k], @dc_sm_goval[.@k]);
+	close;
+
+// ---------------------------------------------------------------------------
+// Ayudas. Los números de pieza son posiciones en los arrays de getinventorylist.
+
+// L_OptCount(pieza) -> cuántos afijos tiene.
+L_OptCount:
+	.@i = getarg(0);
+	.@c = 0;
+	for (.@k = 1; .@k <= 5; .@k++)
+		if (getd("@inventorylist_option_id" + .@k + "[" + .@i + "]") > 0)
+			.@c++;
+	return .@c;
+
+// L_ReadOpts(pieza, desde): copia sus afijos en @dc_sm_oid/oval/opar[desde..desde+4].
+L_ReadOpts:
+	.@i = getarg(0);
+	.@o = getarg(1);
+	for (.@k = 0; .@k < 5; .@k++) {
+		@dc_sm_oid[.@o + .@k] = getd("@inventorylist_option_id" + (.@k + 1) + "[" + .@i + "]");
+		@dc_sm_oval[.@o + .@k] = getd("@inventorylist_option_value" + (.@k + 1) + "[" + .@i + "]");
+		@dc_sm_opar[.@o + .@k] = getd("@inventorylist_option_parameter" + (.@k + 1) + "[" + .@i + "]");
+	}
+	return;
+
+// L_OptText(id, valor) -> el afijo como lo nombra el cliente.
+L_OptText:
+	.@t$ = $@dc_nm$[getarg(0)];
+	if (.@t$ == "")
+		return "Afijo " + getarg(0) + ": " + getarg(1);
+	.@t$ = replacestr(.@t$, "%d", "" + getarg(1));
+	return replacestr(.@t$, "%%", "%");
+
+// L_OptLines(desde): los afijos guardados en @dc_sm_oid[desde..desde+4], uno por línea.
+L_OptLines:
+	.@o = getarg(0);
+	.@any = 0;
+	for (.@k = 0; .@k < 5; .@k++) {
+		if (@dc_sm_oid[.@o + .@k] < 1)
+			continue;
+		mes "  - " + callsub(L_OptText, @dc_sm_oid[.@o + .@k], @dc_sm_oval[.@o + .@k]);
+		.@any = 1;
+	}
+	if (!.@any)
+		mes "  (ninguno)";
+	return;
+
+// L_ChooseAffix(desde, pregunta$) -> el hueco (0-4) del afijo elegido, o -1.
+L_ChooseAffix:
+	.@o = getarg(0);
+	.@m$ = "";
+	.@n = 0;
+	for (.@k = 0; .@k < 5; .@k++) {
+		if (@dc_sm_oid[.@o + .@k] < 1)
+			continue;
+		.@pos[.@n] = .@k;
+		.@m$ += replacestr(callsub(L_OptText, @dc_sm_oid[.@o + .@k], @dc_sm_oval[.@o + .@k]), ":", " -") + ":";
+		.@n++;
+	}
+	mes "[Herrero de Afijos]";
+	mes getarg(1);
+	next;
+	.@c = select(.@m$ + "Cancelar") - 1;
+	if (.@c >= .@n)
+		return -1;
+	return .@pos[.@c];
+
+// L_Compact: junta los afijos de @dc_sm_go* en los primeros huecos.
+L_Compact:
+	.@n = 0;
+	for (.@i = 0; .@i < 5; .@i++) {
+		if (@dc_sm_goid[.@i] < 1)
+			continue;
+		@dc_sm_goid[.@n] = @dc_sm_goid[.@i];
+		@dc_sm_goval[.@n] = @dc_sm_goval[.@i];
+		@dc_sm_gopar[.@n] = @dc_sm_gopar[.@i];
+		.@n++;
+	}
+	for (.@i = .@n; .@i < 5; .@i++) {
+		@dc_sm_goid[.@i] = 0;
+		@dc_sm_goval[.@i] = 0;
+		@dc_sm_gopar[.@i] = 0;
+	}
+	return;
+
+// L_ItemLine(pieza) -> una línea de menú para ella.
+L_ItemLine:
+	.@i = getarg(0);
+	.@s$ = "";
+	.@g = @inventorylist_enchantgrade[.@i];
+	if (.@g > 0)
+		.@s$ += "[" + (.@g == 1 ? "D" : .@g == 2 ? "C" : .@g == 3 ? "B" : "A") + "] ";
+	if (@inventorylist_refine[.@i] > 0)
+		.@s$ += "+" + @inventorylist_refine[.@i] + " ";
+	.@s$ += getitemname(@inventorylist_id[.@i]);
+	.@c = callsub(L_OptCount, .@i);
+	if (.@c > 0)
+		.@s$ += " <" + .@c + " afijo" + (.@c > 1 ? "s" : "") + ">";
+	return .@s$;
+
+// L_Collect(cuáles, salvo) -> cuántas piezas sin equipar e identificadas deja
+// en @dc_sm_cand. cuáles: 1 = solo con afijos, 2 = cualquiera. salvo: una
+// pieza que no cuenta, o -1. Las sin identificar no salen: el menú diría qué
+// son y qué afijos tienen.
+L_Collect:
+	.@need = getarg(0);
+	.@skip = getarg(1);
+	.@n = 0;
+	for (.@i = 0; .@i < @inventorylist_count; .@i++) {
+		if (.@i == .@skip || @inventorylist_equip[.@i] || !@inventorylist_identify[.@i])
+			continue;
+		.@ty = getiteminfo(@inventorylist_id[.@i], ITEMINFO_TYPE);
+		if (.@ty != IT_ARMOR && .@ty != IT_WEAPON && .@ty != IT_SHADOWGEAR)
+			continue;
+		if (.@need == 1 && callsub(L_OptCount, .@i) < 1)
+			continue;
+		@dc_sm_cand[.@n] = .@i;
+		.@n++;
+	}
+	return .@n;
+
+// L_Choose(pregunta$, cuántas) -> la pieza elegida de @dc_sm_cand, por páginas, o -1.
+L_Choose:
+	.@prompt$ = getarg(0);
+	.@n = getarg(1);
+	.@page = 0;
+	.@per = 25;
+	while (1) {
+		.@from = .@page * .@per;
+		.@to = min(.@from + .@per, .@n);
+		.@m$ = "";
+		for (.@k = .@from; .@k < .@to; .@k++)
+			.@m$ += replacestr(callsub(L_ItemLine, @dc_sm_cand[.@k]), ":", " -") + ":";
+		if (.@to < .@n)
+			.@m$ += "[Página siguiente]:";
+		if (.@page > 0)
+			.@m$ += "[Página anterior]:";
+		.@m$ += "Cancelar";
+		mes "[Herrero de Afijos]";
+		mes .@prompt$;
+		if (.@n > .@per)
+			mes "Página " + (.@page + 1) + " de " + ((.@n - 1) / .@per + 1) + ".";
+		next;
+		.@c = select(.@m$) - 1;
+		.@cnt = .@to - .@from;
+		if (.@c < .@cnt)
+			return @dc_sm_cand[.@from + .@c];
+		.@c -= .@cnt;
+		if (.@to < .@n) {
+			if (.@c == 0) {
+				.@page++;
+				continue;
+			}
+			.@c--;
+		}
+		if (.@page > 0 && .@c == 0) {
+			.@page--;
+			continue;
+		}
+		return -1;
+	}
+
+// L_CostLine(precio) -> la línea del precio.
+L_CostLine:
+	if (getarg(0) > 0)
+		return "Precio: ^0000FF" + getarg(0) + " zeny^000000";
+	return "Gratis.";
+
+// L_Swap(pieza, otra): saca la pieza (y la otra, salvo -1) de la mochila y
+// devuelve la misma pieza, con todo lo que tenía, pero con los afijos de
+// @dc_sm_goid/goval/gopar.
+L_Swap:
+	.@i = getarg(0);
+	.@id = @inventorylist_id[.@i];
+	.@ident = @inventorylist_identify[.@i];
+	.@ref = @inventorylist_refine[.@i];
+	.@attr = @inventorylist_attribute[.@i];
+	.@c1 = @inventorylist_card1[.@i];
+	.@c2 = @inventorylist_card2[.@i];
+	.@c3 = @inventorylist_card3[.@i];
+	.@c4 = @inventorylist_card4[.@i];
+	.@grade = @inventorylist_enchantgrade[.@i];
+	.@bound = @inventorylist_bound[.@i];
+	delitemidx @inventorylist_idx[.@i], 1;
+	if (getarg(1) >= 0)
+		delitemidx @inventorylist_idx[getarg(1)], 1;
+	if (.@bound > 0)
+		getitembound4 .@id, 1, .@ident, .@ref, .@attr, .@c1, .@c2, .@c3, .@c4, .@bound, .@grade, @dc_sm_goid, @dc_sm_goval, @dc_sm_gopar;
+	else
+		getitem4 .@id, 1, .@ident, .@ref, .@attr, .@c1, .@c2, .@c3, .@c4, .@grade, @dc_sm_goid, @dc_sm_goval, @dc_sm_gopar;
+	@dc_sm_given = .@id;
+	return;
+}

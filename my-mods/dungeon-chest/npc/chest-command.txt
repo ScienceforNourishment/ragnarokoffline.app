@@ -1,0 +1,88 @@
+// @cofre -- ayuda de prueba para encontrar y reabrir los cofres (GM).
+// Hand-written; build_chests.cjs does not touch this file. Each chest records
+// its NPC name in $@dc_npc_<mapa>$ on init (dungeon-chests.txt).
+//
+//   @cofre            te lleva junto al cofre del mapa actual
+//   @cofre <mapa>     te lleva junto al cofre de ese mapa
+//   @cofre aqui       trae el cofre del mapa actual delante de ti
+//   @cofre cerrar     lo vuelve a cerrar, sin moverlo, para abrirlo otra vez
+//   @cofre mover      lo manda a otra celda aleatoria, como el temporizador
+
+// F_DungeonChest_Near(map, x, y, dy) -> the first passable cell around x,y,
+// trying the row at y+dy first; packed as x * 1000 + y, or 0 if none.
+function	script	F_DungeonChest_Near	{
+	.@map$ = getarg(0);
+	.@x = getarg(1);
+	.@y = getarg(2);
+	.@dy = getarg(3);
+	.@ny = 0 - .@dy;
+	setarray .@ox[0], 0, 1, -1, 1, -1, 0, 1, -1;
+	setarray .@oy[0], .@dy, .@dy, .@dy, 0, 0, .@ny, .@ny, .@ny;
+	for (.@i = 0; .@i < 8; .@i++) {
+		if (checkcell(.@map$, .@x + .@ox[.@i], .@y + .@oy[.@i], cell_chkpass))
+			return (.@x + .@ox[.@i]) * 1000 + .@y + .@oy[.@i];
+	}
+	return 0;
+}
+
+-	script	dungeon_chest_cmd	-1,{
+OnInit:
+	bindatcmd "cofre", strnpcinfo(3) + "::OnCofre", 1, 99;
+	end;
+
+OnCofre:
+	// El prefijo con el que se escribio: Ajustes -> Rates -> Command prefix
+	// puede hacerlo "!" o ".", y las ayudas deben decir el que funciona.
+	.@p$ = charat(.@atcmd_command$, 0);
+	.@here$ = strcharinfo(3);
+	.@map$ = .@here$;
+	.@act$ = "ir";
+	if (.@atcmd_numparameters > 0) {
+		.@arg$ = strtolower(.@atcmd_parameters$[0]);
+		if (.@arg$ == "aqui" || .@arg$ == "cerrar" || .@arg$ == "mover")
+			.@act$ = .@arg$;
+		else
+			.@map$ = .@arg$;
+	}
+
+	.@npc$ = getd("$@dc_npc_" + .@map$ + "$");
+	if (.@npc$ == "") {
+		dispbottom "Cofre: " + .@map$ + " no tiene cofre. Uso: " + .@p$ + "cofre [mapa|aqui|cerrar|mover]";
+		end;
+	}
+	getmapxy(.@cm$, .@cx, .@cy, BL_NPC, .@npc$);
+
+	if (.@act$ == "cerrar") {
+		set getvariableofnpc(.opened, .@npc$), 0;
+		dispbottom "Cofre: " + .@npc$ + " cerrado otra vez en " + .@cx + "," + .@cy + ".";
+		end;
+	}
+	if (.@act$ == "mover") {
+		callfunc("F_DungeonChest_Move", .@npc$, .@map$);
+		set getvariableofnpc(.relocated, .@npc$), 1;
+		getmapxy(.@cm$, .@cx, .@cy, BL_NPC, .@npc$);
+		dispbottom "Cofre: movido a " + .@cx + "," + .@cy + ". " + .@p$ + "cofre para ir.";
+		end;
+	}
+	if (.@act$ == "aqui") {
+		getmapxy(.@pm$, .@px, .@py, BL_PC);
+		.@cell = callfunc("F_DungeonChest_Near", .@map$, .@px, .@py, 1);
+		if (!.@cell) {
+			dispbottom "Cofre: no hay una celda libre a tu lado.";
+			end;
+		}
+		movenpc .@npc$, .@cell / 1000, .@cell % 1000;
+		// Que el temporizador no lo vuelva a mover mientras siga cerrado.
+		set getvariableofnpc(.relocated, .@npc$), 1;
+		dispbottom "Cofre: " + .@npc$ + " traido a " + (.@cell / 1000) + "," + (.@cell % 1000) + (getvariableofnpc(.opened, .@npc$) ? " (abierto: " + .@p$ + "cofre cerrar)." : ".");
+		end;
+	}
+
+	// ir: a una celda libre al sur del cofre, para verlo delante y no tras un muro.
+	.@cell = callfunc("F_DungeonChest_Near", .@map$, .@cx, .@cy, -1);
+	if (!.@cell)
+		.@cell = .@cx * 1000 + .@cy;
+	dispbottom "Cofre: " + .@npc$ + " en " + .@map$ + " " + .@cx + "," + .@cy + (getvariableofnpc(.opened, .@npc$) ? ", abierto (" + .@p$ + "cofre cerrar)." : ", cerrado.");
+	warp .@map$, .@cell / 1000, .@cell % 1000;
+	end;
+}

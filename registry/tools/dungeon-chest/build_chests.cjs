@@ -38,6 +38,7 @@ function chest(map, tier) {
 OnInit:
 \t.opened = 0;
 \t.relocated = 0;
+\tset $@dc_npc_${map}$, strnpcinfo(3);
 \tcallfunc("F_DungeonChest_Move", strnpcinfo(3), "${map}");
 \tinitnpctimer;
 \tend;
@@ -123,6 +124,45 @@ function\tscript\tF_DungeonChest_Open\t{
 \t\tmes "[Cofre de Tier " + .@tier + "]";
 \t\tmes "Alguien más llegó primero y ya abrió el cofre.";
 \t\treturn 0;
+\t}
+
+\t// Un disfraz (costume_pct), equipo con afijos (gear_pct) o la comida. Todo
+\t// el equipo llega sin identificar (dungeon-loot.txt).
+\tif ($@dc_ready && $@dc_cosn > 0 && rand(100) < $@dc_cosp[.@tier]) {
+\t\t.@cos = $@dc_cos[rand(0, $@dc_cosn - 1)];
+\t\tif (!checkweight(.@cos, 1)) {
+\t\t\tmes "[Cofre de Tier " + .@tier + "]";
+\t\t\tmes "No tienes espacio suficiente para cargar el botín.";
+\t\t\treturn 0;
+\t\t}
+\t\tset getvariableofnpc(.opened, .@npc$), 1;
+\t\tgetitem2 .@cos, 1, 0, 0, 0, 0, 0, 0, 0;
+\t\tmes "[Cofre de Tier " + .@tier + "]";
+\t\tmes "Entre telas viejas encuentras una prenda vistosa, sin identificar.";
+\t\tmes "Una Lupa dirá qué es.";
+\t\treturn 1;
+\t}
+\t.@gear = 0;
+\tif ($@dc_ready && rand(100) < $@dc_gear[.@tier])
+\t\t.@gear = callfunc("F_DungeonChest_PickGear", .@tier);
+\tif (.@gear) {
+\t\tif (!checkweight(.@gear, 1)) {
+\t\t\tmes "[Cofre de Tier " + .@tier + "]";
+\t\t\tmes "Dentro hay algo pesado y no puedes cargarlo. Aligera la mochila y vuelve.";
+\t\t\treturn 0;
+\t\t}
+\t\tset getvariableofnpc(.opened, .@npc$), 1;
+\t\tcallfunc "F_DungeonChest_GiveGear", .@gear, .@tier, strnpcinfo(4);
+\t\t.@kind = getiteminfo(.@gear, ITEMINFO_TYPE);
+\t\tmes "[Cofre de Tier " + .@tier + "]";
+\t\tif (.@kind == IT_WEAPON)
+\t\t\tmes "Encuentras un arma sin identificar.";
+\t\telse if (.@kind == IT_SHADOWGEAR)
+\t\t\tmes "Encuentras una pieza de equipo de sombra sin identificar.";
+\t\telse
+\t\t\tmes "Encuentras una pieza de armadura sin identificar.";
+\t\tmes "Una Lupa dirá qué es y qué guarda.";
+\t\treturn 1;
 \t}
 
 \tif (!checkweight(.@item, 1)) {

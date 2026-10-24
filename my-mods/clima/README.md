@@ -22,8 +22,20 @@ Actualízala al cambiar el mod o al probarlo.
   y que el evento anunciado para `prt_fild08` es el que empezó después. El
   log de esa sesión muestra los eventos por bioma de toda la lista
   arrancando y terminando, sin errores
-- **Sin probar:** `@pr_clima` en el tope (la prueba del tope dio total 7,
-  sin clima); la pérdida doble de hambre o sed en `survival`
+- **Probado en el juego (0.4.1, 2026-10-23):** `@presion` cuenta **clima 1**
+  en la Ventisca de `xmas_fild01` sin protección; la sed baja el doble con
+  Calor intenso en `moc_fild11`
+- **Observado (2026-10-23), sin reproducir:** el personaje se siguió viendo
+  congelado después de cambiar de mapa, aunque ya podía moverse. Lo más
+  probable es el `SC_FREEZE` de la Ventisca: roBrowser tira los paquetes de
+  estado que llegan mientras carga el mapa, antes de que exista el personaje
+  (`onEntityStatusChange` sale si `EntityManager.get` no lo encuentra), y se
+  pierde el que lo descongela. Si es eso, el fallo es del cliente y no del mod.
+  Reproducirlo con `rotest` (congelarse en la Ventisca y hacer `@warp`) antes
+  de tocar nada
+- **Sin probar:** el hambre doble con Frío extremo en `survival`. La Ventisca
+  **no** suma frío a `temperature` (solo Frío extremo y Calor intenso ponen
+  `@clima_*_extra_loss`), así que no lleva a Congelado
 - **Limitación:** el visual es fijo por mapa; ver «Limitación conocida»
 - **Actualizado:** 2026-10-23
 

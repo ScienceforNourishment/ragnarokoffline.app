@@ -27,9 +27,9 @@ pegados, sin margen; desde ahora cada mod nuevo recibe un **bloque de 100**.
 | 50840–50843 | `temperature` | ropa |
 | 50844–50999 | `clima`, `survival`, `temperature` | ampliaciones de estos tres; anotar aquí cada ID que se use |
 | 51000–51099 | `adventure` | (planeado) |
-| 51100–51199 | `campfire` | (planeado) leña, kits, comida cocinada, vendas |
+| 51100–51199 | `campfire` | 51100–51102 leña, kit y venda; 51110–51115 platos (recetas en `registry/tools/campfire/recipes.csv`) |
 | 51200–51299 | `nemesis` | trofeos: 51200–51209 (51200 + raza del monstruo) |
-| 51300–51399 | `refuges` | (planeado) materiales |
+| 51300–51399 | `refuges` | sin objetos en 0.1; reservado para materiales propios de oficios (D33) |
 | 51400–51499 | `tavern-rumors` | sin objetos en 0.1 |
 | 51500–51599 | `remnants` | (planeado) objetos con lore |
 | 51600–51699 | `expedition-board` | (planeado) trofeos de marcas |
@@ -53,10 +53,12 @@ Cada mod tiene un **prefijo** corto para todo lo que otros podrían ver:
 | `clima` | — | publica `@clima_*` | `F_Clima_*` | `Clima#clima`, `Pronosticador#clima_prt` |
 | `temperature` | — | `@tp_*` | `F_Temperature_*` | `temp_mgr` |
 | `wounds` | `wd_*` | — | `F_Wounds_*` | `wounds_mgr` |
-| `nemesis` | `nm_*` | `$@nm_gid[]`, `$@nm_owner[]` | `F_Nemesis_*` | `nemesis_mgr` |
+| `nemesis` | `nm_*` | `$@nm_gid[]`, `$@nm_owner[]`, `$@nm_sym$` | `F_Nemesis_*` | `nemesis_mgr` |
 | `expedition-board` | `eb_*` | `$@eb_*` | `F_Expedition_*` | `ExpeditionCtrl`, `ExpeditionData` |
-| `dungeon-chest` | — | — | `F_DungeonChest_*` | — |
+| `dungeon-chest` | — | `$@dc_*` (datos del botín); `@dc_ro_*` (afijos sorteados), `@dc_sm_*` (Herrero) | `F_DungeonChest_*` | `Cofre T<n>#dcp_<mapa>`, `dungeon_loot`, `Herrero de Afijos#dc` |
 | `tavern-rumors` | — | `@tr_l$[]` | `F_Tavern_*` | `Tabernero#tr_*`, `tavern_data` |
+| `campfire` | — | `@cf_*`; `$@cf_*` (las fogatas) | `F_Campfire_*` | `campfire_mgr`, `campfire_recipes`, `Fogata#cf` (plantilla; sus copias se llaman `Fogata`), `Proveedor de Campamento#cf` |
+| `refuges` | — | — (estado en el mod store global, `r.<id>.*`) | `F_Refuge_*` | `refuges_mgr`, `refuges_data`, plantillas `Refugio#rf`, `Caravanero#rf`, `Caravana#rf` (copias `#rf_<id>`, `#rf_<id>_c`, `#rf_<ciudad>`), `Intendente del Refugio#rf_<id>_s` |
 | `adventure` | `adv_*` (aún ninguna) | `@adv_*` (entrada y cola `@adv_q*`); `@tj_*` (entrada del diario, heredada de `travel-journal`) | `F_Adv_*` | `Adventure`, `TravelJournal`, `Cronista#adv_*` |
 
 Un mod nuevo elige un prefijo de 2 a 4 letras, comprueba que nadie lo use
@@ -75,8 +77,9 @@ El mod store está aislado por mod. Lo que otro mod deba leer va en
 | `adv_trait_*` | `adventure` (0.3, planeado) | `temperature`, `wounds`, `survival` | rasgos permanentes |
 | `$@eb_mark[char_id]` | `expedition-board` | `wounds` | GID de la marca viva de ese personaje |
 | `$@eb_markowner[gid]` | `expedition-board` | `nemesis` | dueño de esa marca; su marca no se vuelve némesis |
+| `@cf_rest_until`, `@cf_ward` | `campfire` | `wounds` (gasta `@cf_ward`) | Descansado: hasta cuándo dura y si la próxima muerte fuera de una ciudad no deja herida |
+| `$@cf_live` | `campfire` | `temperature` | fogatas encendidas; solo si no es 0 se llama a `F_Campfire_Near` |
 | `$@nm_owner[gid]` | `nemesis` | `nemesis` (otros, si lo necesitan) | dueño de ese némesis vivo; 0 si no lo es |
-| `.map$[]`, `.event_active[]`, `.combination[]` de `Clima#clima` | `clima` | `wounds` (con `getvariableofnpc`) | qué evento hay en cada mapa. **No son públicas**: si `clima` cambia su orden o sus nombres, hay que tocar `wounds`. Desde `clima` 0.4.0 lo mismo se lee con `F_Clima_Now` (ver abajo); `wounds` aún no se ha pasado a ella |
 
 `@pr_*` es la excepción al prefijo por mod: es un espacio común y cada mod
 escribe solo su propia clave. Un mod que castiga y respeta el tope lleva su
@@ -107,6 +110,19 @@ NPC que corre el script.
 adjunto: quita las heridas y maldiciones que dejó un monstruo de esa clase y
 devuelve cuántas. Comprobar antes `getnpcid(0, "wounds_mgr")`. La usa
 `nemesis`.
+
+**`F_Wounds_Ease(id)`** (desde `wounds` 0.6.0), con el personaje adjunto:
+venda una herida (no una maldición), que penaliza la mitad hasta curarla
+(D29); devuelve 1 si la vendó. `F_Wounds_IsEased(id)` dice si ya lo está. La
+usa `campfire`.
+
+**`F_Campfire_Near()`** (desde `campfire` 0.1.0), con el personaje adjunto:
+1 + el índice de la fogata encendida a 3 celdas o menos, o 0. Llamarla solo
+con `$@cf_live` distinto de 0. La usa `temperature`.
+
+**`F_Campfire_Rest()`** (desde `campfire` 0.2.0), con el personaje adjunto:
+le da Descansado y devuelve sus minutos, sin escribir en el diálogo.
+Comprobar antes `getnpcid(0, "campfire_mgr")`. La usa `refuges`.
 
 Las funciones `F_Atlas_*` se llaman con `callfunc` y funcionan sin personaje
 adjunto si se les pasa el mapa.
@@ -226,7 +242,9 @@ Lo que rAthena y la app permiten o no, y qué consecuencia tiene para el diseño
 | Las funciones de NPC (`callfunc`) son globales entre mods. | El atlas se consulta sin dependencia de carga. `callfunc` de una función inexistente falla: hace falta un valor de reserva. |
 | Mod store (`modstore_*`) con alcance global, cuenta y personaje; 64 KiB por personaje y mod. | Para estado propio (experiencias vistas, reputación, refugios). |
 | `db/` acepta las tablas con plantilla en `db/import-tmpl` de rAthena, entre ellas `mob_db.yml`, `skill_db.yml` y las `exp_*`. | El rebalanceo de monstruos y MVPs por región (D3) vive en mods, generado desde datos. |
-| Lua solo engancha `skill()` e `item()`. | No hay durabilidad por objeto ni IA de monstruos vía Lua. |
+| Lua engancha `skill()`, `item()` (`on_attack`, `on_hit_taken`, `on_use`), `status()` (estados propios con `tick`, stacks y `persist`) y `player()`. | Sigue sin haber durabilidad por objeto ni IA de monstruos vía Lua. Guía: `docs/mods/CUSTOM_SKILLS.md`. |
+| `bonus_script` descarta un icono `>= EFST_MAX` (rAthena 8aea17a). Los iconos propios de mod (20000–22999) solo los lleva un `status()` de Lua. | Un icono nuevo para frío, heridas o hambre pasa por Lua, no por el script. |
+| El prefijo de comandos es un ajuste del jugador (`@`, `!`, `.`, `-`) y no se lee con `getbattleflag`. `bindatcmd` funciona con cualquiera. | Nunca escribir `@` a mano en un texto: en el handler, `charat(.@atcmd_command$, 0)` es el prefijo tecleado. `.@` no cruza un `callsub`. `atcommand "@x"` desde script falla con otro prefijo. |
 | Mapas custom necesitan `.gat/.gnd/.rsw` (hay editor en la app). | Los pasadizos empiezan reutilizando mapas existentes. |
 | Un sprite de NPC mal escrito queda invisible sin error. | Validar cada sprite nuevo en el juego. |
 | Los cambios de `db/` y `npc/` piden recargar mods; los de `client/` y `System/`, reiniciar la app. | Considerarlo al probar. |

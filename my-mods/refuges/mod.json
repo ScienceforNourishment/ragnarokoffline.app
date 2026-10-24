@@ -1,0 +1,13 @@
+{
+  "name": "refuges",
+  "version": "0.1.0",
+  "author": "Alejandro",
+  "description": "Refugios en ruinas en los campos que se restauran en tres etapas con drops y zeny, para todo el mundo: una fogata donde descansar y contar los relatos, una despensa y una caravana a la ciudad.",
+  "requires": {
+    "app": ">=1.5.2",
+    "era": "renewal"
+  },
+  "settings": [
+    { "key": "caravan_price", "type": "number", "default": 300, "min": 0, "max": 100000, "label": "Precio de la caravana (zeny)", "description": "Valor de prueba. Lo que cobran el Caravanero de un refugio y la Caravana de los Refugios de la ciudad por un viaje." }
+  ]
+}

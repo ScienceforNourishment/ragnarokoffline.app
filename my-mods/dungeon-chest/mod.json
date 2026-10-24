@@ -1,10 +1,16 @@
 {
   "name": "dungeon-chest",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "author": "Ragnarok Offline",
-  "description": "Cofres aleatorios por mapa de dungeon, agrupados por Tier según sus monstruos.",
+  "description": "Cofres aleatorios por mapa de dungeon, agrupados por Tier según sus monstruos. Dan equipo sin identificar con afijos (listas de arpg-equipments y afijos de affix-forge) o una comida del Tier, y un Herrero de Afijos en Prontera que los pasa, quita o vuelve a sortear.",
   "requires": {
     "app": ">=1.4.0",
-    "era": "any"
-  }
+    "era": "renewal"
+  },
+  "settings": [
+    { "key": "smith_move_all", "type": "number", "default": 100000, "min": 0, "max": 100000000, "label": "Herrero: pasar todos los afijos (zeny)", "description": "Valor de prueba. Lo cobra el Herrero de Afijos (Prontera 155,187). 0 = gratis." },
+    { "key": "smith_move_one", "type": "number", "default": 60000, "min": 0, "max": 100000000, "label": "Herrero: pasar un afijo (zeny)", "description": "Valor de prueba. Lo cobra el Herrero de Afijos (Prontera 155,187). 0 = gratis." },
+    { "key": "smith_remove", "type": "number", "default": 30000, "min": 0, "max": 100000000, "label": "Herrero: quitar un afijo (zeny)", "description": "Valor de prueba. Lo cobra el Herrero de Afijos (Prontera 155,187). 0 = gratis." },
+    { "key": "smith_reroll", "type": "number", "default": 50000, "min": 0, "max": 100000000, "label": "Herrero: volver a sortear los afijos (zeny)", "description": "Valor de prueba. Lo cobra el Herrero de Afijos (Prontera 155,187). 0 = gratis." }
+  ]
 }

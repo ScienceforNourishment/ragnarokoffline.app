@@ -1,0 +1,204 @@
+//===== Ragnarok Offline: dungeon-chest, botín de equipo ====================
+//= Al abrir un cofre, con la probabilidad gear_pct de su Tier sale una pieza
+//= de equipo sin identificar con 1-4 afijos (random options); si no, la
+//= comida del Tier, como antes. Lo llama F_DungeonChest_Open
+//= (dungeon-chests.txt).
+//=
+//= Los datos salen de dungeon-loot-data.txt, generado desde los CSV de
+//= registry/tools/dungeon-chest/ (loot.csv, affixes.csv, loot_tiers.csv,
+//= loot_biomes.csv) con build_loot.cjs. Las piezas vienen de las listas de
+//= arpg-equipments (MIT, Iguera) y los afijos y su sorteo de affix-forge
+//= (MIT, rhwski); ver la sección «Créditos» del README.
+//=
+//= El sorteo de afijos es el de affix-forge: cuántos (count_weights), de qué
+//= rareza (rarity_weights), una opción de esa rareza que valga para el tipo de
+//= objeto, sin repetir opción ni grupo, y un valor que escala como un monstruo
+//= de nivel «level» del Tier. Con world-atlas, el primer afijo puede salir de
+//= las opciones del bioma del mapa (loot_biomes.csv).
+//=
+//= Variables de servidor $@dc_* (las escribe dungeon_loot en dungeon-loot-data.txt).
+//= Temporales del personaje: @dc_ro_id[], @dc_ro_val[], @dc_ro_par[] (lo que
+//= sortea F_DungeonChest_Roll) y @dc_sm_* (el Herrero de Afijos).
+//===========================================================================
+
+// F_DungeonChest_Job() -> la clase del personaje adjunto con el nombre que usa
+// la tabla de objetos (Jobs del item_db): "Knight" tambien para Lord Knight o
+// Rune Knight. "" si no esta en la tabla.
+function	script	F_DungeonChest_Job	{
+	.@me = eaclass() & (EAJ_BASEMASK | EAJL_2);
+	for (.@i = 0; .@i < $@dc_jn; .@i++)
+		if ($@dc_jv[.@i] == .@me)
+			return $@dc_jk$[.@i];
+	return "";
+}
+
+// F_DungeonChest_PickGear(tier) -> una pieza de equipo de ese Tier, o 0. Con
+// la probabilidad class_pct del Tier, una que pueda equipar el personaje
+// adjunto (si hay alguna); si no, cualquiera.
+function	script	F_DungeonChest_PickGear	{
+	.@t = getarg(0);
+	if (!$@dc_ready || .@t < 1 || .@t > 6)
+		return 0;
+	.@from = $@dc_from[.@t];
+	.@to = $@dc_to[.@t];
+	if (.@to <= .@from)
+		return 0;
+	if (rand(100) < $@dc_cls[.@t]) {
+		.@job$ = "|" + callfunc("F_DungeonChest_Job") + "|";
+		.@n = 0;
+		if (.@job$ != "||") {
+			for (.@i = .@from; .@i < .@to; .@i++) {
+				if ($@dc_job$[.@i] == "*" || compare("|" + $@dc_job$[.@i] + "|", .@job$)) {
+					.@c[.@n] = $@dc_item[.@i];
+					.@n++;
+				}
+			}
+		}
+		if (.@n > 0)
+			return .@c[rand(0, .@n - 1)];
+	}
+	return $@dc_item[rand(.@from, .@to - 1)];
+}
+
+// F_DungeonChest_GiveGear(item, tier, mapa$): sortea los afijos y entrega la
+// pieza sin identificar al personaje adjunto. Comprobar antes checkweight.
+function	script	F_DungeonChest_GiveGear	{
+	.@item = getarg(0);
+	if (callfunc("F_DungeonChest_Roll", .@item, getarg(1), getarg(2), 0) < 1) {
+		// Sin afijos (no deberia pasar): la pieza sola.
+		getitem2 .@item, 1, 0, 0, 0, 0, 0, 0, 0;
+		return 0;
+	}
+	getitem3 .@item, 1, 0, 0, 0, 0, 0, 0, 0, @dc_ro_id, @dc_ro_val, @dc_ro_par;
+	return 1;
+}
+
+// F_DungeonChest_TierOf(item) -> el Tier de una pieza: el suyo en loot.csv, o
+// la banda de su nivel minimo si no esta (como las de dungeon-chest).
+function	script	F_DungeonChest_TierOf	{
+	.@item = getarg(0);
+	for (.@t = 1; .@t <= 6; .@t++)
+		for (.@i = $@dc_from[.@t]; .@i < $@dc_to[.@t]; .@i++)
+			if ($@dc_item[.@i] == .@item)
+				return .@t;
+	.@lv = getiteminfo(.@item, ITEMINFO_EQUIPLEVELMIN);
+	if (.@lv < 40) return 1;
+	if (.@lv < 60) return 2;
+	if (.@lv < 90) return 3;
+	if (.@lv < 120) return 4;
+	if (.@lv < 150) return 5;
+	return 6;
+}
+
+// F_DungeonChest_Roll(item, tier, mapa$, cuantos) -> cuantos afijos salieron.
+// Los deja en @dc_ro_id[], @dc_ro_val[] y @dc_ro_par[] (5 huecos) del personaje
+// adjunto. cuantos 0 = los sortea count_weights del Tier; mapa$ "" = sin
+// bioma. Lo usan el cofre y el Herrero de Afijos (volver a sortear).
+function	script	F_DungeonChest_Roll	{
+	.@item = getarg(0);
+	.@t = getarg(1);
+	.@type = getiteminfo(.@item, ITEMINFO_TYPE);
+	.@lv = $@dc_lv[.@t];
+	.@flat = 100 + .@lv * 2;
+	.@pct = 100 + .@lv;
+	cleararray @dc_ro_id[0], 0, 5;
+	cleararray @dc_ro_val[0], 0, 5;
+	cleararray @dc_ro_par[0], 0, 5;
+
+	// Cuantos afijos.
+	.@sum = 0;
+	for (.@j = 0; .@j < 4; .@j++)
+		.@sum += $@dc_cw[.@t * 4 + .@j];
+	.@k = min(max(getarg(3), 0), 5);
+	if (!.@k && .@sum > 0) {
+		.@k = 1;
+		.@r = rand(1, .@sum);
+		for (.@j = 0; .@j < 4; .@j++) {
+			.@r -= $@dc_cw[.@t * 4 + .@j];
+			if (.@r <= 0) {
+				.@k = .@j + 1;
+				break;
+			}
+		}
+	}
+	.@wsum = 0;
+	for (.@j = 0; .@j < 4; .@j++)
+		.@wsum += $@dc_rw[.@t * 4 + .@j];
+	if (.@wsum < 1)
+		.@wsum = 1;
+
+	if (!.@k)
+		.@k = 1;
+	// Opciones del bioma, para el primer afijo.
+	.@bio$ = "";
+	if ($@wa_ready && getarg(2) != "")
+		.@bio$ = callfunc("F_Atlas_Biome", getarg(2));
+	.@bopt$ = "";
+	for (.@b = 0; .@b < $@dc_bn; .@b++) {
+		if ($@dc_bio$[.@b] == .@bio$) {
+			if (rand(100) < $@dc_bpct[.@b])
+				.@bopt$ = $@dc_bopt$[.@b];
+			break;
+		}
+	}
+
+	.@got = 0;
+	for (.@j = 0; .@j < .@k; .@j++) {
+		.@s = -1;
+		// Primer afijo: una opcion del bioma que valga para este objeto.
+		if (.@j == 0 && .@bopt$ != "") {
+			explode(.@bo$, .@bopt$, "|");
+			.@bc = getarraysize(.@bo$);
+			.@c = $@dc_aix[atoi(.@bo$[rand(0, .@bc - 1)])] - 1;
+			if (.@c >= 0 && (!$@dc_atype[.@c] || $@dc_atype[.@c] == .@type))
+				.@s = .@c;
+		}
+		.@tries = 0;
+		while (.@s < 0 && .@tries < 80) {
+			.@tries++;
+			.@r = rand(1, .@wsum);
+			.@rar = 4;
+			for (.@q = 0; .@q < 4; .@q++) {
+				.@r -= $@dc_rw[.@t * 4 + .@q];
+				if (.@r <= 0) {
+					.@rar = .@q + 1;
+					break;
+				}
+			}
+			if ($@dc_arc[.@rar] < 1)
+				continue;
+			.@c = $@dc_ari[(.@rar - 1) * 400 + rand(0, $@dc_arc[.@rar] - 1)];
+			if ($@dc_atype[.@c] && $@dc_atype[.@c] != .@type)
+				continue;
+			.@dup = 0;
+			for (.@u = 0; .@u < .@got; .@u++) {
+				if (@dc_ro_id[.@u] == $@dc_aid[.@c])
+					.@dup = 1;
+				if ($@dc_agrp[.@c] && .@ogrp[.@u] == $@dc_agrp[.@c])
+					.@dup = 1;
+			}
+			if (.@dup)
+				continue;
+			.@s = .@c;
+		}
+		if (.@s < 0)
+			continue;
+		.@v = 1;
+		if ($@dc_amax[.@s] > 0) {
+			.@v = rand($@dc_amin[.@s], $@dc_amax[.@s]);
+			if ($@dc_akind[.@s] == 0)
+				.@v = .@v * .@flat / 100;
+			else if ($@dc_akind[.@s] == 1)
+				.@v = .@v * .@pct / 100;
+			if ($@dc_acap[.@s] > 0 && .@v > $@dc_acap[.@s])
+				.@v = $@dc_acap[.@s];
+			if (.@v < 1)
+				.@v = 1;
+		}
+		@dc_ro_id[.@got] = $@dc_aid[.@s];
+		@dc_ro_val[.@got] = .@v;
+		.@ogrp[.@got] = $@dc_agrp[.@s];
+		.@got++;
+	}
+	return .@got;
+}

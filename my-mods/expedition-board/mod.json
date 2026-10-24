@@ -1,6 +1,6 @@
 {
   "name": "expedition-board",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "author": "Alejandro",
   "description": "Tableros de contratos en las ciudades principales: expediciones a una marca y cacerías por zona; entrega en el tablero que lo publicó.",
   "requires": {

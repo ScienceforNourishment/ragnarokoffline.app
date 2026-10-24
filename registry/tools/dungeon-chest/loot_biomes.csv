@@ -1,0 +1,12 @@
+biome,pct,options,note
+nieve,35,26|38,resistir agua: el frío y los monstruos de hielo
+montana,35,26|38|29|44,agua y viento
+costa,35,26|38,agua
+volcan,35,28|42,fuego
+desierto,35,28|42,fuego
+pantano,35,30|46|27|40,veneno y tierra
+selva,35,30|46|27|40,veneno y tierra
+cueva,35,27|40,tierra
+bosque,35,27|40|29|44,tierra y viento
+pradera,35,27|40|29|44,tierra y viento
+ruinas,35,34|54|32|50,no muertos y sombra

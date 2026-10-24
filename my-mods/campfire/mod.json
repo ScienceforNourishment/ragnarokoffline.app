@@ -1,0 +1,16 @@
+{
+  "name": "campfire",
+  "version": "0.2.0",
+  "author": "Alejandro",
+  "description": "Fogatas en el campo: la leña o un kit encienden una fogata donde se descansa (Descansado), se cocinan drops de monstruos en platos con buff y se venda una herida. Junto al fuego, temperatura Cómoda.",
+  "requires": {
+    "app": ">=1.5.2",
+    "era": "any"
+  },
+  "settings": [
+    { "key": "firewood_minutes", "type": "number", "default": 10, "min": 1, "max": 180, "label": "Duración de la fogata de Leña (min)", "description": "Valor de prueba. La descripción del objeto sigue diciendo 10 minutos." },
+    { "key": "kit_minutes", "type": "number", "default": 30, "min": 1, "max": 180, "label": "Duración de la fogata del Kit de Acampada (min)", "description": "Valor de prueba. La descripción del objeto sigue diciendo 30 minutos." },
+    { "key": "rest_minutes", "type": "number", "default": 20, "min": 1, "max": 120, "label": "Duración de Descansado (min)", "description": "Valor de prueba. También vale para la fogata de un refugio (refuges)." },
+    { "key": "rest_regen", "type": "number", "default": 30, "min": 0, "max": 200, "label": "Regeneración extra de Descansado (%)", "description": "Valor de prueba. Regeneración natural de HP y SP." }
+  ]
+}

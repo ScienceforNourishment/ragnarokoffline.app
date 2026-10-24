@@ -31,8 +31,9 @@ Actualízala al cambiar el mod o al probarlo.
 - **Ojo con los rates:** `getexp` multiplica por `quest_exp_rate`. En la
   prueba estaba a 4x y el personaje subió dos niveles con un 77 %; ya está
   a 1x (D8)
-- **Sin probar:** el Cronista de las otras 5 ciudades (solo se vio el de
-  Izlude); `Adventure::OnRest` llamado desde otro mod (lo cubre
+- **Probado en el juego (0.1.0, 2026-10-23):** el Cronista de Geffen, Payon,
+  Morocc, Alberta y Aldebaran se ve y responde
+- **Sin probar:** `Adventure::OnRest` llamado desde otro mod (lo cubre
   [`tavern-rumors`](../tavern-rumors/README.md#probarlo))
 - **Pedido (2026-10-23):** una pestaña solo con las expediciones terminadas,
   para leer la historia del personaje. Va en la 0.2

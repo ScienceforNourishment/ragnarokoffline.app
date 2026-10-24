@@ -6,6 +6,8 @@
 //=   wd_list$   ids de las heridas que tiene, separados por barras: "1|5"
 //=   wd_src$    que monstruo dejo cada una (id:clase), solo las de un
 //=              monstruo: "1:1013|5:1002". Lo usa F_Wounds_CureFrom (nemesis)
+//=   wd_eased$  las vendadas junto a una fogata de campfire, que penalizan la
+//=              mitad hasta curarlas (D29): "1|5". F_Wounds_Ease
 //=
 //= Dos tipos (.kind): 1 herida (la cura la posada o el templo),
 //=                    2 maldicion (solo la cura el templo).
@@ -22,6 +24,9 @@
 //= Dependencias suaves (el mod funciona sin ellas):
 //=   world-atlas     bioma del mapa donde se muere (elige la herida) y ciudades
 //=   adventure (su diario)  anota la herida recibida y la curada
+//=   campfire        la venda (F_Wounds_Ease) y Descansado: con @cf_ward y
+//=                   @cf_rest_until, la primera muerte fuera de una ciudad no
+//=                   deja herida; wounds gasta @cf_ward
 //===========================================================================
 
 // F_Wounds_Name(id) -> nombre de la herida; "" si no existe.
@@ -47,6 +52,26 @@ function	script	F_Wounds_Has	{
 	return compare("|" + wd_list$ + "|", "|" + getarg(0) + "|");
 }
 
+// F_Wounds_IsEased(id) -> 1 si esa herida esta vendada (campfire).
+function	script	F_Wounds_IsEased	{
+	if (wd_eased$ == "")
+		return 0;
+	return compare("|" + wd_eased$ + "|", "|" + getarg(0) + "|");
+}
+
+// F_Wounds_Ease(id) -> 1 si la vendo: penaliza la mitad hasta curarla (D29).
+// Solo heridas, no maldiciones. PUBLICA; la usa la fogata de campfire.
+function	script	F_Wounds_Ease	{
+	.@id = getarg(0);
+	if (callfunc("F_Wounds_Kind", .@id) != 1 || !callfunc("F_Wounds_Has", .@id) || callfunc("F_Wounds_IsEased", .@id))
+		return 0;
+	if (wd_eased$ == "")
+		wd_eased$ = "" + .@id;
+	else
+		wd_eased$ = wd_eased$ + "|" + .@id;
+	return 1;
+}
+
 // F_Wounds_Count() -> cuantas heridas tiene el personaje.
 function	script	F_Wounds_Count	{
 	if (wd_list$ == "")
@@ -60,11 +85,13 @@ function	script	F_Wounds_Price	{
 	.@kind = callfunc("F_Wounds_Kind", getarg(0));
 	if (.@kind == 0)
 		return 0;
+	// price_pct: ajuste de la app, 100 = estos precios.
+	.@pct = callfunc("F_ModSetting", "wounds", "price_pct", 100);
 	if (getarg(1) == 1)
-		return 150 + BaseLevel * 10;
+		return (150 + BaseLevel * 10) * .@pct / 100;
 	if (.@kind == 2)
-		return 300 + BaseLevel * 15;
-	return 100 + BaseLevel * 6;
+		return (300 + BaseLevel * 15) * .@pct / 100;
+	return (100 + BaseLevel * 6) * .@pct / 100;
 }
 
 // F_Wounds_Add(id) -> 1 si se anoto, 0 si no (no existe, ya la tiene, o ya
@@ -97,6 +124,20 @@ function	script	F_Wounds_Remove	{
 			wd_list$ = .@a$[.@i];
 		else
 			wd_list$ = wd_list$ + "|" + .@a$[.@i];
+	}
+	// Ya no esta vendada.
+	if (wd_eased$ != "") {
+		explode(.@e$, wd_eased$, "|");
+		.@n = getarraysize(.@e$);
+		wd_eased$ = "";
+		for (.@i = 0; .@i < .@n; .@i++) {
+			if (atoi(.@e$[.@i]) == getarg(0))
+				continue;
+			if (wd_eased$ == "")
+				wd_eased$ = .@e$[.@i];
+			else
+				wd_eased$ = wd_eased$ + "|" + .@e$[.@i];
+		}
 	}
 	// Y su origen, si lo tenia ("id:clase").
 	if (wd_src$ != "") {
@@ -164,7 +205,7 @@ OnInit:
 	.max = 3;
 	// Tope de presion comun; survival y temperature usan el mismo numero.
 	.pr_cap = 6;
-	.chance = 100;		// % por muerte fuera de ciudad. Valor de prueba.
+	.chance = callfunc("F_ModSetting", "wounds", "death_chance", 100);	// % por muerte fuera de ciudad
 	.safe_maps$ = "|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|";
 
 	// kind 1 herida, 2 maldicion. fx$: efecto; @n se sustituye por el valor.
@@ -221,6 +262,8 @@ OnList:
 		.@id = atoi(.@a$[.@i]);
 		if (callfunc("F_Wounds_Kind", .@id) == 2)
 			dispbottom "Maldicion: " + callfunc("F_Wounds_Name", .@id);
+		else if (callfunc("F_Wounds_IsEased", .@id))
+			dispbottom "Herida: " + callfunc("F_Wounds_Name", .@id) + " (vendada)";
 		else
 			dispbottom "Herida: " + callfunc("F_Wounds_Name", .@id);
 	}
@@ -291,6 +334,9 @@ S_Apply:
 			.@v = .@pct;
 		else
 			.@v = .@pts;
+		// Vendada (campfire): la mitad, minimo 1.
+		if (callfunc("F_Wounds_IsEased", .@id))
+			.@v = max(.@v / 2, 1);
 		.@fx$ += replacestr(.fx$[.@id], "@n", "" + .@v);
 	}
 	if (.@fx$ != "")
@@ -315,6 +361,12 @@ OnPCDieEvent:
 	}
 	if (compare(.safe_maps$, "|" + strcharinfo(3) + "|"))
 		end;
+	// Descansado junto a una fogata de campfire: esta muerte no deja herida.
+	if (@cf_ward && @cf_rest_until > gettimetick(2)) {
+		@cf_ward = 0;
+		dispbottom "Ibas descansado: esta vez sales sin herida.";
+		end;
+	}
 	if (rand(100) >= .chance)
 		end;
 	if (callfunc("F_Wounds_Count") >= .max)
@@ -403,22 +455,14 @@ OnPCDieEvent:
 	end;
 
 // Herida del evento de clima activo en el mapa; 0 si no hay clima, no esta el
-// mod o ese evento no deja herida. Lee las matrices de Clima#clima.
+// mod o ese evento no deja herida. F_Clima_Now es de clima 0.4.0 o posterior.
 S_ClimateWound:
 	if (!getnpcid(0, "Clima#clima"))
 		return 0;
-	.@n = getvariableofnpc(.map_count, "Clima#clima");
-	for (.@i = 0; .@i < .@n; .@i++) {
-		if (getvariableofnpc(.map$[.@i], "Clima#clima") != getarg(0))
-			continue;
-		if (!getvariableofnpc(.event_active[.@i], "Clima#clima"))
-			return 0;
-		.@combo = getvariableofnpc(.combination[.@i], "Clima#clima");
-		if (.@combo < 1 || .@combo > 10)
-			return 0;
-		return .clima_wound[.@combo];
-	}
-	return 0;
+	.@combo = callfunc("F_Clima_Now", getarg(0));
+	if (.@combo < 1 || .@combo > 10)
+		return 0;
+	return .clima_wound[.@combo];
 
 // Ids candidatos segun el bioma de la world-atlas ("" si no esta el atlas).
 S_Candidates:

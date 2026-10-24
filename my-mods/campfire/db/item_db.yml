@@ -1,0 +1,109 @@
+Header:
+  Type: ITEM_DB
+  Version: 3
+
+# Rango de campfire: 51100-51199 (CONVENTIONS.md). 51100-51109 herramientas,
+# 51110 en adelante platos. Las recetas de los platos estan en
+# registry/tools/campfire/recipes.csv. Precios y valores, de prueba.
+Body:
+  # DelayConsume: no se gasta al usarlo; F_Campfire_Light lo quita solo si la
+  # fogata llega a encenderse.
+  - Id: 51100
+    AegisName: Campfire_Firewood
+    Name: Leña
+    Type: DelayConsume
+    Buy: 300
+    Weight: 100
+    Flags:
+      BuyingStore: true
+    Script: |
+      if (callfunc("F_Campfire_Light", callfunc("F_ModSetting", "campfire", "firewood_minutes", 10)))
+        delitem 51100, 1;
+  - Id: 51101
+    AegisName: Campfire_Camp_Kit
+    Name: Kit de Acampada
+    Type: DelayConsume
+    Buy: 900
+    Weight: 250
+    Flags:
+      BuyingStore: true
+    Script: |
+      if (callfunc("F_Campfire_Light", callfunc("F_ModSetting", "campfire", "kit_minutes", 30)))
+        delitem 51101, 1;
+  # Se usa desde el menu de la fogata, no desde el inventario.
+  - Id: 51102
+    AegisName: Campfire_Bandage
+    Name: Venda
+    Type: Etc
+    Buy: 400
+    Weight: 10
+    Flags:
+      BuyingStore: true
+  # Platos: un estado de comida de rAthena (20 min; uno mas fuerte del mismo
+  # atributo reemplaza al otro) y hambre o sed si survival esta.
+  - Id: 51110
+    AegisName: Campfire_Grasshopper_Skewer
+    Name: Brocheta de Saltamontes
+    Type: Healing
+    Buy: 40
+    Weight: 40
+    Flags:
+      BuyingStore: true
+    Script: |
+      sc_start SC_STRFOOD, 1200000, 2;
+      callfunc "F_Campfire_Eat", 25, 0;
+  - Id: 51111
+    AegisName: Campfire_Honey_Apple
+    Name: Manzana Asada con Miel
+    Type: Healing
+    Buy: 40
+    Weight: 40
+    Flags:
+      BuyingStore: true
+    Script: |
+      sc_start SC_AGIFOOD, 1200000, 2;
+      callfunc "F_Campfire_Eat", 30, 0;
+  - Id: 51112
+    AegisName: Campfire_Roast_Meat
+    Name: Carne Asada
+    Type: Healing
+    Buy: 40
+    Weight: 60
+    Flags:
+      BuyingStore: true
+    Script: |
+      sc_start SC_VITFOOD, 1200000, 2;
+      callfunc "F_Campfire_Eat", 60, 0;
+  - Id: 51113
+    AegisName: Campfire_Mushroom_Soup
+    Name: Sopa de Setas
+    Type: Healing
+    Buy: 40
+    Weight: 50
+    Flags:
+      BuyingStore: true
+    Script: |
+      sc_start SC_INTFOOD, 1200000, 2;
+      callfunc "F_Campfire_Eat", 30, 15;
+  - Id: 51114
+    AegisName: Campfire_Root_Stew
+    Name: Guiso de Raíces
+    Type: Healing
+    Buy: 40
+    Weight: 60
+    Flags:
+      BuyingStore: true
+    Script: |
+      sc_start SC_DEXFOOD, 1200000, 2;
+      callfunc "F_Campfire_Eat", 40, 0;
+  - Id: 51115
+    AegisName: Campfire_Berry_Compote
+    Name: Compota de Frutos Rojos
+    Type: Healing
+    Buy: 40
+    Weight: 40
+    Flags:
+      BuyingStore: true
+    Script: |
+      sc_start SC_LUKFOOD, 1200000, 2;
+      callfunc "F_Campfire_Eat", 20, 15;

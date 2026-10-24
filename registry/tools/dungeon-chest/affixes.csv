@@ -1,0 +1,215 @@
+id,rarity,min,max,kind,type,cap,group,name
+3,1,2,4,0,0,0,0,STR +%d
+4,1,2,4,0,0,0,0,AGI +%d
+5,1,2,4,0,0,0,0,VIT +%d
+6,1,2,4,0,0,0,0,INT +%d
+7,1,2,4,0,0,0,0,DEX +%d
+8,1,2,4,0,0,0,0,LUK +%d
+17,1,5,10,0,0,0,12,ATK +%d
+19,1,5,10,0,0,0,13,MATK +%d
+1,1,30,60,0,0,0,10,MaxHP +%d
+2,1,10,25,0,0,0,11,MaxSP +%d
+22,1,3,6,0,0,0,0,FLEE +%d
+20,1,10,20,0,0,0,0,DEF +%d
+21,1,10,20,0,0,0,0,MDEF +%d
+18,1,3,7,0,0,0,0,HIT +%d
+24,1,2,4,0,0,0,0,Critical +%d
+23,1,2,4,0,0,0,0,Perfect Dodge +%d
+11,1,10,30,1,0,100,0,HP Recovery +%d%%
+12,1,10,30,1,0,100,0,SP Recovery +%d%%
+9,2,4,6,1,0,30,10,MaxHP +%d%%
+10,2,4,6,1,0,30,11,MaxSP +%d%%
+13,2,4,6,1,0,25,12,ATK +%d%%
+14,2,4,6,1,0,25,13,MATK +%d%%
+166,2,4,6,1,0,25,0,Ranged Physical Damage +%d%%
+219,2,4,6,1,0,25,0,Melee Physical Damage +%d%%
+167,2,4,8,1,0,30,0,Received Ranged Physical Damage -%d%%
+220,2,4,8,1,0,30,0,Received Melee Physical Damage -%d%%
+15,2,1,2,2,0,5,14,ASPD +%d
+16,2,3,5,1,0,15,14,ASPD -%d%%
+170,2,3,5,1,0,30,0,Variable Casting Time -%d%%
+171,2,3,5,1,0,30,0,After Skill Delay -%d%%
+172,2,3,6,1,0,30,0,SP Consumption -%d%%
+168,2,5,10,1,0,40,0,Healing effectiveness +%d%%
+169,2,3,7,1,0,30,0,Recovery gained from Healing skills +%d%%
+165,2,5,10,1,0,40,0,Critical Damage -%d%%
+25,2,3,7,1,0,30,0,Neutral elemental resistance +%d%%
+26,2,3,7,1,0,30,0,Water elemental resistance +%d%%
+27,2,3,7,1,0,30,0,Earth elemental resistance +%d%%
+28,2,3,7,1,0,30,0,Fire elemental resistance +%d%%
+29,2,3,7,1,0,30,0,Wind elemental resistance +%d%%
+30,2,3,7,1,0,30,0,Poison elemental resistance +%d%%
+31,2,3,7,1,0,30,0,Holy elemental resistance +%d%%
+32,2,3,7,1,0,30,0,Shadow elemental resistance +%d%%
+33,2,3,7,1,0,30,0,Ghost elemental resistance +%d%%
+34,2,3,7,1,0,30,0,Undead elemental resistance +%d%%
+36,2,5,10,1,0,40,0,Neutral monster resistance +%d%%
+38,2,5,10,1,0,40,0,Water monster resistance +%d%%
+40,2,5,10,1,0,40,0,Earth monster resistance +%d%%
+42,2,5,10,1,0,40,0,Fire monster resistance +%d%%
+44,2,5,10,1,0,40,0,Wind monster resistance +%d%%
+46,2,5,10,1,0,40,0,Poison monster resistance +%d%%
+48,2,5,10,1,0,40,0,Holy monster resistance +%d%%
+50,2,5,10,1,0,40,0,Shadow monster resistance +%d%%
+52,2,5,10,1,0,40,0,Ghost monster resistance +%d%%
+54,2,5,10,1,0,40,0,Undead monster resistance +%d%%
+56,2,5,10,1,0,40,0,Neutral monster magic resistance +%d%%
+58,2,5,10,1,0,40,0,Water monster magic resistance +%d%%
+60,2,5,10,1,0,40,0,Earth monster magic resistance +%d%%
+62,2,5,10,1,0,40,0,Fire monster magic resistance +%d%%
+64,2,5,10,1,0,40,0,Wind monster magic resistance +%d%%
+66,2,5,10,1,0,40,0,Poison monster magic resistance +%d%%
+68,2,5,10,1,0,40,0,Holy monster magic resistance +%d%%
+70,2,5,10,1,0,40,0,Shadow monster magic resistance +%d%%
+72,2,5,10,1,0,40,0,Ghost monster magic resistance +%d%%
+74,2,5,10,1,0,40,0,Undead monster magic resistance +%d%%
+87,2,3,7,1,0,35,0,Formless monster resistance +%d%%
+88,2,3,7,1,0,35,0,Undead monster resistance +%d%%
+89,2,3,7,1,0,35,0,Brute monster resistance +%d%%
+90,2,3,7,1,0,35,0,Plant monster resistance +%d%%
+91,2,3,7,1,0,35,0,Insect monster resistance +%d%%
+92,2,3,7,1,0,35,0,Fish monster resistance +%d%%
+93,2,3,7,1,0,35,0,Demon monster resistance +%d%%
+94,2,3,7,1,0,35,0,Demihuman monster resistance +%d%%
+95,2,3,7,1,0,35,0,Angel monster resistance +%d%%
+96,2,3,7,1,0,35,0,Dragon monster resistance +%d%%
+194,2,3,7,1,0,35,0,Formless monster resistance +%d%%
+195,2,3,7,1,0,35,0,Undead monster resistance +%d%%
+196,2,3,7,1,0,35,0,Brute monster resistance +%d%%
+197,2,3,7,1,0,35,0,Plant monster resistance +%d%%
+198,2,3,7,1,0,35,0,Insect monster resistance +%d%%
+199,2,3,7,1,0,35,0,Fish monster resistance +%d%%
+200,2,3,7,1,0,35,0,Demon monster resistance +%d%%
+201,2,3,7,1,0,35,0,Demihuman monster resistance +%d%%
+202,2,3,7,1,0,35,0,Angel monster resistance +%d%%
+203,2,3,7,1,0,35,0,Dragon monster resistance +%d%%
+149,2,3,6,1,0,30,0,Normal monster resistance +%d%%
+160,2,3,7,1,0,30,0,Small monster resistance +%d%%
+190,2,3,7,1,0,30,0,Small monster magic resistance +%d%%
+161,2,3,7,1,0,30,0,Medium monster resistance +%d%%
+191,2,3,7,1,0,30,0,Medium monster magic resistance +%d%%
+162,2,3,7,1,0,30,0,Large monster resistance +%d%%
+192,2,3,7,1,0,30,0,Large monster magic resistance +%d%%
+164,3,5,10,1,0,40,0,Critical Damage +%d%%
+193,3,2,4,1,0,15,0,Elemental attacks resistance +%d%%
+218,3,5,15,1,0,50,0,Recieved reflected damage -%d%%
+150,3,3,6,1,0,30,0,Boss monster resistance +%d%%
+37,3,3,7,1,0,35,0,ATK +%d%% against Neutral monster
+39,3,3,7,1,0,35,0,ATK +%d%% against Water monster
+41,3,3,7,1,0,35,0,ATK +%d%% against Earth monster
+43,3,3,7,1,0,35,0,ATK +%d%% against Fire monster
+45,3,3,7,1,0,35,0,ATK +%d%% against Wind monster
+47,3,3,7,1,0,35,0,ATK +%d%% against Poison monster
+49,3,3,7,1,0,35,0,ATK +%d%% against Holy monster
+51,3,3,7,1,0,35,0,ATK +%d%% against Shadow monster
+53,3,3,7,1,0,35,0,ATK +%d%% against Ghost monster
+55,3,3,7,1,0,35,0,ATK +%d%% against Undead monster
+57,3,3,7,1,0,35,0,MATK +%d%% against Neutral monster
+59,3,3,7,1,0,35,0,MATK +%d%% against Water monster
+61,3,3,7,1,0,35,0,MATK +%d%% against  Earth monster
+63,3,3,7,1,0,35,0,MATK +%d%% against Fire monster
+65,3,3,7,1,0,35,0,MATK +%d%% against Wind monster
+67,3,3,7,1,0,35,0,MATK +%d%% against Poison monster
+69,3,3,7,1,0,35,0,MATK +%d%% against Holy monster
+71,3,3,7,1,0,35,0,MATK +%d%% against Shadow monster
+73,3,3,7,1,0,35,0,MATK +%d%% against Ghost monster
+75,3,3,7,1,0,35,0,MATK +%d%% against Undead monster
+97,3,3,7,1,0,35,0,ATK +%d%% against Formless monster
+98,3,3,7,1,0,35,0,ATK +%d%% against Undead monster
+99,3,3,7,1,0,35,0,ATK +%d%% against Brute monster
+100,3,3,7,1,0,35,0,ATK +%d%% against Plant monster
+101,3,3,7,1,0,35,0,ATK +%d%% against Insect monster
+102,3,3,7,1,0,35,0,ATK +%d%% against Fish monster
+103,3,3,7,1,0,35,0,ATK +%d%% against Demon monster
+104,3,3,7,1,0,35,0,ATK +%d%% against Demihuman monster
+105,3,3,7,1,0,35,0,ATK +%d%% against Angel monster
+106,3,3,7,1,0,35,0,ATK +%d%% against Dragon monster
+107,3,3,7,1,0,35,0,MATK +%d%% against Formless monster
+108,3,3,7,1,0,35,0,MATK +%d%% against Undead monster
+109,3,3,7,1,0,35,0,MATK +%d%% against Brute monster
+110,3,3,7,1,0,35,0,MATK +%d%% against Plant monster
+111,3,3,7,1,0,35,0,MATK +%d%% against Insect monster
+112,3,3,7,1,0,35,0,MATK +%d%% against Fish monster
+113,3,3,7,1,0,35,0,MATK +%d%% against Devil monster
+114,3,3,7,1,0,35,0,MATK +%d%% against Demihuman monster
+115,3,3,7,1,0,35,0,MATK +%d%% against Angel monster
+116,3,3,7,1,0,35,0,MATK +%d%% against Dragon monster
+147,3,3,6,1,0,30,0,ATK +%d%% against Normal monster
+151,3,3,6,1,0,30,0,MATK +%d%% against Normal monster
+157,3,3,7,1,0,35,0,ATK +%d%% against Small size monster
+187,3,3,7,1,0,35,0,MATK against Small size monster +%d%%
+158,3,3,7,1,0,35,0,ATK +%d%% against Medium size monster
+188,3,3,7,1,0,35,0,MATK against Medium size monster +%d%%
+159,3,3,7,1,0,35,0,ATK +%d%% against Large size monster
+189,3,3,7,1,0,35,0,MATK against Large size monster +%d%%
+221,3,3,7,1,0,35,0,Neutral elemental magic skill damage +%d%%
+222,3,3,7,1,0,35,0,Water elemental magic skill damage +%d%%
+223,3,3,7,1,0,35,0,Earth elemental magic skill damage +%d%%
+224,3,3,7,1,0,35,0,Fire elemental magic skill damage +%d%%
+225,3,3,7,1,0,35,0,Wind elemental magic skill damage +%d%%
+226,3,3,7,1,0,35,0,Poison elemental magic skill damage +%d%%
+227,3,3,7,1,0,35,0,Holy elemental magic skill damage +%d%%
+228,3,3,7,1,0,35,0,Shadow elemental magic skill damage +%d%%
+229,3,3,7,1,0,35,0,Ghost elemental magic skill damage +%d%%
+230,3,3,7,1,0,35,0,Undead elemental magic skill damage +%d%%
+185,3,0,0,2,5,0,0,Indestructible in battle
+186,3,0,0,2,4,0,0,Indestructible in battle
+148,4,3,6,1,0,30,0,ATK +%d%% against Boss monster
+152,4,3,6,1,0,30,0,MATK +%d%% against Boss monster
+153,4,2,5,1,0,25,0,Pierces %d%% DEF of Normal monster
+154,4,2,5,1,0,25,0,Pierces %d%% DEF of Boss monster
+155,4,2,5,1,0,25,0,Pierces %d%% MDEF of Normal monster
+156,4,2,5,1,0,25,0,Pierces %d%% MDEF of Boss monster
+127,4,2,5,1,0,25,0,Pierces %d%% DEF of Formless monster
+128,4,2,5,1,0,25,0,Pierces %d%% DEF of Undead monster
+129,4,2,5,1,0,25,0,Pierces %d%% DEF of Brute monster
+130,4,2,5,1,0,25,0,Pierces %d%% DEF of Plant monster
+131,4,2,5,1,0,25,0,Pierces %d%% DEF of Insect monster
+132,4,2,5,1,0,25,0,Pierces %d%% DEF of Fish monster
+133,4,2,5,1,0,25,0,Pierces %d%% DEF of Demon monster
+134,4,2,5,1,0,25,0,Pierces %d%% DEF of Demihuman monster
+135,4,2,5,1,0,25,0,Pierces %d%% DEF of Angel monster
+136,4,2,5,1,0,25,0,Pierces %d%% DEF of Dragon monster
+137,4,2,5,1,0,25,0,Pierces %d%% MDEF of Formless monster
+138,4,2,5,1,0,25,0,Pierces %d%% MDEF of Undead monster
+139,4,2,5,1,0,25,0,Pierces %d%% MDEF of Brute monster
+140,4,2,5,1,0,25,0,Pierces %d%% MDEF of Plant monster
+141,4,2,5,1,0,25,0,Pierces %d%% MDEF of Insect monster
+142,4,2,5,1,0,25,0,Pierces %d%% MDEF of Fish monster
+143,4,2,5,1,0,25,0,Pierces %d%% MDEF of Demon monster
+144,4,2,5,1,0,25,0,Pierces %d%% MDEF of Demihuman monster
+145,4,2,5,1,0,25,0,Pierces %d%% MDEF of Angel monster
+146,4,2,5,1,0,25,0,Pierces %d%% MDEF of Dragon monster
+231,4,2,4,1,0,15,0,All elemental magic skill damage +%d%%
+232,4,2,5,1,0,15,0,Experience gained from Formless race monsters +%d%%
+233,4,2,5,1,0,15,0,Experience gained from Undead race monsters +%d%%
+234,4,2,5,1,0,15,0,Experience gained from Brute race monsters +%d%%
+235,4,2,5,1,0,15,0,Experience gained from Plant race monsters +%d%%
+236,4,2,5,1,0,15,0,Experience gained from Insect race monsters +%d%%
+237,4,2,5,1,0,15,0,Experience gained from Fish race monsters +%d%%
+238,4,2,5,1,0,15,0,Experience gained from Demon race monsters +%d%%
+239,4,2,5,1,0,15,0,Experience gained from Demi-Human race monsters +%d%%
+240,4,2,5,1,0,15,0,Experience gained from Angel race monsters +%d%%
+241,4,2,5,1,0,15,0,Experience gained from Dragon race monsters +%d%%
+242,4,1,3,1,0,10,0,Experience gained from all race monsters +%d%%
+163,4,0,0,2,5,0,0,Nullify weapon's damage size penalty
+175,4,0,0,2,5,0,1,Weapon Element: Neutral
+176,4,0,0,2,5,0,1,Weapon Element: Water
+177,4,0,0,2,5,0,1,Weapon Element: Earth
+178,4,0,0,2,5,0,1,Weapon Element: Fire
+179,4,0,0,2,5,0,1,Weapon Element: Wind
+180,4,0,0,2,5,0,1,Weapon Element: Poison
+181,4,0,0,2,5,0,1,Weapon Element: Holy
+182,4,0,0,2,5,0,1,Weapon Element: Shadow
+183,4,0,0,2,5,0,1,Weapon Element: Ghost
+184,4,0,0,2,5,0,1,Weapon Element: Undead
+76,4,0,0,2,4,0,2,Armor Element: Neutral
+77,4,0,0,2,4,0,2,Armor Element: Water
+78,4,0,0,2,4,0,2,Armor Element: Earth
+79,4,0,0,2,4,0,2,Armor Element: Fire
+80,4,0,0,2,4,0,2,Armor Element: Wind
+81,4,0,0,2,4,0,2,Armor Element: Poison
+82,4,0,0,2,4,0,2,Armor Element: Holy
+83,4,0,0,2,4,0,2,Armor Element: Shadow
+84,4,0,0,2,4,0,2,Armor Element: Ghost
+85,4,0,0,2,4,0,2,Armor Element: Undead

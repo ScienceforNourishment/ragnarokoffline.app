@@ -165,7 +165,13 @@ materiales de `refuges` lo son.
 
 - **Recompensas reales para contratos y cofres:** trofeos con nombre de las
   marcas, botín de cofre por **bioma** (equipo de abrigo en mazmorras de hielo,
-  ropa fresca en las de desierto), además de por Tier.
+  ropa fresca en las de desierto), además de por Tier. Los cofres ya dan
+  equipo con afijos y algún disfraz (`dungeon-chest` 0.4.0, D35–D36).
+- **Disfraces como botín de varias actividades** (D36): hay 51 en
+  `registry/tools/dungeon-chest/costumes.csv`, que hoy solo dan los cofres.
+  Repartirlos por actividad (unos de contratos, otros de refugios, otros de
+  oficios o de un némesis) da razones para hacer cosas distintas, y un
+  disfraz no toca el balance.
 - **Oficios** (pesca, leñador, minería, peletero): no se pueden añadir a la
   ventana de habilidades sin tocar el cliente. Se implementan con herramientas
   (objetos), nodos de recurso (NPC fijos con recarga temporal) y nivel de
@@ -244,7 +250,7 @@ Diseño y límites en [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## Mods nuevos propuestos
 
-Por orden de impacto. Existen `adventure` (0.1), `nemesis` (0.1) y `tavern-rumors` (0.1); lo que
+Por orden de impacto. Existen `adventure` (0.1), `nemesis` (0.1), `tavern-rumors` (0.1), `campfire` (0.2) y `refuges` (0.1); lo que
 hacen está en su README, y lo de aquí abajo es la propuesta original. Rangos de IDs y prefijos en
 [`CONVENTIONS.md`](./CONVENTIONS.md).
 
