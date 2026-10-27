@@ -1,0 +1,149 @@
+Header:
+  Type: ITEM_DB
+  Version: 3
+
+# Trofeos de marca (D40): uno por raza, 51600 + raza (RC_*, 0-9). Los da
+# una marca abatida. Llevado puesto, +10 % de dano contra su raza; ademas se
+# gasta como prueba de una marca de elite, en el Herrero de Afijos
+# (dungeon-chest) o con el Coleccionista. Sin precio: no se venden.
+Body:
+  - Id: 51600
+    AegisName: Eb_Trophy_Formless
+    Name: Esquirla de marca
+    Type: Armor
+    Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
+    Script: |
+      bonus2 bAddRace,RC_Formless,10;
+      bonus2 bMagicAddRace,RC_Formless,10;
+  - Id: 51601
+    AegisName: Eb_Trophy_Undead
+    Name: Hueso de marca
+    Type: Armor
+    Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
+    Script: |
+      bonus2 bAddRace,RC_Undead,10;
+      bonus2 bMagicAddRace,RC_Undead,10;
+  - Id: 51602
+    AegisName: Eb_Trophy_Brute
+    Name: Colmillo de marca
+    Type: Armor
+    Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
+    Script: |
+      bonus2 bAddRace,RC_Brute,10;
+      bonus2 bMagicAddRace,RC_Brute,10;
+  - Id: 51603
+    AegisName: Eb_Trophy_Plant
+    Name: Raiz de marca
+    Type: Armor
+    Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
+    Script: |
+      bonus2 bAddRace,RC_Plant,10;
+      bonus2 bMagicAddRace,RC_Plant,10;
+  - Id: 51604
+    AegisName: Eb_Trophy_Insect
+    Name: Antena de marca
+    Type: Armor
+    Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
+    Script: |
+      bonus2 bAddRace,RC_Insect,10;
+      bonus2 bMagicAddRace,RC_Insect,10;
+  - Id: 51605
+    AegisName: Eb_Trophy_Fish
+    Name: Aleta de marca
+    Type: Armor
+    Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
+    Script: |
+      bonus2 bAddRace,RC_Fish,10;
+      bonus2 bMagicAddRace,RC_Fish,10;
+  - Id: 51606
+    AegisName: Eb_Trophy_Demon
+    Name: Cuerno de marca
+    Type: Armor
+    Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
+    Script: |
+      bonus2 bAddRace,RC_Demon,10;
+      bonus2 bMagicAddRace,RC_Demon,10;
+  - Id: 51607
+    AegisName: Eb_Trophy_DemiHuman
+    Name: Insignia de marca
+    Type: Armor
+    Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
+    Script: |
+      bonus2 bAddRace,RC_DemiHuman,10;
+      bonus2 bMagicAddRace,RC_DemiHuman,10;
+  - Id: 51608
+    AegisName: Eb_Trophy_Angel
+    Name: Pluma de marca
+    Type: Armor
+    Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
+    Script: |
+      bonus2 bAddRace,RC_Angel,10;
+      bonus2 bMagicAddRace,RC_Angel,10;
+  - Id: 51609
+    AegisName: Eb_Trophy_Dragon
+    Name: Escama de marca
+    Type: Armor
+    Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
+    Script: |
+      bonus2 bAddRace,RC_Dragon,10;
+      bonus2 bMagicAddRace,RC_Dragon,10;

@@ -30,9 +30,11 @@ La planificación está repartida en estos documentos; léelos en este orden:
 | [`DECISIONS.md`](./DECISIONS.md) | lo decidido, con fecha y porqué. **Manda sobre los demás** |
 | [`ROADMAP.md`](./ROADMAP.md) | la visión, los hitos, el estado de cada mod y los errores abiertos |
 | [`PLAN.md`](./PLAN.md) | el catálogo de diseño: qué sistemas queremos y cómo |
+| [`FLUJO.md`](./FLUJO.md) | cómo se juega con todos los mods: el bucle de una expedición paso a paso, qué mod interviene en cada momento y los huecos para diseñar |
 | [`CONVENTIONS.md`](./CONVENTIONS.md) | rangos de IDs, prefijos, eventos públicos, regla de grupo y restricciones técnicas |
 | [`MODPACK.md`](./MODPACK.md) | qué mods y Settings forman la partida |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | límites de la plataforma: clima eventual, día y noche y presupuesto de rendimiento |
+| [`RUMORES.md`](./RUMORES.md) | los rumores que llevan a algo: la cadena desde un relato contado hasta una consecuencia en el mundo (D42–D43) |
 | [`NOVEDADES.md`](./NOVEDADES.md) | funciones nuevas de la plataforma por aprovechar, con lo investigado: iconos de estado propios, logros, música |
 | [`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md) | el guion de la próxima sesión de prueba larga en el juego, con su tabla de resultados |
 
@@ -52,9 +54,11 @@ tarea:
 |---|---|
 | Arreglar o probar un mod existente | su README; el error abierto y los pendientes en `ROADMAP.md` |
 | Preparar o hacer una sesión de prueba en el juego | `SESION-DE-PRUEBA.md`; al acabar, sus resultados pasan a «Estado» de cada README |
-| Crear un mod nuevo | su entrada en `PLAN.md` («Mods nuevos propuestos»); `CONVENTIONS.md` (IDs, prefijo, eventos, reglas de rendimiento) |
+| Crear un mod nuevo | su entrada en `PLAN.md` («Mods nuevos propuestos»); `CONVENTIONS.md` (IDs, prefijo, eventos, reglas de rendimiento); `FLUJO.md` («Para diseñar lo siguiente») |
+| Diseñar un sistema o revisar el conjunto | `FLUJO.md` |
 | Cualquier cosa de EXP, expediciones, relatos o el diario | `ADVENTURE.md` |
 | Castigos, recompensas o valores de balance | `BALANCE.md` |
+| Rumores, cadenas de pistas o lo que desbloquea un relato contado | `RUMORES.md` |
 | Algo que la plataforma quizá no permite (clima, luz, cliente, rendimiento) | `ARCHITECTURE.md` y la tabla de restricciones de `CONVENTIONS.md` |
 | Activar o recomendar un mod del registro, o cambiar Settings | `MODPACK.md` |
 | Una decisión de diseño nueva | `DECISIONS.md` (añadirla ahí con fecha) |
@@ -218,8 +222,9 @@ las ideas para futuras iteraciones:
   bioma; un 5 % de las veces, un disfraz (D36); si no, una comida del Tier
   (de prueba). En Prontera, su **Herrero de Afijos** pasa, quita o vuelve a
   sortear afijos por zeny (D37). Los datos son CSV propios importados de
-  `arpg-equipments` y `affix-forge`. Los objetos de `clima` y la ropa de
-  `temperature` como botín siguen pendientes.
+  `arpg-equipments` y `affix-forge`. Desde la 0.6.0 (D38), un 10 % de las
+  aperturas da un objeto de `clima` o la ropa de `temperature` del bioma de
+  la mazmorra.
 - **`survival`** añade barras de hambre y sed a la interfaz, además de alimentos
   y bebidas que las restauran. Ambos valores disminuyen con el tiempo, y los
   eventos de `clima` pueden acelerar esa reducción. En los mapas exteriores
@@ -229,7 +234,7 @@ las ideas para futuras iteraciones:
   (D12): el diario vive ahora en `adventure`, que conserva
   `TravelJournal::OnLog`, así que los mods que escriben en él no cambian. Su
   código queda en el historial de git.
-- **`expedition-board`** coloca un tablero de contratos en cada ciudad principal, con dos tipos: *marca* (aparece un monstruo con nombre en un mapa cercano) y *caza* (abatir N monstruos de una especie dentro de un mapa; el progreso lo cuenta el mod). En ambos hay que volver a la ciudad que lo publicó: las cacerías se cobran en el tablero y las marcas con el Intendente, un NPC junto al tablero. Escribe notas en el diario de `adventure` (`TravelJournal::OnLog`, dependencia suave, sin `requires.mods`) y toma el Tier del mapa de `world-atlas` (también suave) para escalar la recompensa y reforzar las marcas; por lo demás es independiente de los demás mods de esta carpeta y de `bounty-hunt`. Las recompensas actuales son zeny y pociones de prueba; no asumas botín de `dungeon-chest` ni de `clima`.
+- **`expedition-board`** coloca un tablero de contratos en cada ciudad principal, con dos tipos: *marca* (aparece un monstruo con nombre en un mapa cercano) y *caza* (abatir N monstruos de una especie dentro de un mapa; el progreso lo cuenta el mod). En ambos hay que volver a la ciudad que lo publicó: las cacerías se cobran en el tablero y las marcas con el Intendente, un NPC junto al tablero. Escribe notas en el diario de `adventure` (`TravelJournal::OnLog`, dependencia suave, sin `requires.mods`) y toma el Tier del mapa de `world-atlas` (también suave) para escalar la recompensa y reforzar las marcas; por lo demás es independiente de los demás mods de esta carpeta y de `bounty-hunt`. Las recompensas son zeny y pociones de prueba y, desde la 0.8.0 (D40), un **trofeo de la raza** de la marca: se lleva puesto, abre una **marca de élite** con el Intendente, se engarza con el Herrero de `dungeon-chest` o se cuelga con el **Coleccionista** de Payon por defensa permanente.
 
 - **`wounds`** da heridas y maldiciones con nombre al morir fuera de una ciudad; se curan con el Posadero (zeny, solo heridas) o el Sacerdote del Templo (donación, también maldiciones) de las siete ciudades. El nombre de la herida sale de quién te mató, del bioma, del clima activo o de tu marca de `expedition-board`. Penaliza con su propio `bonus_script`, sin tocar `survival`. Usa `world-atlas` (bioma) y `travel-journal` (notas) como dependencias suaves. Ver [`wounds/README.md`](./wounds/README.md).
 
@@ -260,7 +265,8 @@ las ideas para futuras iteraciones:
 
 - **`nemesis`** convierte en némesis al monstruo que te mató fuera de una
   ciudad (uno a la vez): te espera con nombre donde caíste, sube de rango si
-  vuelve a matarte y, al vencerlo, da trofeos firmados, un relato de
+  vuelve a matarte y, al vencerlo, da un talismán firmado con afijos de su
+  historia (D40), un relato de
   `adventure` y cura las heridas que te dejó (`wounds` 0.5.0,
   `F_Wounds_CureFrom`). Todo con dependencias suaves; sin temporizadores. Ver
   [`nemesis/README.md`](./nemesis/README.md).
@@ -269,7 +275,13 @@ las ideas para futuras iteraciones:
   zeny, el Tabernero cuenta qué tiempo hace donde vas (`clima`), qué le duele
   al monstruo de tu contrato (`expedition-board`) y dónde te espera tu
   némesis (`nemesis`); y allí se cuentan gratis los relatos de `adventure`
-  (`Adventure::OnRest`). Todo con dependencias suaves. Ver
+  (`Adventure::OnRest`). Desde la 0.2 (D41) vende el **rumor de un alijo**
+  escondido en un campo, con el botín de los cofres de `dungeon-chest` y un
+  relato (provisional). Desde la 0.3 (D42–D44), su **Viejo Trotamundos**
+  convierte los relatos contados de `adventure` (`adv_told$`, desde la 0.5)
+  en **cadenas de rumores**: un rastro en una mazmorra, alguien que lo lee
+  en otra ciudad, un guardián y algo que queda para el mundo
+  ([`RUMORES.md`](./RUMORES.md)). Todo con dependencias suaves. Ver
   [`tavern-rumors/README.md`](./tavern-rumors/README.md).
 
 - **`campfire`** pone fogatas en el campo: la leña o un kit encienden una

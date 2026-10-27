@@ -6,12 +6,12 @@
 // dungeon-loot.txt and affix-smith.txt:
 //   $@dc_item[] $@dc_job$[]      the equipment, by Tier; Tier t is [$@dc_from[t], $@dc_to[t])
 //   $@dc_cos[] ($@dc_cosn)       the costumes
-//   $@dc_lv[t] $@dc_gear[t] $@dc_cls[t] $@dc_cosp[t]  loot_tiers.csv
+//   $@dc_lv[t] $@dc_gear[t] $@dc_cls[t] $@dc_cosp[t] $@dc_bip[t]  loot_tiers.csv
 //   $@dc_cw[t*4+k] $@dc_rw[t*4+r]        count and rarity weights (k, r from 0)
 //   $@dc_a*[] ($@dc_an)          the affixes; $@dc_aix[option id] = index + 1
 //   $@dc_ari[(r-1)*400+k]        the k-th affix of rarity r; $@dc_arc[r] how many
 //   $@dc_nm$[option id]          its name, as the client shows it
-//   $@dc_bio$[] $@dc_bpct[] $@dc_bopt$[]  loot_biomes.csv
+//   $@dc_bio$[] $@dc_bpct[] $@dc_bopt$[] $@dc_bitem$[]  loot_biomes.csv
 //   $@dc_jk$[] $@dc_jv[]         item_db job name and its EAJ_ constant
 
 -	script	dungeon_loot	-1,{
@@ -60,6 +60,7 @@ OnInit:
 	setarray $@dc_gear[0], 0, 80, 80, 80, 80, 80, 80;
 	setarray $@dc_cls[0], 0, 70, 70, 70, 70, 70, 70;
 	setarray $@dc_cosp[0], 0, 5, 5, 5, 5, 5, 5;
+	setarray $@dc_bip[0], 0, 10, 10, 10, 10, 10, 10;
 	setarray $@dc_cw[0], 0, 0, 0, 0, 60, 30, 9, 1, 55, 30, 12, 3, 50, 30, 15, 5, 45, 30, 18, 7, 40, 32, 20, 8, 35, 33, 22, 10;
 	setarray $@dc_rw[0], 0, 0, 0, 0, 70, 22, 7, 1, 62, 26, 10, 2, 55, 28, 14, 3, 50, 29, 17, 4, 45, 30, 20, 5, 40, 30, 23, 7;
 	$@dc_an = 214;
@@ -789,6 +790,7 @@ OnInit:
 	setarray $@dc_bio$[0], "nieve", "montana", "costa", "volcan", "desierto", "pantano", "selva", "cueva", "bosque", "pradera", "ruinas";
 	setarray $@dc_bpct[0], 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35;
 	setarray $@dc_bopt$[0], "26|38", "26|38|29|44", "26|38", "28|42", "28|42", "30|46|27|40", "30|46|27|40", "27|40", "27|40|29|44", "27|40|29|44", "34|54|32|50";
+	setarray $@dc_bitem$[0], "50825|50840|50841", "50833|50840|50841", "50826", "50827|50842|50843", "50832|50842|50843", "50829", "50827", "50827", "50831", "50824|50828", "50829";
 	$@dc_jn = 29;
 	setarray $@dc_jk$[0], "Acolyte", "Alchemist", "Archer", "Assassin", "BardDancer", "Blacksmith", "Crusader", "Gunslinger", "Hunter", "KagerouOboro", "Knight", "Mage", "Merchant", "Monk", "Ninja", "Novice", "Priest", "Rebellion", "Rogue", "Sage", "SoulLinker", "Spirit_Handler", "StarGladiator", "Summoner", "SuperNovice", "Swordman", "Taekwon", "Thief", "Wizard";
 	setarray $@dc_jv[0], EAJ_ACOLYTE, EAJ_ALCHEMIST, EAJ_ARCHER, EAJ_ASSASSIN, EAJ_BARDDANCER, EAJ_BLACKSMITH, EAJ_CRUSADER, EAJ_GUNSLINGER, EAJ_HUNTER, EAJ_KAGEROUOBORO, EAJ_KNIGHT, EAJ_MAGE, EAJ_MERCHANT, EAJ_MONK, EAJ_NINJA, EAJ_NOVICE, EAJ_PRIEST, EAJ_REBELLION, EAJ_ROGUE, EAJ_SAGE, EAJ_SOULLINKER, EAJ_SPIRIT_HANDLER, EAJ_STARGLADIATOR, EAJ_SUMMONER, EAJ_SUPERNOVICE, EAJ_SWORDMAN, EAJ_TAEKWON, EAJ_THIEF, EAJ_WIZARD;

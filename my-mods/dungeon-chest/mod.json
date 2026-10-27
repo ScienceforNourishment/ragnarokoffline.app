@@ -1,8 +1,8 @@
 {
   "name": "dungeon-chest",
-  "version": "0.5.0",
+  "version": "0.7.1",
   "author": "Ragnarok Offline",
-  "description": "Cofres aleatorios por mapa de dungeon, agrupados por Tier según sus monstruos. Dan equipo sin identificar con afijos (listas de arpg-equipments y afijos de affix-forge) o una comida del Tier, y un Herrero de Afijos en Prontera que los pasa, quita o vuelve a sortear.",
+  "description": "Cofres aleatorios por mapa de dungeon, agrupados por Tier según sus monstruos. Dan equipo sin identificar con afijos (listas de arpg-equipments y afijos de affix-forge) o una comida del Tier, y un Herrero de Afijos en Prontera que los pasa, quita, vuelve a sortear o engarza trofeos de caza.",
   "requires": {
     "app": ">=1.4.0",
     "era": "renewal"
@@ -11,6 +11,9 @@
     { "key": "smith_move_all", "type": "number", "default": 100000, "min": 0, "max": 100000000, "label": "Herrero: pasar todos los afijos (zeny)", "description": "Valor de prueba. Lo cobra el Herrero de Afijos (Prontera 155,187). 0 = gratis." },
     { "key": "smith_move_one", "type": "number", "default": 60000, "min": 0, "max": 100000000, "label": "Herrero: pasar un afijo (zeny)", "description": "Valor de prueba. Lo cobra el Herrero de Afijos (Prontera 155,187). 0 = gratis." },
     { "key": "smith_remove", "type": "number", "default": 30000, "min": 0, "max": 100000000, "label": "Herrero: quitar un afijo (zeny)", "description": "Valor de prueba. Lo cobra el Herrero de Afijos (Prontera 155,187). 0 = gratis." },
-    { "key": "smith_reroll", "type": "number", "default": 50000, "min": 0, "max": 100000000, "label": "Herrero: volver a sortear los afijos (zeny)", "description": "Valor de prueba. Lo cobra el Herrero de Afijos (Prontera 155,187). 0 = gratis." }
+    { "key": "smith_reroll", "type": "number", "default": 50000, "min": 0, "max": 100000000, "label": "Herrero: volver a sortear los afijos (zeny)", "description": "Valor de prueba. Lo cobra el Herrero de Afijos (Prontera 155,187). 0 = gratis." },
+    { "key": "smith_trophy", "type": "number", "default": 20000, "min": 0, "max": 100000000, "label": "Herrero: engarzar un trofeo (zeny)", "description": "Valor de prueba. Gasta un trofeo de marca o un talismán de némesis y pone un afijo de su raza. 0 = gratis." },
+    { "key": "smith_trophy_mark", "type": "number", "default": 5, "min": 1, "max": 100, "label": "Herrero: afijo de un trofeo de marca (%)", "description": "Valor de prueba. ATK, MATK o resistencia contra su raza." },
+    { "key": "smith_trophy_nemesis", "type": "number", "default": 8, "min": 1, "max": 100, "label": "Herrero: afijo de un talismán de némesis (%)", "description": "Valor de prueba." }
   ]
 }

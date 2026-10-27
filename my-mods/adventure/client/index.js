@@ -120,8 +120,11 @@ export default function init(parameters, api) {
     const trips = $('.list.trips');
     const traits = $('.list.traits');
     const num = (value, fallback) => (Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : fallback);
-    const step = num(parameters?.streak_step, 10);
-    const max = num(parameters?.streak_max, 50);
+    // The racha settings may be 0 (streak_step 0 turns it off), so only a
+    // missing or negative value falls back.
+    const num0 = (value, fallback) => (value !== undefined && value !== null && value !== '' && Number(value) >= 0 ? Number(value) : fallback);
+    const step = num0(parameters?.streak_step, 10);
+    const max = num0(parameters?.streak_max, 50);
     const limits = { minutes: num(parameters?.trait_minutes, 30), biomes: num(parameters?.forager_biomes, 5), cures: num(parameters?.tough_cures, 3) };
     $('.name').textContent = api.snapshot()?.player?.name || '';
 

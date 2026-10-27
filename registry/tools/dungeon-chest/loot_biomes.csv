@@ -1,12 +1,12 @@
-biome,pct,options,note
-nieve,35,26|38,resistir agua: el frío y los monstruos de hielo
-montana,35,26|38|29|44,agua y viento
-costa,35,26|38,agua
-volcan,35,28|42,fuego
-desierto,35,28|42,fuego
-pantano,35,30|46|27|40,veneno y tierra
-selva,35,30|46|27|40,veneno y tierra
-cueva,35,27|40,tierra
-bosque,35,27|40|29|44,tierra y viento
-pradera,35,27|40|29|44,tierra y viento
-ruinas,35,34|54|32|50,no muertos y sombra
+biome,pct,options,items,note
+nieve,35,26|38,50825|50840|50841,resistir agua: el frío y los monstruos de hielo; objetos: Armadura Horno (clima) y Capa de Piel y Chaleco de Lana (temperature)
+montana,35,26|38|29|44,50833|50840|50841,agua y viento; objetos: Abrigo Polar (clima) y Capa de Piel y Chaleco de Lana (temperature)
+costa,35,26|38,50826,agua; objeto: Gafas de Claridad (clima)
+volcan,35,28|42,50827|50842|50843,fuego; objetos: Máscara de Gas Etéreo (clima) y Manto de Lino y Túnica Fresca (temperature)
+desierto,35,28|42,50832|50842|50843,fuego; objetos: Sombrero del Desierto (clima) y Manto de Lino y Túnica Fresca (temperature)
+pantano,35,30|46|27|40,50829,veneno y tierra; objeto: Manto Bendecido (clima)
+selva,35,30|46|27|40,50827,veneno y tierra; objeto: Máscara de Gas Etéreo (clima)
+cueva,35,27|40,50827,tierra; objeto: Máscara de Gas Etéreo (clima)
+bosque,35,27|40|29|44,50831,tierra y viento; objeto: Scriptum Petreum (clima)
+pradera,35,27|40|29|44,50824|50828,tierra y viento; objetos: Manto de Lluvia y Botas de Estabilidad (clima)
+ruinas,35,34|54|32|50,50829,no muertos y sombra; objeto: Manto Bendecido (clima)

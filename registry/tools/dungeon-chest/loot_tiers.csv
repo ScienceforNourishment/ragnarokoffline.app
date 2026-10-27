@@ -1,7 +1,7 @@
-tier,level,gear_pct,class_pct,costume_pct,count_weights,rarity_weights,note
-1,20,80,70,5,60|30|9|1,70|22|7|1,valores de prueba; level escala los afijos como un monstruo de ese nivel en affix-forge
-2,50,80,70,5,55|30|12|3,62|26|10|2,
-3,75,80,70,5,50|30|15|5,55|28|14|3,los pesos por defecto de affix-forge
-4,105,80,70,5,45|30|18|7,50|29|17|4,
-5,135,80,70,5,40|32|20|8,45|30|20|5,
-6,175,80,70,5,35|33|22|10,40|30|23|7,
+tier,level,gear_pct,class_pct,costume_pct,biome_item_pct,count_weights,rarity_weights,note
+1,20,80,70,5,10,60|30|9|1,70|22|7|1,valores de prueba; level escala los afijos como un monstruo de ese nivel en affix-forge; biome_item_pct es D38
+2,50,80,70,5,10,55|30|12|3,62|26|10|2,
+3,75,80,70,5,10,50|30|15|5,55|28|14|3,los pesos por defecto de affix-forge
+4,105,80,70,5,10,45|30|18|7,50|29|17|4,
+5,135,80,70,5,10,40|32|20|8,45|30|20|5,
+6,175,80,70,5,10,35|33|22|10,40|30|23|7,

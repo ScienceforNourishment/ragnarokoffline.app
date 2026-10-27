@@ -2,13 +2,17 @@
 //
 // Las lineas de cabecera usan TAB entre campos, no espacios.
 // Los contratos viven en expedition-contracts.txt (generado desde un CSV).
-// Hay dos tipos (.type en los datos):
+// Hay tres tipos (.type en los datos):
 //   1 expedicion  una marca (monstruo con nombre) espera en un punto
 //   2 caceria     hay que abatir N monstruos de una especie dentro de un mapa
+//   3 elite       una marca mas dura, un Tier mas arriba, que el Intendente da a
+//                 cambio de un trofeo de marca de la raza del monstruo (D40)
 //
 // Donde se entrega cada tipo (siempre en la ciudad que publico el contrato):
-//   expedicion  con el Intendente, un NPC aparte junto al tablero
-//   caceria     en el propio tablero
+//   expedicion, elite  con el Intendente, un NPC aparte junto al tablero
+//   caceria            en el propio tablero
+//
+// Toda marca abatida da trofeos de su raza (expedition-trophies.txt).
 // F_Expedition_AtBoard(type) lo decide; para mover una entrega a otro NPC u otra
 // ciudad basta con tocar eso y colocar al NPC que llame a F_Expedition_Pay.
 //
@@ -122,6 +126,15 @@ function	script	F_Expedition_Pay	{
 	Zeny += .@zeny;
 	getitem .@item, .@amt;
 	mes "Contrato cerrado. " + .@zeny + " zeny y " + .@amt + " " + getitemname(.@item) + ".";
+	// Los trofeos que no cupieron al abatir la marca (expedition-trophies.txt).
+	if (eb_tr_n > 0) {
+		.@t = eb_tr_item;
+		.@n = eb_tr_n;
+		if (callfunc("F_Expedition_TrophyGive"))
+			mes "Y tus " + .@n + " " + getitemname(.@t) + ", que guardaba el gremio.";
+		else
+			mes "Tu trofeo sigue a salvo con el gremio: haz sitio y vuelve a hablarme.";
+	}
 	return 1;
 }
 
@@ -185,6 +198,42 @@ function	script	F_Expedition_Reset	{
 	return;
 }
 
+// F_Expedition_MarkName(id) -> el nombre que lleva la marca en el mapa.
+function	script	F_Expedition_MarkName	{
+	if (getvariableofnpc(.type[getarg(0)], "ExpeditionData") == 3)
+		return "Marca de elite";
+	return "Marca de expedicion";
+}
+
+// F_Expedition_Accept(id) -> 1 si el personaje queda con ese contrato; 0 si no
+// se pudo colocar su marca. Sin dialogo. Quien llama refuerza la marca
+// (F_Expedition_Strengthen) despues de close2, como al aceptar en el tablero.
+function	script	F_Expedition_Accept	{
+	.@id = getarg(0);
+	.@type = getvariableofnpc(.type[.@id], "ExpeditionData");
+	if (.@type != 2) {
+		if (!callfunc("F_Expedition_Spawn", .@id))
+			return 0;
+	}
+	eb_qid = .@id;
+	eb_state = 1;
+	eb_prog = 0;
+	callfunc "F_Expedition_HuntEnd";
+	// Una caceria se cuenta desde este momento, solo en su mapa.
+	if (.@type == 2) {
+		eb_hunt_mob = getvariableofnpc(.mob[.@id], "ExpeditionData");
+		eb_hunt_map$ = getvariableofnpc(.map$[.@id], "ExpeditionData");
+		$@eb_hunters++;
+	}
+	// Diario del viajero (F_Expedition_Log), si adventure esta activo.
+	if (.@type == 2)
+		.@note$ = "Acepte en " + getvariableofnpc(.cityname$[.@id], "ExpeditionData") + " cazar " + getvariableofnpc(.count[.@id], "ExpeditionData") + " " + getmonsterinfo(getvariableofnpc(.mob[.@id], "ExpeditionData"), MOB_NAME) + " en " + getvariableofnpc(.place$[.@id], "ExpeditionData") + ".";
+	else
+		.@note$ = "Acepte en " + getvariableofnpc(.cityname$[.@id], "ExpeditionData") + " el contrato" + (.@type == 3 ? " de elite" : "") + ": " + getvariableofnpc(.name$[.@id], "ExpeditionData") + " (" + getvariableofnpc(.place$[.@id], "ExpeditionData") + ").";
+	callfunc "F_Expedition_Log", .@note$;
+	return 1;
+}
+
 // F_Expedition_Spawn(id) -> 1 si la marca quedo puesta, 0 si no. Si la celda
 // del contrato no es transitable, prueba celdas al azar cada vez mas lejos.
 function	script	F_Expedition_Spawn	{
@@ -219,7 +268,7 @@ function	script	F_Expedition_Spawn	{
 	}
 
 	callfunc "F_Expedition_ClearMark";
-	monster .@map$, .@sx, .@sy, "Marca de expedicion", .@mob, 1, "ExpeditionCtrl::OnMarkDead";
+	monster .@map$, .@sx, .@sy, callfunc("F_Expedition_MarkName", .@id), .@mob, 1, "ExpeditionCtrl::OnMarkDead";
 	.@gid = $@mobid[0];
 	if (.@gid < 1) {
 		debugmes "expedition-board: monster() failed for contract " + .@id + " on " + .@map$;
@@ -242,8 +291,8 @@ OnPCLoginEvent:
 		$@eb_hunters++;
 		end;
 	}
-	// Solo las expediciones tienen marca que recolocar.
-	if (getvariableofnpc(.type[eb_qid], "ExpeditionData") != 1)
+	// Solo las expediciones y las de elite tienen marca que recolocar.
+	if (getvariableofnpc(.type[eb_qid], "ExpeditionData") == 2)
 		end;
 	if (callfunc("F_Expedition_MarkAlive"))
 		end;
@@ -290,13 +339,16 @@ OnMarkDead:
 		end;
 	$@eb_mark[getcharid(0)] = 0;
 	eb_state = 2;
+	.@elite = (getvariableofnpc(.type[eb_qid], "ExpeditionData") == 3);
 	dispbottom "Expedicion: objetivo abatido. Entrega con el Intendente de " + getvariableofnpc(.cityname$[eb_qid], "ExpeditionData") + ", junto al tablero.";
+	// Los trofeos de su raza (expedition-trophies.txt), si toca.
+	callfunc "F_Expedition_TrophyEarn", eb_qid;
 	// Entrada en el diario del viajero (F_Expedition_Log), si adventure esta activo.
-	callfunc "F_Expedition_Log", "Marca abatida: " + getvariableofnpc(.name$[eb_qid], "ExpeditionData") + " (" + getvariableofnpc(.place$[eb_qid], "ExpeditionData") + ").";
-	// La primera vez con cada marca es un relato de adventure (Media), para el
-	// dueno y su grupo en este mapa. adventure no la repite.
+	callfunc "F_Expedition_Log", "Marca " + (.@elite ? "de elite " : "") + "abatida: " + getvariableofnpc(.name$[eb_qid], "ExpeditionData") + " (" + getvariableofnpc(.place$[eb_qid], "ExpeditionData") + ").";
+	// La primera vez con cada marca es un relato de adventure (Media; Mayor si es
+	// de elite), para el dueno y su grupo en este mapa. adventure no la repite.
 	if (getnpcid(0, "Adventure"))
-		callfunc "F_Adv_Experience", "mark:" + eb_qid, 2, callfunc("F_Expedition_Tier", eb_qid), "Abatí la marca: " + getvariableofnpc(.name$[eb_qid], "ExpeditionData"), 1;
+		callfunc "F_Adv_Experience", "mark:" + eb_qid, (.@elite ? 3 : 2), callfunc("F_Expedition_Tier", eb_qid), "Abatí la marca" + (.@elite ? " de élite" : "") + ": " + getvariableofnpc(.name$[eb_qid], "ExpeditionData"), 1;
 	end;
 
 // Corre con CADA monstruo que mata un jugador, en todo el servidor, bots del
@@ -397,7 +449,7 @@ prontera,160,193,4	script	Expedicion#eb_prt	4_BOARD3,{
 		if (eb_state == 1) {
 			.@goal$ = callfunc("F_Expedition_Goal", .@qid);
 			mes .@goal$;
-			if (.@type == 1) {
+			if (.@type != 2) {
 				.@alive = callfunc("F_Expedition_MarkAlive");
 				if (!.@alive)
 					mes "^FF0000La marca no esta en el mapa.^000000 Puedes pedir que la vuelvan a colocar.";
@@ -407,7 +459,7 @@ prontera,160,193,4	script	Expedicion#eb_prt	4_BOARD3,{
 			.@hand$ = callfunc("F_Expedition_Handoff", .@qid);
 			mes .@hand$;
 		} else {
-			if (.@type == 1)
+			if (.@type != 2)
 				mes "La marca ya cayo.";
 			else
 				mes "La caceria esta completa.";
@@ -430,7 +482,7 @@ prontera,160,193,4	script	Expedicion#eb_prt	4_BOARD3,{
 			.@act[.@n] = 1;
 			.@menu$ = .@menu$ + "Entregar el contrato:";
 		}
-		if (eb_state == 1 && .@type == 1 && !.@alive) {
+		if (eb_state == 1 && .@type != 2 && !.@alive) {
 			.@n++;
 			.@act[.@n] = 4;
 			.@menu$ = .@menu$ + "Volver a colocar la marca:";
@@ -446,6 +498,9 @@ prontera,160,193,4	script	Expedicion#eb_prt	4_BOARD3,{
 			if (!getvariableofnpc(.valid[.@i], "ExpeditionData"))
 				continue;
 			if (getvariableofnpc(.city$[.@i], "ExpeditionData") != .@city$)
+				continue;
+			// Las de elite las da el Intendente, a cambio de un trofeo.
+			if (getvariableofnpc(.type[.@i], "ExpeditionData") == 3)
 				continue;
 			.@n++;
 			.@act[.@n] = 10000 + .@i;
@@ -487,8 +542,8 @@ prontera,160,193,4	script	Expedicion#eb_prt	4_BOARD3,{
 		mes getvariableofnpc(.blurb$[.@qid], "ExpeditionData");
 		.@goal$ = callfunc("F_Expedition_Goal", .@qid);
 		mes .@goal$;
-		if (.@type == 1)
-			mes "La marca se llama ^0000FFMarca de expedicion^000000.";
+		if (.@type != 2)
+			mes "La marca se llama ^0000FF" + callfunc("F_Expedition_MarkName", .@qid) + "^000000.";
 		else if (eb_state == 1)
 			mes "Progreso: ^0000FF" + eb_prog + "/" + .@need + "^000000.";
 		close;
@@ -496,7 +551,7 @@ prontera,160,193,4	script	Expedicion#eb_prt	4_BOARD3,{
 
 	if (.@do == 3) {
 		mes "[Tablero de Expediciones]";
-		if (.@type == 1)
+		if (.@type != 2)
 			mes "Si abandonas, la marca se retira y el contrato queda libre.";
 		else
 			mes "Si abandonas, se pierde el progreso y el contrato queda libre.";
@@ -547,28 +602,10 @@ prontera,160,193,4	script	Expedicion#eb_prt	4_BOARD3,{
 			close;
 		}
 		mes "[Tablero de Expediciones]";
-		if (.@type == 1) {
-			if (!callfunc("F_Expedition_Spawn", .@id)) {
-				mes "No se pudo colocar la marca. Prueba de nuevo o revisa el mapa.";
-				close;
-			}
+		if (!callfunc("F_Expedition_Accept", .@id)) {
+			mes "No se pudo colocar la marca. Prueba de nuevo o revisa el mapa.";
+			close;
 		}
-		eb_qid = .@id;
-		eb_state = 1;
-		eb_prog = 0;
-		callfunc "F_Expedition_HuntEnd";
-		// Una caceria se cuenta desde este momento, solo en su mapa.
-		if (.@type == 2) {
-			eb_hunt_mob = getvariableofnpc(.mob[.@id], "ExpeditionData");
-			eb_hunt_map$ = getvariableofnpc(.map$[.@id], "ExpeditionData");
-			$@eb_hunters++;
-		}
-		// Diario del viajero (F_Expedition_Log), si adventure esta activo.
-		if (.@type == 2)
-			.@note$ = "Acepte en " + getvariableofnpc(.cityname$[.@id], "ExpeditionData") + " cazar " + getvariableofnpc(.count[.@id], "ExpeditionData") + " " + getmonsterinfo(getvariableofnpc(.mob[.@id], "ExpeditionData"), MOB_NAME) + " en " + getvariableofnpc(.place$[.@id], "ExpeditionData") + ".";
-		else
-			.@note$ = "Acepte en " + getvariableofnpc(.cityname$[.@id], "ExpeditionData") + " el contrato: " + getvariableofnpc(.name$[.@id], "ExpeditionData") + " (" + getvariableofnpc(.place$[.@id], "ExpeditionData") + ").";
-		callfunc "F_Expedition_Log", .@note$;
 		if (.@type == 1) {
 			mes "Contrato aceptado. Busca a ^0000FFMarca de expedicion^000000.";
 			close2;
@@ -591,10 +628,25 @@ aldebaran,139,125,4	duplicate(Expedicion#eb_prt)	Expedicion#eb_alde	4_BOARD3
 
 // El Intendente recibe las marcas abatidas, junto a cada tablero. Pone a prueba
 // que la entrega pueda estar en otro NPC: todo el cobro es F_Expedition_Pay.
+// Tambien da las marcas de elite de su ciudad (D40), a cambio de un trofeo de
+// marca de la raza del monstruo, y guarda los trofeos que no cupieron.
 prontera,162,193,4	script	Intendente#eb_prt	4_M_02,{
 	.@city$ = strnpcinfo(4);
 	.@title$ = "[Intendente de Expediciones]";
 	mes .@title$;
+
+	// Un trofeo que no cupo al abatir la marca, con el contrato ya cobrado.
+	if (eb_tr_n > 0 && eb_state != 2) {
+		.@t = eb_tr_item;
+		.@n = eb_tr_n;
+		if (callfunc("F_Expedition_TrophyGive")) {
+			mes "Te guardaba esto: " + .@n + " " + getitemname(.@t) + ".";
+		} else {
+			mes "Te guardo un trofeo, pero no puedes cargarlo. Haz sitio y vuelve.";
+		}
+		next;
+		mes .@title$;
+	}
 
 	if (eb_state == 2 && getvariableofnpc(.valid[eb_qid], "ExpeditionData")) {
 		.@type = getvariableofnpc(.type[eb_qid], "ExpeditionData");
@@ -616,8 +668,62 @@ prontera,162,193,4	script	Intendente#eb_prt	4_M_02,{
 		mes "Tu contrato sigue en curso. Vuelve cuando lo hayas cumplido.";
 		close;
 	}
-	mes "Aqui se entregan las marcas abatidas de los contratos de expedicion. No traes nada.";
-	close;
+
+	// Marcas de elite de esta ciudad. .@el[n] es el contrato de la opcion n.
+	.@n = 0;
+	.@menu$ = "";
+	for (.@i = 1; .@i <= getvariableofnpc(.max, "ExpeditionData"); .@i++) {
+		if (!getvariableofnpc(.valid[.@i], "ExpeditionData") || getvariableofnpc(.type[.@i], "ExpeditionData") != 3)
+			continue;
+		if (getvariableofnpc(.city$[.@i], "ExpeditionData") != .@city$)
+			continue;
+		.@el[.@n] = .@i;
+		.@n++;
+		.@menu$ += "[Elite] " + getvariableofnpc(.name$[.@i], "ExpeditionData") + ":";
+	}
+	mes "Aqui se entregan las marcas abatidas de los contratos de expedicion.";
+	if (!.@n)
+		close;
+	mes "A quien ya ha cazado una marca, el gremio le confia otra mas dura. Hace falta una prueba: un trofeo de marca de la misma raza.";
+	next;
+	.@s = select(.@menu$ + "Nada por ahora") - 1;
+	if (.@s >= .@n)
+		close;
+	.@id = .@el[.@s];
+	.@trophy = callfunc("F_Expedition_TrophyOf", getvariableofnpc(.mob[.@id], "ExpeditionData"));
+	mes .@title$;
+	mes "^0000FF" + getvariableofnpc(.name$[.@id], "ExpeditionData") + "^000000";
+	mes getvariableofnpc(.blurb$[.@id], "ExpeditionData");
+	next;
+	mes .@title$;
+	mes callfunc("F_Expedition_Goal", .@id);
+	.@tag$ = callfunc("F_Expedition_Tag", .@id);
+	if (.@tag$ != "")
+		mes .@tag$;
+	mes "Recompensa: " + callfunc("F_Expedition_Zeny", .@id) + " zeny, " + getvariableofnpc(.amt[.@id], "ExpeditionData") + " " + getitemname(getvariableofnpc(.item[.@id], "ExpeditionData")) + " y " + callfunc("F_ModSetting", "expedition-board", "elite_trophies", 2) + " " + getitemname(.@trophy) + ".";
+	mes "Prueba: ^0000FF1 " + getitemname(.@trophy) + "^000000 (llevas " + countitem(.@trophy) + "). Se queda con el gremio.";
+	next;
+	if (!countitem(.@trophy)) {
+		mes .@title$;
+		mes "Sin esa prueba no puedo darte el contrato. Abate antes una marca de esa raza.";
+		close;
+	}
+	if (select("Entregar la prueba y aceptar:No por ahora") == 2) {
+		mes .@title$;
+		mes "Cuando quieras.";
+		close;
+	}
+	mes .@title$;
+	// El trofeo se cobra solo si la marca quedo puesta.
+	if (!callfunc("F_Expedition_Accept", .@id)) {
+		mes "No se pudo colocar la marca. Prueba de nuevo mas tarde; la prueba sigue siendo tuya.";
+		close;
+	}
+	delitem .@trophy, 1;
+	mes "Contrato aceptado. Busca a ^0000FFMarca de elite^000000 en " + getvariableofnpc(.place$[.@id], "ExpeditionData") + ".";
+	close2;
+	callfunc "F_Expedition_Strengthen", .@id;
+	end;
 }
 
 izlude,130,121,4	duplicate(Intendente#eb_prt)	Intendente#eb_izl	4_M_02

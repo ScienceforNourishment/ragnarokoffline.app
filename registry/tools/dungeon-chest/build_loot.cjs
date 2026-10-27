@@ -23,11 +23,16 @@
 //                   level would in affix-forge), gear_pct (equipment instead
 //                   of food), class_pct (try the opener's class first),
 //                   costume_pct (a costume instead of anything else),
-//                   count_weights and rarity_weights (four numbers joined
+//                   biome_item_pct (one of the biome's items, below,
+//                   instead of equipment or food; D38), count_weights and rarity_weights (four numbers joined
 //                   with "|"), note.
 // loot_biomes.csv   biome (of world-atlas), pct, options (affix ids joined
-//                   with "|"), note: the first affix of a chest in that biome
-//                   is one of these, pct % of the time.
+//                   with "|"), items, note: the first affix of a chest in that
+//                   biome is one of these, pct % of the time. items: the
+//                   clima and temperature items (joined with "|", or empty)
+//                   a chest there gives biome_item_pct % of the time; each
+//                   must be in one of those mods' item_db (ITEM_MODS). The
+//                   chest skips the ones of a mod that is not loaded.
 //
 // The loot data was imported once from the reference mods with
 // import_reference.cjs; these CSVs are ours now. With rAthena's Renewal
@@ -41,6 +46,11 @@ const DEFAULT_DB = path.join(ROOT, 'vendor', 'rathena', 'db', 're');
 const MOD = path.join(ROOT, 'my-mods', 'dungeon-chest');
 const OUT = path.join(MOD, 'npc', 'dungeon-loot-data.txt');
 const LUB = path.join(MOD, 'data', 'luafiles514', 'lua files', 'datainfo', 'addrandomoptionnametable.lub');
+// The other mods' item tables whose items loot_biomes.csv may name.
+const ITEM_MODS = [
+  path.join(ROOT, 'my-mods', 'clima', 'renewal', 'db', 'item_db.yml'),
+  path.join(ROOT, 'my-mods', 'temperature', 'db', 'item_db.yml'),
+];
 
 // The item_db job names whose EAJ_ constant exists in the pinned rAthena
 // (script_constants.hpp), spelled as the constant: EAJ_ + upper case.
@@ -121,17 +131,21 @@ function parse(equip) {
     return item;
   });
 
-  const tiers = rows('loot_tiers.csv', 'tier,level,gear_pct,class_pct,costume_pct,count_weights,rarity_weights,note').map(({ c, where }) => ({
+  const tiers = rows('loot_tiers.csv', 'tier,level,gear_pct,class_pct,costume_pct,biome_item_pct,count_weights,rarity_weights,note').map(({ c, where }) => ({
     tier: int(where, c[0], 'tier', 1, 6), level: int(where, c[1], 'level', 1, 300), gear: int(where, c[2], 'gear_pct', 0, 100),
-    cls: int(where, c[3], 'class_pct', 0, 100), cos: int(where, c[4], 'costume_pct', 0, 100),
-    cw: weights(where, c[5], 'count_weights'), rw: weights(where, c[6], 'rarity_weights'),
+    cls: int(where, c[3], 'class_pct', 0, 100), cos: int(where, c[4], 'costume_pct', 0, 100), bip: int(where, c[5], 'biome_item_pct', 0, 100),
+    cw: weights(where, c[6], 'count_weights'), rw: weights(where, c[7], 'rarity_weights'),
   }));
   for (let t = 1; t <= 6; t++) if (tiers.filter((x) => x.tier === t).length !== 1) throw new Error(`loot_tiers.csv: Tier ${t} needs exactly one row`);
 
-  const bio = rows('loot_biomes.csv', 'biome,pct,options,note').map(({ c, where }) => {
+  const modItems = new Set();
+  for (const f of ITEM_MODS) for (const m of fs.readFileSync(f, 'utf8').matchAll(/^  - Id: (\d+)/gm)) modItems.add(+m[1]);
+  const bio = rows('loot_biomes.csv', 'biome,pct,options,items,note').map(({ c, where }) => {
     if (!biomes.has(c[0])) throw new Error(`${where}: biome "${c[0]}" is not in the atlas`);
     for (const o of c[2].split('|')) if (!ids.has(+o)) throw new Error(`${where}: option ${o} is not in affixes.csv`);
-    return { biome: c[0], pct: int(where, c[1], 'pct', 0, 100), options: c[2] };
+    const items = c[3] === '' ? [] : c[3].split('|').map((v) => int(where, v, 'item', 1, 9999999));
+    for (const i of items) if (!modItems.has(i)) throw new Error(`${where}: item ${i} is not in the item_db of clima or temperature`);
+    return { biome: c[0], pct: int(where, c[1], 'pct', 0, 100), options: c[2], items: items.join('|') };
   });
   return { affixes, names, loot, costumes, tiers: tiers.sort((a, b) => a.tier - b.tier), bio };
 }
@@ -172,12 +186,12 @@ function render({ affixes, names, loot, costumes, tiers, bio }) {
 // dungeon-loot.txt and affix-smith.txt:
 //   $@dc_item[] $@dc_job$[]      the equipment, by Tier; Tier t is [$@dc_from[t], $@dc_to[t])
 //   $@dc_cos[] ($@dc_cosn)       the costumes
-//   $@dc_lv[t] $@dc_gear[t] $@dc_cls[t] $@dc_cosp[t]  loot_tiers.csv
+//   $@dc_lv[t] $@dc_gear[t] $@dc_cls[t] $@dc_cosp[t] $@dc_bip[t]  loot_tiers.csv
 //   $@dc_cw[t*4+k] $@dc_rw[t*4+r]        count and rarity weights (k, r from 0)
 //   $@dc_a*[] ($@dc_an)          the affixes; $@dc_aix[option id] = index + 1
 //   $@dc_ari[(r-1)*400+k]        the k-th affix of rarity r; $@dc_arc[r] how many
 //   $@dc_nm$[option id]          its name, as the client shows it
-//   $@dc_bio$[] $@dc_bpct[] $@dc_bopt$[]  loot_biomes.csv
+//   $@dc_bio$[] $@dc_bpct[] $@dc_bopt$[] $@dc_bitem$[]  loot_biomes.csv
 //   $@dc_jk$[] $@dc_jv[]         item_db job name and its EAJ_ constant
 
 -	script	dungeon_loot	-1,{
@@ -193,6 +207,7 @@ ${arr('$@dc_lv', byTier((t) => t.level))}
 ${arr('$@dc_gear', byTier((t) => t.gear))}
 ${arr('$@dc_cls', byTier((t) => t.cls))}
 ${arr('$@dc_cosp', byTier((t) => t.cos))}
+${arr('$@dc_bip', byTier((t) => t.bip))}
 ${arr('$@dc_cw', four((t) => t.cw))}
 ${arr('$@dc_rw', four((t) => t.rw))}
 	$@dc_an = ${affixes.length};
@@ -211,6 +226,7 @@ ${names.map((n) => `\t$@dc_nm$[${n.id}] = "${n.name}";`).join('\n')}
 ${arr('$@dc_bio$', bio.map((b) => b.biome), true)}
 ${arr('$@dc_bpct', bio.map((b) => b.pct))}
 ${arr('$@dc_bopt$', bio.map((b) => b.options), true)}
+${arr('$@dc_bitem$', bio.map((b) => b.items), true)}
 	$@dc_jn = ${used.length};
 ${arr('$@dc_jk$', used, true)}
 ${arr('$@dc_jv', used.map((j) => `EAJ_${j.toUpperCase()}`))}

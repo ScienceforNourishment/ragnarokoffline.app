@@ -40,9 +40,11 @@ Actualízala al cambiar el mod o al probarlo.
   Frío extremo en `mjolnir_12` sin Abrigo Polar y vuelve a lo normal al salir
   del mapa o acabar el evento. La Brocheta de Saltamontes y la Carne Asada de
   `campfire` suben el hambre +25 y +60
-- **Sin probar (1.3.0):** Buscavidas y los ajustes de Settings (parte de `adventure` en
-  [`SESION-DE-PRUEBA.md`](../SESION-DE-PRUEBA.md))
-- **Actualizado:** 2026-10-24
+- **Probado en el juego (1.3.0, 2026-10-26):** con el rasgo **Buscavidas**
+  de `adventure`, hambre y sed bajan un punto cada 18 s en vez de 15; los
+  ajustes se ven en Settings → Mods
+- **Sin probar (1.3.0):** cambiar los ajustes de Settings (`need_seconds`)
+- **Actualizado:** 2026-10-26
 
 ## Qué incluye
 

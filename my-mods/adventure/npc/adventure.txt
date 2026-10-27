@@ -19,6 +19,10 @@
 //=   client.n          how many journal entries were ever written
 //=   client.e.<n>      "<unix>|<type>|<text>", the last 300 are kept
 //=   client.p.<n>      untold relato: "<base>|<job>|<per mille>|<tier>|<text>"
+//=   pk.<n>            its key in the store form ("map.prt_sewb4"), for adv_told$
+//=
+//= Character variables other mods read: adv_trait_* (rasgos) and, since 0.5.0,
+//= adv_told$[] / adv_told_n (the keys of the relatos told; see F_Adv_Told).
 //=   client.x.*        the expedition: on, no, start, out, since, deaths, top,
 //=                     from, deep, pn (relatos written so far), streak (new
 //=                     experiences in this expedition, for the racha)
@@ -180,9 +184,64 @@ function	script	F_Adv_Gain	{
 		.@pm = .@base * 1000 / NextBaseExp;
 	.@n = modstore_inc("char", "client.x.pn", 1);
 	modstore_set "char", "client.p." + .@n, .@base + "|" + .@job + "|" + .@pm + "|" + .@tier + "|" + .@text$;
+	// Its key, for adv_told$ when it is told (outside "client": the window
+	// does not need it).
+	modstore_set "char", "pk." + .@n, strtolower(replacestr(getarg(0), ":", "."));
+	// A Mayor or Hito relato may be an achievement, completed when told.
+	if (.@size >= 3)
+		callfunc "F_Adv_AchQueue", strtolower(replacestr(getarg(0), ":", ".")), .@size;
 	callfunc "F_Adv_Write", "exp", .@text$;
 	dispbottom "Nuevo relato: " + .@text$ + ".";
 	return 1;
+}
+
+//--- Achievements (D39): Mayor and Hito relatos, completed when they are told,
+//--- like their EXP. Ids 901000-901999; renewal/db/achievement_db.yml and
+//--- System/achievement_list.lub. The waiting ones are in the store, "ach.<id>".
+//=   tier.<n>       901000 + n     Hito, first step into Tier n
+//=   chesttier.<n>  901010 + n     first chest of Tier n (dungeon-chest)
+//=   mvp.*          901021         the first MVP
+//=   nemesis.*      901031         the first nemesis; a Hito (rank 3) also 901032
+//=   refuge.*       901041         the first refuge restored (refuges)
+
+// F_Adv_AchQueue(key, size): keeps the achievements of a new relato until it is
+// told. key: the store form, "tier.3", "mvp.1038".
+function	script	F_Adv_AchQueue	{
+	explode(.@k$, getarg(0), ".");
+	.@kind$ = .@k$[0];
+	.@v = atoi(.@k$[1]);
+	if (.@kind$ == "tier" && .@v >= 1 && .@v <= 6)
+		.@id[0] = 901000 + .@v;
+	else if (.@kind$ == "chesttier" && .@v >= 1 && .@v <= 6)
+		.@id[0] = 901010 + .@v;
+	else if (.@kind$ == "mvp")
+		.@id[0] = 901021;
+	else if (.@kind$ == "nemesis") {
+		.@id[0] = 901031;
+		if (getarg(1) >= 4)
+			.@id[1] = 901032;
+	} else if (.@kind$ == "refuge")
+		.@id[0] = 901041;
+	for (.@i = 0; .@i < getarraysize(.@id); .@i++)
+		modstore_set "char", "ach." + .@id[.@i], 1;
+	return;
+}
+
+// F_Adv_AchTell: completes the achievements of the relatos just told. Only
+// Renewal has them (D1; several rewards are not in Pre-Renewal's tables).
+function	script	F_Adv_AchTell	{
+	.@n = modstore_keys("char", "ach", .@ids$);
+	if (!.@n)
+		return;
+	modstore_delete "char", "ach";
+	if (!checkre(0))
+		return;
+	for (.@i = 0; .@i < .@n; .@i++) {
+		.@id = atoi(.@ids$[.@i]);
+		if (!achievementexists(.@id))
+			achievementcomplete .@id;
+	}
+	return;
 }
 
 // F_Adv_Drain({share}): writes the notes queued with F_Adv_Note and takes the
@@ -264,6 +323,20 @@ function	script	F_Adv_Duration	{
 	return (.@m / 60) + " h " + (.@m % 60) + " min";
 }
 
+// F_Adv_Told(key$): publishes a relato just told in the character variables
+// adv_told$[] (a ring of the last 64 keys, in the store form "map.prt_sewb4")
+// and adv_told_n (how many were ever published). Other mods read them to react
+// to what was told (tavern-rumors, RUMORES.md): entry k is adv_told$[k % 64],
+// for k from max(seen, adv_told_n - 64) to adv_told_n - 1. Relatos gained
+// before 0.5.0 have no key and are not published.
+function	script	F_Adv_Told	{
+	if (getarg(0) == "")
+		return;
+	adv_told$[adv_told_n % 64] = getarg(0);
+	adv_told_n++;
+	return;
+}
+
 // F_Adv_Rest -> how many relatos were told; -1 when there was nothing to tell
 // and no expedition to close. Pays them one by one, in order, writes the
 // expedition summary and ends the expedition.
@@ -288,10 +361,13 @@ function	script	F_Adv_Rest	{
 			getexp .@b, .@j;
 		.@pm += atoi(.@f$[2]);
 		.@told++;
+		callfunc "F_Adv_Told", modstore_get("char", "pk." + .@i, "");
 	}
 	modstore_delete "char", "client.p";
+	modstore_delete "char", "pk";
 	modstore_set "char", "client.x.pn", 0;
 	modstore_set "char", "client.x.streak", 0;
+	callfunc "F_Adv_AchTell";
 	if (.@on) {
 		.@no = modstore_get("char", "client.x.no", 0);
 		.@out = modstore_get("char", "client.x.out", 0);

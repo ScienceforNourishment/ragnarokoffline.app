@@ -1,0 +1,204 @@
+// expedition-board -- Trofeos de marca y el Coleccionista (D40).
+//
+// Las lineas de cabecera usan TAB entre campos, no espacios.
+//
+// Toda marca abatida (expedicion o elite) da a su dueno trofeos de la raza del
+// monstruo: 51600 + raza (RC_*, 0-9), definidos en db/item_db.yml. Uno por una
+// marca, elite_trophies (2) por una de elite, y cada contrato solo da trofeos
+// una vez cada trophy_hours (12) horas por personaje, para que no se saquen
+// repitiendo la marca mas facil. Un trofeo se usa de cuatro maneras:
+//   - llevarlo puesto: es un accesorio, +10 % de dano contra su raza;
+//   - como prueba: el Intendente da una marca de elite a cambio (expedition-board.txt);
+//   - engarzarlo: el Herrero de Afijos de dungeon-chest pone un afijo de su raza;
+//   - contarlo: el Coleccionista lo cuelga en su pared y da defensa permanente
+//     contra su raza: collector_mark (1) % por uno de marca, collector_nemesis
+//     (2) % por un talisman de nemesis, hasta collector_cap (10) % por raza.
+//
+// Estado por personaje (permanente):
+//   eb_trt[id]   ultima vez (unix) que el contrato id dio trofeos
+//   eb_tr_item   trofeo que no cupo al abatir la marca; eb_tr_n cuantos. Los
+//                entrega el Intendente al cobrar o al hablarle
+//   eb_def[raza] defensa del Coleccionista contra esa raza, en %
+//
+// La defensa es un bonus_script de texto fijo que lee eb_def[] al recalcular
+// el personaje: se pone al entrar al juego, no se pierde al morir y
+// recalculatestat la pone al dia al colgar un trofeo.
+
+// F_Expedition_TrophyOf(mob) -> el trofeo de marca de la raza de ese monstruo.
+function	script	F_Expedition_TrophyOf	{
+	.@race = getmonsterinfo(getarg(0), MOB_RACE);
+	if (.@race < 0 || .@race > 9)
+		.@race = 0;
+	return 51600 + .@race;
+}
+
+// F_Expedition_TrophyEarn(id): los trofeos de la marca del contrato id para el
+// personaje adjunto, si al contrato le toca dar (trophy_hours). Si no caben,
+// quedan con el Intendente (eb_tr_item, eb_tr_n).
+function	script	F_Expedition_TrophyEarn	{
+	.@id = getarg(0);
+	.@hours = callfunc("F_ModSetting", "expedition-board", "trophy_hours", 12);
+	.@now = gettimetick(2);
+	if (.@hours > 0 && eb_trt[.@id] > 0 && .@now - eb_trt[.@id] < .@hours * 3600) {
+		dispbottom "Expedicion: esta marca ya te dio su trofeo hace poco. Vuelve a cazarla mas adelante.";
+		return;
+	}
+	eb_trt[.@id] = .@now;
+	.@item = callfunc("F_Expedition_TrophyOf", getvariableofnpc(.mob[.@id], "ExpeditionData"));
+	.@n = 1;
+	if (getvariableofnpc(.type[.@id], "ExpeditionData") == 3)
+		.@n = max(1, callfunc("F_ModSetting", "expedition-board", "elite_trophies", 2));
+	// Lo pendiente de otro trofeo distinto se entrega antes o se suma si es igual.
+	if (eb_tr_n > 0 && eb_tr_item != .@item)
+		callfunc "F_Expedition_TrophyGive";
+	if (eb_tr_n > 0 && eb_tr_item != .@item) {
+		dispbottom "Expedicion: no puedes cargar mas trofeos; el Intendente guarda los tuyos.";
+		return;
+	}
+	eb_tr_item = .@item;
+	eb_tr_n += .@n;
+	if (callfunc("F_Expedition_TrophyGive"))
+		dispbottom "Expedicion: te llevas " + .@n + " " + getitemname(.@item) + ".";
+	else
+		dispbottom "Expedicion: no puedes cargar el trofeo; el Intendente te lo guarda.";
+	return;
+}
+
+// F_Expedition_TrophyGive() -> 1 si entrego los trofeos pendientes (o no habia).
+function	script	F_Expedition_TrophyGive	{
+	if (eb_tr_n < 1)
+		return 1;
+	if (!checkweight(eb_tr_item, eb_tr_n))
+		return 0;
+	.@item = eb_tr_item;
+	.@n = eb_tr_n;
+	eb_tr_item = 0;
+	eb_tr_n = 0;
+	getitem .@item, .@n;
+	return 1;
+}
+
+// F_Expedition_RaceName(raza) -> su nombre, como en los afijos.
+function	script	F_Expedition_RaceName	{
+	setarray .@r$[0], "Amorfo", "No muerto", "Bestia", "Planta", "Insecto", "Pez", "Demonio", "Semihumano", "Angel", "Dragon";
+	.@i = getarg(0);
+	if (.@i < 0 || .@i > 9)
+		return "?";
+	return .@r$[.@i];
+}
+
+// F_Expedition_DefApply: la defensa del Coleccionista del personaje adjunto, si
+// tiene alguna. Texto fijo: con el flag 1024 renovarla solo alarga su duracion,
+// y los valores salen de eb_def[] al recalcular. 8 = se quita al salir (se
+// vuelve a poner al entrar); sin el 1, no se pierde al morir.
+function	script	F_Expedition_DefApply	{
+	for (.@r = 0; .@r < 10; .@r++)
+		if (eb_def[.@r] > 0)
+			break;
+	if (.@r == 10)
+		return;
+	bonus_script "{ bonus2 bSubRace,RC_Formless,eb_def[0]; bonus2 bSubRace,RC_Undead,eb_def[1]; bonus2 bSubRace,RC_Brute,eb_def[2]; bonus2 bSubRace,RC_Plant,eb_def[3]; bonus2 bSubRace,RC_Insect,eb_def[4]; bonus2 bSubRace,RC_Fish,eb_def[5]; bonus2 bSubRace,RC_Demon,eb_def[6]; bonus2 bSubRace,RC_DemiHuman,eb_def[7]; bonus2 bSubRace,RC_Angel,eb_def[8]; bonus2 bSubRace,RC_Dragon,eb_def[9]; }", 2000000, 1032;
+	recalculatestat;
+	return;
+}
+
+-	script	ExpeditionTrophies	-1,{
+	end;
+
+OnPCLoginEvent:
+	callfunc "F_Expedition_DefApply";
+	end;
+}
+
+// El Coleccionista de Trofeos: en Payon, la ciudad de los cazadores. La copia
+// de Prontera, junto al tablero, es para las pruebas (D23) y se quita al
+// cerrar la porcion vertical.
+payon,180,104,4	script	Coleccionista#eb_pay	4_M_JOB_HUNTER,{
+	.@cap = callfunc("F_ModSetting", "expedition-board", "collector_cap", 10);
+	.@pm = callfunc("F_ModSetting", "expedition-board", "collector_mark", 1);
+	.@pn = callfunc("F_ModSetting", "expedition-board", "collector_nemesis", 2);
+	mes "[Coleccionista de Trofeos]";
+	mes "Cada pieza de esta pared es una caceria que alguien vivio para contarla.";
+	mes "Dejame la tuya y aprenderas a aguantar mejor a los de su raza.";
+	next;
+	.@s = select("Colgar un trofeo:Ver mi pared:Irse");
+	if (.@s == 3)
+		close;
+	if (.@s == 2) {
+		mes "[Coleccionista de Trofeos]";
+		.@any = 0;
+		for (.@r = 0; .@r < 10; .@r++) {
+			if (eb_def[.@r] < 1)
+				continue;
+			mes "- " + callfunc("F_Expedition_RaceName", .@r) + ": defensa +" + eb_def[.@r] + "% (tope " + .@cap + "%)";
+			.@any = 1;
+		}
+		if (!.@any)
+			mes "Aun no has colgado nada.";
+		close;
+	}
+	// Trofeos sin equipar de la mochila: de marca y talismanes de nemesis.
+	getinventorylist;
+	.@n = 0;
+	.@menu$ = "";
+	for (.@i = 0; .@i < @inventorylist_count; .@i++) {
+		.@id = @inventorylist_id[.@i];
+		if (@inventorylist_equip[.@i])
+			continue;
+		if (.@id >= 51600 && .@id <= 51609) {
+			.@race = .@id - 51600;
+			.@add = .@pm;
+		} else if (.@id >= 51200 && .@id <= 51209) {
+			.@race = .@id - 51200;
+			.@add = .@pn;
+		} else {
+			continue;
+		}
+		.@pos[.@n] = .@i;
+		.@rc[.@n] = .@race;
+		.@ad[.@n] = .@add;
+		.@n++;
+		.@menu$ += getitemname(.@id) + (@inventorylist_amount[.@i] > 1 ? " x" + @inventorylist_amount[.@i] : "") + " (" + callfunc("F_Expedition_RaceName", .@race) + ", +" + .@add + "%):";
+	}
+	mes "[Coleccionista de Trofeos]";
+	if (!.@n) {
+		mes "No llevas trofeos sin equipar. Los dan las marcas del gremio y los nemesis vencidos.";
+		close;
+	}
+	mes "Cual cuelgo? El trofeo se queda aqui para siempre.";
+	next;
+	.@c = select(.@menu$ + "Ninguno") - 1;
+	if (.@c >= .@n)
+		close;
+	.@race = .@rc[.@c];
+	mes "[Coleccionista de Trofeos]";
+	if (eb_def[.@race] >= .@cap) {
+		mes "Ya aguantas a los de raza " + callfunc("F_Expedition_RaceName", .@race) + " todo lo que se puede aprender en una pared (" + .@cap + "%).";
+		mes "Guardalo para otra cosa.";
+		close;
+	}
+	.@new = min(.@cap, eb_def[.@race] + .@ad[.@c]);
+	mes "Defensa contra la raza " + callfunc("F_Expedition_RaceName", .@race) + ": " + eb_def[.@race] + "% -> " + .@new + "%.";
+	next;
+	if (select("Colgarlo:Mejor no") == 2) {
+		mes "[Coleccionista de Trofeos]";
+		mes "Tuyo es.";
+		close;
+	}
+	// La mochila pudo cambiar con el dialogo abierto.
+	getinventorylist;
+	.@i = .@pos[.@c];
+	if (.@i >= @inventorylist_count || @inventorylist_equip[.@i] || (@inventorylist_id[.@i] - 51600 != .@race && @inventorylist_id[.@i] - 51200 != .@race)) {
+		mes "[Coleccionista de Trofeos]";
+		mes "Algo cambio en tu mochila. Prueba otra vez.";
+		close;
+	}
+	delitemidx @inventorylist_idx[.@i], 1;
+	eb_def[.@race] = .@new;
+	mes "[Coleccionista de Trofeos]";
+	mes "Ya esta en la pared. Quien sabe como murio algo, sabe como no morir igual.";
+	close2;
+	callfunc "F_Expedition_DefApply";
+	end;
+}
+prontera,157,187,4	duplicate(Coleccionista#eb_pay)	Coleccionista#eb_prt	4_M_JOB_HUNTER

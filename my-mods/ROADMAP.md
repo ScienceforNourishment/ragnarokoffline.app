@@ -44,7 +44,8 @@ Que lo que ya existe funcione y no se rompa.
       más importante pendiente: los **iconos de `temperature`**, que no
       salían al llegar a un mapa frío o caluroso (visto el 2026-10-23,
       arreglado en 0.4.1; el 2026-10-24 el de frío ya salía y el de calor
-      no, arreglado en 0.5.1 sin probar; ver su
+      no, arreglado en 0.5.1; el 2026-10-26 los dos salían pero no se
+      apagaban al salir del mapa, arreglado en 0.5.2 sin probar; ver su
       [«Estado»](./temperature/README.md#estado)).
 - [x] Aplicar [`CONVENTIONS.md`](./CONVENTIONS.md): rangos de IDs,
       prefijos y eventos públicos registrados (revisado el 2026-10-17: se cumplen; completadas las tablas).
@@ -76,9 +77,16 @@ presión; los resultados están en el «Estado» de cada README. La sesión del
 hambre doble con Frío extremo, el icono de frío, las variantes de las
 cacerías, `campfire` 0.2 entero y las ruinas de `refuges`; encontró dos
 fallos, arreglados sin probar (`temperature` 0.5.1, icono de calor;
-`refuges` 0.1.2, el refugio no abría diálogo). Queda en
-[`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md): esos dos arreglos, el resto
-de `refuges` y `adventure` 0.3 con sus enganches.
+`refuges` 0.1.2, el refugio no abría diálogo). La sesión del 2026-10-26,
+ya con `adventure` cargado, probó la restauración de `refuges` entera,
+`nemesis` fuera del atlas y `adventure` 0.2 y 0.3 con todos sus enganches de
+un jugador (racha, pestañas, relatos de otros mods, rasgos); encontró dos
+fallos, arreglados sin probar (`adventure` 0.4.1, los logros no cargaban;
+`dungeon-chest` 0.7.1, el cofre se trababa al dar un objeto del bioma).
+Queda en [`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md): esos dos arreglos,
+los iconos de `temperature` 0.5.2, el MVP, los logros, los objetos del bioma,
+los trofeos, el rumor de un alijo de `tavern-rumors` 0.2.0 y la primera
+cadena de rumores (`tavern-rumors` 0.3.0, `adventure` 0.5.0).
 
 ### H1. Porción vertical: Prontera e Izlude, Tier 1 y 2
 
@@ -126,25 +134,43 @@ mundo.
 - [x] `campfire`: Descansando, cocinar, venda. 0.1 escrita el 2026-10-23
       (D28–D30, con `temperature` 0.4.0 y `wounds` 0.6.0); la 0.2.0 probada
       en el juego el 2026-10-24, salvo la fogata compartida (dos jugadores).
-- [ ] `refuges`: al menos un refugio restaurable en la región. 0.1 escrita
+- [x] `refuges`: al menos un refugio restaurable en la región. 0.1 escrita
       el 2026-10-23 (D32–D34): la Abadía y `prt_fild11`, con `campfire`
-      0.2.0; las ruinas probadas el 2026-10-24, la restauración falta (0.1.2
-      arregla el diálogo que no abría).
+      0.2.0. La 0.1.2, probada en el juego el 2026-10-26: la Abadía se
+      restaura en sus tres etapas, salvo el relato de grupo (dos jugadores).
 - [x] `tavern-rumors` 0.1: la taberna de Prontera, con pronóstico, pistas
       del contrato y del némesis, y donde se cuentan los relatos. Escrito el
       2026-10-23 y probado en el juego el mismo día (con `clima` 0.4.1).
+- [ ] Un rumor que lleve a algo: la cadena «Rumor → Pista → Hallazgo».
+      `tavern-rumors` 0.2.0 (2026-10-26, D41): el Tabernero vende el rumor
+      de un alijo en un campo, con botín de cofre y un relato. Sin probar,
+      y **provisional**: lo reemplazan las cadenas de D42–D43, diseñadas en
+      [`RUMORES.md`](./RUMORES.md). La primera, «La puerta tapiada», en
+      `tavern-rumors` 0.3.0 con `adventure` 0.5.0 (2026-10-26, D44), sin
+      probar. Siguiente: probarla y hacer «La madre de la manada».
+- [ ] **Clima eventual** (adelantado de «Después»): los rumores de clima
+      (D43) lo necesitan. Por la vía C (D44): arreglo en el fork de
+      roBrowser y plugin de `clima`
+      ([`ARCHITECTURE.md`](./ARCHITECTURE.md#clima-eventual)).
 - [ ] `remnants`: unos pocos restos con lore, cuando exista `LORE.md`.
 - [ ] Recompensas reales: trofeos de marcas y botín de cofre por bioma. El
       botín de cofre está hecho en `dungeon-chest` 0.4.0 (2026-10-23, D35):
       equipo sin identificar con afijos, por Tier y con afijos del bioma;
-      falta probarlo. Quedan los trofeos de marcas y los objetos de `clima` y
-      `temperature` como botín.
-- [ ] Integraciones de `adventure` 0.2: cofres, contratos, clima,
+      probado en el juego el 2026-10-23. Los objetos de `clima` y
+      `temperature` como botín, en `dungeon-chest` 0.6.0 (2026-10-24, D38),
+      que trabó un cofre el 2026-10-26 (arreglado en 0.7.1, sin probar).
+      Los trofeos de marcas y los talismanes de `nemesis`, con
+      sus cuatro usos y las marcas de élite (D40), en `expedition-board`
+      0.8.0, `nemesis` 0.3.0 y `dungeon-chest` 0.7.0 (2026-10-24), sin probar.
+- [ ] Logros de los relatos Mayores e Hitos, con disfraces por correo
+      (`adventure` 0.4.0, 2026-10-24, D39). En la prueba del 2026-10-26 no
+      cargaron; `adventure` 0.4.1 lo arregla, sin probar.
+- [x] Integraciones de `adventure` 0.2: cofres, contratos, clima,
       temperatura, racha y crédito en grupo. Escritas el 2026-10-23
       (`adventure` 0.2.0, `dungeon-chest` 0.5.0, `expedition-board` 0.7.0,
       `clima` 0.5.0, `temperature` 0.5.0, `refuges` 0.1.1), con la pestaña
-      Expediciones del diario; falta probarlas en el juego («Probar la 0.2»
-      en el [README de `adventure`](./adventure/README.md#probar-la-02)).
+      Expediciones del diario. Probadas en el juego el 2026-10-26, salvo el
+      crédito en grupo (siguiente punto) y el relato del MVP.
 - [ ] Prueba de dos jugadores: crédito en grupo en todos los mods.
 
 **Terminado cuando:** una partida en la región tiene un principio (rumor), un
@@ -175,9 +201,9 @@ cada región:
 
 ### Después
 
-**Mundo vivo:** clima eventual y ciclo de día y noche
-([`ARCHITECTURE.md`](./ARCHITECTURE.md)). Puede adelantarse a H2 si se elige
-la vía A del clima: es un arreglo pequeño en el fork de roBrowser.
+**Mundo vivo:** ciclo de día y noche
+([`ARCHITECTURE.md`](./ARCHITECTURE.md)). El clima eventual pasó a H2
+(2026-10-26), porque lo piden los rumores de clima (D43).
 
 Sin orden todavía: tutorial (D20), oficios (pesca y minería primero),
 pasadizos y trampas, cartografía, encuentros en el camino, economía completa.
@@ -194,14 +220,14 @@ Qué hace cada mod, su versión y qué se probó están **solo** en la sección
 | `clima` | [README](./clima/README.md#estado) | H0; probar el pronóstico |
 | `temperature` | [README](./temperature/README.md#estado) | H0 |
 | `wounds` | [README](./wounds/README.md#estado) | H0; interiores en H1 |
-| `adventure` | [README](./adventure/README.md#estado) | 0.1 probada; 0.2 (racha, grupo, relatos de otros mods, Expediciones) y 0.3 (rasgos y ajustes) escritas: probarlas. Los saberes esperan a decidir qué skills |
+| `adventure` | [README](./adventure/README.md#estado) | 0.1, 0.2 y 0.3 probadas (salvo MVP y grupo); probar los logros con la 0.4.1. Los saberes esperan a decidir qué skills |
 | `expedition-board` | [README](./expedition-board/README.md#estado) | H0 |
-| `dungeon-chest` | [README](./dungeon-chest/README.md#estado) | probar `@cofre`, los cofres de Izlude y los relatos de cofre (0.5.0) |
+| `dungeon-chest` | [README](./dungeon-chest/README.md#estado) | probar los objetos del bioma con la 0.7.1 (D38) y el engarce de trofeos |
 | `affix-forge`, `arpg-equipments` | referencia externa, no se activan | datos ya importados a `dungeon-chest`; ver «Otros pendientes» |
 | `nemesis` | [README](./nemesis/README.md#estado) | probado; H2 |
-| `tavern-rumors` | [README](./tavern-rumors/README.md#estado) | probado; otras ciudades en H3 |
-| `campfire` | [README](./campfire/README.md#estado) | probar en el juego; H2 |
-| `refuges` | [README](./refuges/README.md#estado) | probar en el juego; H2 |
+| `tavern-rumors` | [README](./tavern-rumors/README.md#estado) | 0.1 probada; probar el alijo (0.2.0) y la primera cadena (0.3.0); la segunda cadena; otras ciudades en H3 |
+| `campfire` | [README](./campfire/README.md#estado) | probado salvo dos jugadores; H2 |
+| `refuges` | [README](./refuges/README.md#estado) | probado salvo dos jugadores; H2 |
 | `remnants` | diseño, sin código; espera a `LORE.md` | H2 |
 
 ## Frentes abiertos
@@ -236,8 +262,9 @@ Trabajo de planificación que no es código y que hay que hacer en paralelo:
     Cristalización). Solo desde un `status()` de Lua, así que pide decidir
     cómo pasa el estado del script a Lua (char store) y hacer los TGA de
     24x24. Junto con el panel, cubre la «Interfaz».
-  - **Logros propios** para `adventure` y `nemesis` (primer némesis vencido,
-    N expediciones, relatos contados): `docs/mods/CUSTOM_ACHIEVEMENTS.md`.
+  - **Logros propios:** hechos en `adventure` 0.4.0 para los relatos
+    Mayores e Hitos (D39), que cubren también el némesis, los cofres y los
+    refugios. Otros (N expediciones, relatos contados) quedan por decidir.
   - **Música con `playBGM`** en `campfire`, los refugios restaurados y la
     taberna de `tavern-rumors`. Pide elegir pistas del cliente.
   - **`item()` `on_use` en Lua** para la comida y el agua de `survival`, si
@@ -322,8 +349,11 @@ aquí solo lo que cruza varios mods o no es de ninguno.
   `nemesis` 0.2.0 y `adventure` 0.3.0. `world-atlas` no tiene valores que
   ajustar. Quedan en los scripts, a propósito, los umbrales de `survival`
   (repetidos en su cliente) y el tope de presión (igual en tres mods).
-- Verificar los puntos marcados *(verificar)* en `PLAN.md` contra el rAthena
-  fijado.
+- ~~Verificar los puntos marcados *(verificar)* en `PLAN.md` contra el
+  rAthena fijado.~~ Hecho el 2026-10-24 contra `8aea17a`; el resultado está
+  junto a cada punto. Lo que cambia planes: `duplicatenpc` no existe (la
+  tumba de `remnants` iría con `duplicate`), y `cloakonnpc` por personaje
+  se pierde al cambiar de mapa.
 - Probar `companion-party-overhaul` con estos mods.
 - **Lo que queda por rescatar de `affix-forge` y `arpg-equipments`** (MIT),
   revisados el 2026-10-23. Ya están en `dungeon-chest` 0.4.0: sus listas de

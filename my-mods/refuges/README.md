@@ -44,11 +44,20 @@ Actualízala al cambiar el mod o al probarlo.
   ruinas»; el montón de leña (`4_WOODPILE`) se ve en `prt_monk 90,238` con
   el nombre «Refugio en ruinas» y nadie a sus lados; la Caravana de Prontera
   cuenta las dos ruinas y que ningún refugio tiene cobertizo
-- **Sin probar en el juego:** el resto. Lo que más dudas tiene: que el sprite
-  `4_BONFIRE` se vea en roBrowser, que el cambio de nombre y
-  sprite al restaurar se vea sin salir del mapa, y que el Intendente y el
-  Caravanero aparezcan al terminar su etapa
-- **Actualizado:** 2026-10-24
+- **Probado en el juego (0.1.2, 2026-10-26),** todo «Probarlo» de un
+  jugador, con `campfire` 0.2.0 y `adventure` 0.4.0. El diálogo de las ruinas
+  y su menú; entregar los materiales por partes («10 / 20») y pagar los 3000
+  zeny; al terminar la etapa 1, las ruinas pasan a ser la hoguera «Refugio
+  de la Abadía» sin salir del mapa (`4_BONFIRE` se ve), con el relato
+  «Restauré el Refugio de la Abadía». Descansar junto al fuego da Descansado
+  20 minutos y cuenta los relatos, que cierran la expedición. Con
+  `@refugio monk 2` aparece el Intendente con sus siete provisiones; con
+  `@refugio monk 3`, el Caravanero, que lleva a Prontera por 300 zeny, y la
+  Caravana de Prontera trae de vuelta a la hoguera. Tras recargar los mods,
+  el refugio sigue restaurado con todo lo suyo
+- **Sin probar en el juego:** `prt_fild11` restaurado (solo se puso a 0) y
+  el relato de grupo, que necesita dos jugadores
+- **Actualizado:** 2026-10-26
 
 ## Instalar
 

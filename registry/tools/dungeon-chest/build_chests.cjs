@@ -149,8 +149,9 @@ function\tscript\tF_DungeonChest_Open\t{
 \t\treturn 0;
 \t}
 
-\t// Un disfraz (costume_pct), equipo con afijos (gear_pct) o la comida. Todo
-\t// el equipo llega sin identificar (dungeon-loot.txt).
+\t// Un disfraz (costume_pct), un objeto de clima o temperature del bioma
+\t// (biome_item_pct, D38), equipo con afijos (gear_pct) o la comida. Todo el
+\t// equipo llega sin identificar (dungeon-loot.txt).
 \tif ($@dc_ready && $@dc_cosn > 0 && rand(100) < $@dc_cosp[.@tier]) {
 \t\t.@cos = $@dc_cos[rand(0, $@dc_cosn - 1)];
 \t\tif (!checkweight(.@cos, 1)) {
@@ -162,6 +163,22 @@ function\tscript\tF_DungeonChest_Open\t{
 \t\tgetitem2 .@cos, 1, 0, 0, 0, 0, 0, 0, 0;
 \t\tmes "[Cofre de Tier " + .@tier + "]";
 \t\tmes "Entre telas viejas encuentras una prenda vistosa, sin identificar.";
+\t\tmes "Una Lupa dirá qué es.";
+\t\treturn .@tier;
+\t}
+\t.@bitem = 0;
+\tif ($@dc_ready && rand(100) < $@dc_bip[.@tier])
+\t\t.@bitem = callfunc("F_DungeonChest_BiomeItem", strnpcinfo(4));
+\tif (.@bitem) {
+\t\tif (!checkweight(.@bitem, 1)) {
+\t\t\tmes "[Cofre de Tier " + .@tier + "]";
+\t\t\tmes "No tienes espacio suficiente para cargar el botín.";
+\t\t\treturn 0;
+\t\t}
+\t\tset getvariableofnpc(.opened, .@npc$), 1;
+\t\tgetitem2 .@bitem, 1, 0, 0, 0, 0, 0, 0, 0;
+\t\tmes "[Cofre de Tier " + .@tier + "]";
+\t\tmes "Entre los restos de otro viajero encuentras ropa hecha para este lugar, sin identificar.";
 \t\tmes "Una Lupa dirá qué es.";
 \t\treturn .@tier;
 \t}

@@ -12,8 +12,9 @@
 //= Sin un mod, su tema dice que no se sabe nada y no cobra.
 //=
 //= Una ronda por tema: el precio solo se cobra cuando hay algo que contar.
-//= Sin temporizadores ni estado guardado. Temporales: @tr_l$[] (las líneas
-//= del rumor que se está preparando).
+//= Sin temporizadores. Temporales: @tr_l$[] (las líneas del rumor que se
+//= está preparando). El rumor de un alijo (0.2.0) guarda su estado en
+//= variables de personaje tr_h*, tr_p*: ver tavern-finds.txt.
 //=
 //= La debilidad por elemento sale de tavern_data (tavern-elements.txt,
 //= generado desde el attr_fix.yml de Renewal).
@@ -187,10 +188,14 @@ prt_in,180,23,2	script	Tabernero#tr_prt	4_M_MANAGER,{
 	next;
 	while (1) {
 		.@rest$ = (getnpcid(0, "Adventure") ? "Sentarme a contar lo vivido" : "");
-		.@s = select("Preguntar por el tiempo:Preguntar por mi contrato:Preguntar por mi némesis:" + .@rest$ + ":Nada, gracias");
-		if (.@s == 5)
+		.@s = select("Preguntar por el tiempo:Preguntar por mi contrato:Preguntar por mi némesis:Preguntar por algo escondido:" + .@rest$ + ":Nada, gracias");
+		if (.@s == 6)
 			break;
 		if (.@s == 4) {
+			callsub S_Find, .@city$;
+			continue;
+		}
+		if (.@s == 5) {
 			mes "[Tabernero]";
 			mes "Siéntate junto al fuego. Aquí todo el mundo cuenta lo suyo, y nadie interrumpe.";
 			doevent "Adventure::OnRest";
@@ -282,4 +287,45 @@ S_Nemesis:
 		callfunc "F_Tavern_Say", "Ya no hay quien lo pare, dicen. Ve preparado.";
 	callfunc "F_Tavern_Weak", nm_mob;
 	return "";
+
+// S_Find(ciudad$): el rumor de un alijo (tavern-finds.txt). Con uno pendiente
+// lo repite gratis; si no, lo vende por find_rounds rondas. Escribe en el
+// diálogo y deja un next pendiente de cerrar.
+S_Find:
+	mes "[Tabernero]";
+	if (tr_hm$ != "") {
+		mes "Lo que te conté sigue en pie: " + callfunc("F_Tavern_FindText");
+		next;
+		return;
+	}
+	if (callfunc("F_Tavern_Fields", getarg(0)) == "") {
+		mes "Por aquí no se oye de nada escondido.";
+		next;
+		return;
+	}
+	.@cost = callfunc("F_Tavern_FindPrice");
+	mes "Dicen que alguien escondió algo en los campos y no volvió a por ello.";
+	mes "Eso vale más que una ronda: son " + .@cost + " zeny.";
+	next;
+	if (select("Pagar:Mejor no") == 2)
+		return;
+	mes "[Tabernero]";
+	if (Zeny < .@cost) {
+		mes "Con eso no llega. Lo que se esconde, se paga.";
+		next;
+		return;
+	}
+	if (!callfunc("F_Tavern_NewFind", getarg(0))) {
+		mes "Hoy nadie se acuerda de nada. Vuelve otro día.";
+		next;
+		return;
+	}
+	Zeny -= .@cost;
+	mes "Baja la voz y se inclina sobre la barra.";
+	mes "Se habla de " + callfunc("F_Tavern_FindText");
+	mes "Lo que haya dentro es tuyo, si llegas.";
+	if (getnpcid(0, "Adventure"))
+		callfunc "F_Adv_Note", "note", "El Tabernero me habló de " + callfunc("F_Tavern_FindText");
+	next;
+	return;
 }

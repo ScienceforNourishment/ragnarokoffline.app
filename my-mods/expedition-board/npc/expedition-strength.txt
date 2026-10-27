@@ -15,7 +15,8 @@
 // Con el Tier del atlas T (1-6) y los valores por defecto:
 //   HP    = 150% + 50% por cada Tier por encima del 1   (T1 x1.5 ... T6 x4)
 //   ATK   = 100% + 15% por cada Tier por encima del 1   (T1 x1.0 ... T6 x1.75)
-// Sin atlas (Tier 0) la marca no cambia.
+// Sin atlas (Tier 0) la marca no cambia. Una de elite, ademas, x2 de HP y
+// x1,3 de ATK (elite_hp, elite_atk).
 function	script	F_Expedition_Strengthen	{
 	.@enabled = callfunc("F_ModSetting", "expedition-board", "mark_strength", 1);
 	if (!.@enabled)
@@ -32,6 +33,11 @@ function	script	F_Expedition_Strengthen	{
 	getunitdata .@gid, .@u;
 	.@hp_pct = 150 + callfunc("F_ModSetting", "expedition-board", "mark_hp_tier", 50) * (.@tier - 1);
 	.@atk_pct = 100 + callfunc("F_ModSetting", "expedition-board", "mark_atk_tier", 15) * (.@tier - 1);
+	// Una marca de elite (D40) suma elite_hp % de HP y elite_atk % de ATK encima.
+	if (getvariableofnpc(.type[getarg(0)], "ExpeditionData") == 3) {
+		.@hp_pct = .@hp_pct * (100 + callfunc("F_ModSetting", "expedition-board", "elite_hp", 100)) / 100;
+		.@atk_pct = .@atk_pct * (100 + callfunc("F_ModSetting", "expedition-board", "elite_atk", 30)) / 100;
+	}
 
 	.@maxhp = .@u[UMOB_MAXHP] * .@hp_pct / 100;
 	setunitdata .@gid, UMOB_MAXHP, .@maxhp;

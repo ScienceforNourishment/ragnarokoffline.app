@@ -182,8 +182,12 @@ materiales de `refuges` lo son.
   gastan, comida, reparación, recetas. Sin ellos los recursos sobran.
 - **Trofeos de caza:** drops en `db/mob_db.yml` y artesanos que los usan.
 - **Preparación contra monstruos:** ajustar elemento y resistencias solo en
-  monstruos de zonas de expedición. Estados vía habilidades de monstruo
-  *(verificar si `mob_skill_db` es una tabla que un mod puede sobrescribir)*.
+  monstruos de zonas de expedición. Estados vía habilidades de monstruo.
+  *Comprobado el 2026-10-24 contra `8aea17a`:* un mod puede, con
+  `db/mob_skill_db.txt`; rAthena lo lee de `db/import` y la app une las filas
+  de varios mods (`docs/MODDING.md`). Las filas se **añaden** a las de serie;
+  una fila `<id>,clear` quita antes las del monstruo (`mob.cpp`), así que
+  dos mods que toquen al mismo monstruo deben ponerse de acuerdo.
 
 ### Ciudades y expediciones
 
@@ -203,8 +207,14 @@ materiales de `refuges` lo son.
 ### Exploración y mundo
 
 - **Pasadizos:** NPC con área de contacto en celdas transitables junto a una
-  pared y warp oculto *(verificar `HIDDEN_WARP_NPC` y `cloakonnpc` por
-  personaje)*. Empezar con mapas existentes poco usados.
+  pared y warp oculto. Empezar con mapas existentes poco usados.
+  *Comprobado el 2026-10-24 contra `8aea17a`:* `HIDDEN_WARP_NPC` es el
+  sprite 139 y rAthena lo acepta. `cloakonnpc "<npc>", <char_id>` (o
+  `cloakonnpcself`) oculta o muestra un NPC **a un solo personaje**, y
+  también le apaga o enciende su área de contacto (`npc_touch_areanpc`
+  mira `npc_is_cloaked` por jugador). Pero se **pierde al cambiar de mapa y
+  al salir** (`pc_setpos` vacía `cloaked_npc`): un pasadizo descubierto se
+  vuelve a mostrar en cada `OnPCLoadMapEvent`, leyendo el mod store.
 - **Trampas:** zonas de contacto con daño o estado, ligadas al Tier de la
   mazmorra. Detección o desarme según clase (Rogue, Hunter, Assassin).
 - **Objetos de mazmorreo:** lámparas (pase gráfico por mapa con
@@ -228,8 +238,10 @@ materiales de `refuges` lo son.
   `arpg-equipments`. Cuidado con conflictos de `item_db`: gana el último mod
   aplicado.
 - **Durabilidad:** fuera de este ciclo. rAthena no la tiene por objeto; la
-  opción sería un contador de desgaste por ranura con `breakequip`
-  *(verificar)*. Rinde poco para su costo.
+  opción sería un contador de desgaste por ranura con `breakequip`. Rinde
+  poco para su costo. *Comprobado el 2026-10-24:* `breakequip <ranura>`
+  existe, rompe y desequipa lo de esa ranura (se repara como cualquier
+  objeto roto) y devuelve 1 si rompió algo; el contador sería del mod.
 
 ### Clima y luz
 
@@ -269,8 +281,10 @@ hacen está en su README, y lo de aquí abajo es la propuesta original. Rangos d
 4. **`refuges`** (Reconstrucción, el hilo B): refugios en ruinas en los campos
    que se restauran entregando materiales y trofeos. Restaurados quedan para
    siempre: descanso, un vendedor, a veces un atajo. Estado en el mod store;
-   el NPC visible por personaje con `cloakonnpc` *(verificar el alcance por
-   personaje)*. Es la «Consecuencia que queda en el mundo». Su fogata es el
+   el NPC visible por personaje con `cloakonnpc`. *Resuelto por D32:* lo
+   restaurado es del mundo; `cloakonnpc` por personaje existe pero se
+   pierde al cambiar de mapa (ver «Pasadizos»). Es la «Consecuencia que
+   queda en el mundo». Su fogata es el
    único lugar fuera de la ciudad donde se cuentan los relatos (llama a
    `Adventure::OnRest`).
 5. **`tavern-rumors`**: una taberna por ciudad, en un interior. Rumores que
@@ -281,8 +295,13 @@ hacen está en su README, y lo de aquí abajo es la propuesta original. Rangos d
 6. **`remnants`** (restos y lore), generados desde un CSV: cadáveres de
    aventureros con una nota de una o dos líneas, objetos cuya descripción en
    `itemInfo.lua` cuenta el misterio de la niebla, NPC mudos. Incluye la
-   tumba con tus provisiones en el lugar de la muerte *(verificar
-   `duplicatenpc` en el rAthena fijado)*. Depende de `LORE.md`.
+   tumba con tus provisiones en el lugar de la muerte. *Comprobado el
+   2026-10-24 contra `8aea17a`:* `duplicatenpc` no existe. Hay
+   `duplicate "<npc>", "<mapa>", x, y{, nombre, sprite…}`, el que usa
+   `campfire` (D28), que pone una copia donde se quiera y la ven todos; y
+   `duplicate_dynamic`, que solo ve su dueño pero aparece a 2 celdas de él
+   y desaparece tras 60 s sin usarse (`feature.dynamicnpc_timeout`), así que
+   no sirve para una tumba que espera. Depende de `LORE.md`.
 7. **Encuentros en el camino**: al entrar en un campo (`loadevent`), un sorteo
    según el bioma: caravana atacada, mercader errante, emboscada. Sin
    temporizadores.

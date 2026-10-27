@@ -58,9 +58,12 @@ Actualízala al cambiar el mod o al probarlo.
     celdas o más vuelve el frío en 4 s o menos.
   - **Descansado:** 20 minutos; la primera muerte en el campo sale sin
     herida y la segunda sí la deja.
+- **Probado en el juego (0.2.0, 2026-10-26),** con «Probarlo» de
+  [`refuges`](../refuges/README.md#probarlo): `F_Campfire_Rest` desde la
+  hoguera de un refugio da Descansado 20 minutos y `@fogata` lo dice
 - **Sin probar:** la fogata compartida (Cómodo, descansar y cocinar en la
   del compañero), que necesita dos jugadores; los ajustes de Settings
-- **Actualizado:** 2026-10-24
+- **Actualizado:** 2026-10-26
 
 ## Instalar
 

@@ -186,6 +186,10 @@ experiencias**.
 | `wound:<id>` | primera vez que recibes esa herida o maldición | Media | `wounds` |
 | `nemesis:<clase>` | vencer a tu némesis (una vez por clase de monstruo) | Mayor; Hito si era de rango 3 | `nemesis` 0.1 |
 | `refuge:<id>` | terminar la etapa 1 de un refugio (techo y fogata) | Mayor | `refuges` 0.1 |
+| `rumor:<mapa>` | encontrar el alijo de un rumor de la taberna en ese mapa | Menor | `tavern-rumors` 0.2 (D41) |
+| `rastro:<cadena>` | encontrar el rastro de una cadena de rumores | Menor | `tavern-rumors` 0.3 (D42) |
+| `final:<cadena>` | vencer al guardián de una cadena | Mayor | `tavern-rumors` 0.3 |
+| `cadena:<cadena>` | terminar una cadena de rumores | Hito | `tavern-rumors` 0.3 |
 | `lore:<id>` | encontrar un resto con historia | Menor | `remnants` (planeado) |
 
 Los hitos escritos a mano (cadenas, lugares especiales) van en un CSV,

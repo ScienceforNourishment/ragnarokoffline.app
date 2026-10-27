@@ -1,0 +1,97 @@
+# Logros de adventure (D39): los relatos Mayores e Hitos, completados al
+# contarlos (F_Adv_Rest, npc/adventure.txt). Ninguno lo cuenta rAthena solo,
+# asi que todos son Group: None. La recompensa es un disfraz de
+# costumes.csv de dungeon-chest y llega por correo al reclamarla en Alt+K.
+# Lo que dice la ventana esta en System/achievement_list.lub, con el mismo id.
+# Ids 901000-901999 (CONVENTIONS.md). Solo Renewal: varios disfraces no
+# existen en Pre-Renewal.
+Header:
+  Type: ACHIEVEMENT_DB
+  Version: 2
+
+Body:
+  # Hitos: primer paso en tierras de cada Tier (tier:<n>).
+  - Id: 901001
+    Name: Primer paso en Tier 1
+    Rewards:
+      Item: C_Brabery_Hat
+    Score: 20
+  - Id: 901002
+    Name: Primer paso en Tier 2
+    Rewards:
+      Item: C_Eremes_Scarf
+    Score: 20
+  - Id: 901003
+    Name: Primer paso en Tier 3
+    Rewards:
+      Item: C_Kirin_Wing
+    Score: 20
+  - Id: 901004
+    Name: Primer paso en Tier 4
+    Rewards:
+      Item: C_Valkyrie_Wing
+    Score: 20
+  - Id: 901005
+    Name: Primer paso en Tier 5
+    Rewards:
+      Item: Brilliant_Golden_Wings
+    Score: 20
+  - Id: 901006
+    Name: Primer paso en Tier 6
+    Rewards:
+      Item: C_Archangel_Wing
+    Score: 20
+  # Mayores: primer cofre de cada Tier (chesttier:<n>, dungeon-chest).
+  - Id: 901011
+    Name: Primer cofre de Tier 1
+    Rewards:
+      Item: C_Cookie_PinkRibbon
+    Score: 10
+  - Id: 901012
+    Name: Primer cofre de Tier 2
+    Rewards:
+      Item: C_Analyze_Eye
+    Score: 10
+  - Id: 901013
+    Name: Primer cofre de Tier 3
+    Rewards:
+      Item: C_Black_Cat
+    Score: 10
+  - Id: 901014
+    Name: Primer cofre de Tier 4
+    Rewards:
+      Item: C_DancingButterfly_TW
+    Score: 10
+  - Id: 901015
+    Name: Primer cofre de Tier 5
+    Rewards:
+      Item: C_Imperial_Glory
+    Score: 10
+  - Id: 901016
+    Name: Primer cofre de Tier 6
+    Rewards:
+      Item: C_Wings_Of_Lucifer
+    Score: 10
+  # Mayor: el primer MVP (mvp:<id>).
+  - Id: 901021
+    Name: Primer MVP abatido
+    Rewards:
+      Item: C_GreatDevilWing
+    Score: 10
+  # Mayor: el primer nemesis vencido; Hito: uno de rango 3 (nemesis:<clase>).
+  - Id: 901031
+    Name: Primer nemesis vencido
+    Rewards:
+      Item: C_Assassin_Mask_
+    Score: 10
+  - Id: 901032
+    Name: Nemesis de rango 3 vencido
+    Rewards:
+      Item: C_Bloody_Wing
+    Score: 20
+  # Mayor: el primer refugio restaurado (refuge:<id>, refuges).
+  - Id: 901041
+    Name: Primer refugio restaurado
+    Rewards:
+      Item: C_Flame_Muffler
+    Score: 10

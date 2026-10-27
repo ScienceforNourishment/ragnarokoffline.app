@@ -28,11 +28,11 @@ pegados, sin margen; desde ahora cada mod nuevo recibe un **bloque de 100**.
 | 50844–50999 | `clima`, `survival`, `temperature` | ampliaciones de estos tres; anotar aquí cada ID que se use |
 | 51000–51099 | `adventure` | (planeado) |
 | 51100–51199 | `campfire` | 51100–51102 leña, kit y venda; 51110–51115 platos (recetas en `registry/tools/campfire/recipes.csv`) |
-| 51200–51299 | `nemesis` | trofeos: 51200–51209 (51200 + raza del monstruo) |
+| 51200–51299 | `nemesis` | talismanes: 51200–51209 (51200 + raza del monstruo; accesorios con afijos, D40) |
 | 51300–51399 | `refuges` | sin objetos en 0.1; reservado para materiales propios de oficios (D33) |
-| 51400–51499 | `tavern-rumors` | sin objetos en 0.1 |
+| 51400–51499 | `tavern-rumors` | objetos de rastro de las cadenas (0.3.0): 51400 Llave Oxidada; la lista, en `registry/tools/tavern-rumors/chains.csv` |
 | 51500–51599 | `remnants` | (planeado) objetos con lore |
-| 51600–51699 | `expedition-board` | (planeado) trofeos de marcas |
+| 51600–51699 | `expedition-board` | trofeos de marca: 51600–51609 (51600 + raza, accesorios, D40) |
 | 51700–51799 | `dungeon-chest` | (planeado) botín propio |
 | 55000–56999 | `arpg-equipments` (registro) | **no usar**: referencia externa |
 
@@ -41,6 +41,17 @@ pegados, sin margen; desde ahora cada mod nuevo recibe un **bloque de 100**.
 y conservar sus efectos (ver «Comportamiento del cargador» en el README).
 Antes de activar un mod del registro, revisa que sus IDs no caigan en estos
 rangos.
+
+## Rangos de IDs de logros
+
+Los logros propios (ventana Alt+K, `docs/mods/CUSTOM_ACHIEVEMENTS.md`) van
+de 900000 en adelante, un **bloque de 1000** por mod. Nunca reutilizar un
+id: los personajes guardan el progreso del anterior.
+
+| Rango | Mod | Uso |
+|---|---|---|
+| 900000–900999 | `examples/mods/custom-achievement` | **no usar**: el ejemplo de la app |
+| 901000–901999 | `adventure` | relatos Mayores e Hitos (D39); la lista, en su README |
 
 ## Nombres
 
@@ -54,9 +65,9 @@ Cada mod tiene un **prefijo** corto para todo lo que otros podrían ver:
 | `temperature` | — | `@tp_*` | `F_Temperature_*` | `temp_mgr` |
 | `wounds` | `wd_*` | — | `F_Wounds_*` | `wounds_mgr` |
 | `nemesis` | `nm_*` | `$@nm_gid[]`, `$@nm_owner[]`, `$@nm_sym$` | `F_Nemesis_*` | `nemesis_mgr` |
-| `expedition-board` | `eb_*` | `$@eb_*` | `F_Expedition_*` | `ExpeditionCtrl`, `ExpeditionData` |
+| `expedition-board` | `eb_*` (también `eb_trt[]`, `eb_tr_*`, `eb_def[]` de los trofeos) | `$@eb_*` | `F_Expedition_*` | `ExpeditionCtrl`, `ExpeditionData`, `ExpeditionTrophies`, `Coleccionista#eb_*` |
 | `dungeon-chest` | — | `$@dc_*` (datos del botín); `@dc_ro_*` (afijos sorteados), `@dc_sm_*` (Herrero) | `F_DungeonChest_*` | `Cofre T<n>#dcp_<mapa>`, `dungeon_loot`, `Herrero de Afijos#dc` |
-| `tavern-rumors` | — | `@tr_l$[]` | `F_Tavern_*` | `Tabernero#tr_*`, `tavern_data` |
+| `tavern-rumors` | `tr_hm$`, `tr_hx`, `tr_hy`, `tr_px`, `tr_py` (el rumor de un alijo, 0.2.0); `tr_ci$`, `tr_cs`, `tr_cx`, `tr_cy`, `tr_cpx`, `tr_cpy` (la cadena en curso, 0.3.0) | `@tr_l$[]`; `$@tr_hn$[char_id]` (el alijo de cada personaje); `$@tr_cn$[]`, `$@tr_cst[]`, `$@tr_cg[]`, `$@tr_cgo[]`, `$@tr_wn$[]` (las cadenas); mod store: global `w.<cadena>.*` (on, x, y, by), de personaje `c.<cadena>` (1 en espera, 2 en curso, 3 hecha) y `told` (hasta dónde leyó `adv_told$`) | `F_Tavern_*`, `F_Chain_*` | `Tabernero#tr_*`, `tavern_data`, `tavern_finds`, `Alijo#tr`, `tavern_chains`, `tavern_chains_mgr`, `Viejo Trotamundos#trc_*`, `<analista>#trc_<cadena>`, plantillas `Rastro#trc`, `Puerta#trc`, `Pasadizo#trc` |
 | `campfire` | — | `@cf_*`; `$@cf_*` (las fogatas) | `F_Campfire_*` | `campfire_mgr`, `campfire_recipes`, `Fogata#cf` (plantilla; sus copias se llaman `Fogata`), `Proveedor de Campamento#cf` |
 | `refuges` | — | — (estado en el mod store global, `r.<id>.*`) | `F_Refuge_*` | `refuges_mgr`, `refuges_data`, plantillas `Refugio#rf`, `Caravanero#rf`, `Caravana#rf` (copias `#rf_<id>`, `#rf_<id>_c`, `#rf_<ciudad>`), `Intendente del Refugio#rf_<id>_s` |
 | `adventure` | `adv_trait_*`, `adv_t_*`, `adv_cured` (rasgos) | `@adv_*` (entrada, colas `@adv_q*` y `@adv_n*`, con `@adv_qm$` para el grupo); `@tj_*` (entrada del diario, heredada de `travel-journal`) | `F_Adv_*` | `Adventure`, `TravelJournal`, `Cronista#adv_*` |
@@ -75,6 +86,7 @@ El mod store está aislado por mod. Lo que otro mod deba leer va en
 | `@pr_survival`, `@pr_temp`, `@pr_wounds`, `@pr_clima` | `survival`, `temperature`, `wounds`, `clima` (cada uno la suya) | `survival`, `temperature`, `wounds` | presión, para el tope común ([`BALANCE.md`](./BALANCE.md#tope-de-presión)) |
 | `@pr_clima_map$` | `clima` | quien lee `@pr_clima` | mapa del evento; `@pr_clima` solo cuenta si es el mapa actual |
 | `adv_trait_*` | `adventure` (desde 0.3) | `temperature` (`cold`, `heat`), `wounds` (`tough`), `survival` (`forager`) | rasgos permanentes; 1 si el personaje lo tiene |
+| `adv_told$[]`, `adv_told_n` | `adventure` (desde 0.5.0) | `tavern-rumors` (cadenas) | las claves de los relatos contados, en un anillo de 64 (ver el README de `adventure`, «Reaccionar a lo contado») |
 | `$@eb_mark[char_id]` | `expedition-board` | `wounds` | GID de la marca viva de ese personaje |
 | `$@eb_markowner[gid]` | `expedition-board` | `nemesis` | dueño de esa marca; su marca no se vuelve némesis |
 | `@cf_rest_until`, `@cf_ward` | `campfire` | `wounds` (gasta `@cf_ward`) | Descansado: hasta cuándo dura y si la próxima muerte fuera de una ciudad no deja herida |

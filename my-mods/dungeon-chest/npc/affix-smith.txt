@@ -4,7 +4,12 @@
 //=   - pasar TODOS los afijos de una pieza a otra (la de origen se pierde),
 //=   - pasar UNO de los afijos a otra pieza (la de origen se pierde),
 //=   - quitar un afijo,
-//=   - volver a sortear los afijos de una pieza.
+//=   - volver a sortear los afijos de una pieza,
+//=   - engarzar un trofeo de caza (D40): gasta un trofeo de marca de
+//=     expedition-board (51600-51609) o un talisman de nemesis (51200-51209) y
+//=     pone en una pieza un afijo de su raza: ATK, MATK o resistencia, +5 % o
+//=     +8 % (smith_trophy_mark, smith_trophy_nemesis).
+//= Los trofeos nunca son la pieza que se trabaja: no salen en L_Collect.
 //= Volver a sortear usa F_DungeonChest_Roll (dungeon-loot.txt): las mismas
 //= reglas que los cofres, con el Tier de la pieza y sin bioma.
 //=
@@ -23,17 +28,24 @@ prontera,155,187,4	script	Herrero de Afijos#dc	4_M_DWARF,{
 	.@price[1] = callfunc("F_ModSetting", "dungeon-chest", "smith_reroll", 50000);
 	.@price[2] = callfunc("F_ModSetting", "dungeon-chest", "smith_move_one", 60000);
 	.@price[3] = callfunc("F_ModSetting", "dungeon-chest", "smith_remove", 30000);
+	.@price[4] = callfunc("F_ModSetting", "dungeon-chest", "smith_trophy", 20000);
 	mes "[Herrero de Afijos]";
 	mes "Puedo pasar afijos de una pieza a otra, quitar uno o volver a sortearlos.";
+	mes "Tambien engarzo trofeos de caza.";
 	mes "Cada trabajo se paga en zeny.";
 	next;
 
 L_Main:
-	.@sel = select("Pasar TODOS los afijos a otra pieza:Pasar UN afijo a otra pieza:Quitar un afijo:Volver a sortear los afijos:¿Cuánto cuesta?:Irse");
-	if (.@sel == 6)
+	.@sel = select("Pasar TODOS los afijos a otra pieza:Pasar UN afijo a otra pieza:Quitar un afijo:Volver a sortear los afijos:Engarzar un trofeo de caza:¿Cuánto cuesta?:Irse");
+	if (.@sel == 7)
 		close;
 
 	if (.@sel == 5) {
+		callsub L_Trophy, .@price[4];
+		goto L_Main;
+	}
+
+	if (.@sel == 6) {
 		mes "[Herrero de Afijos]";
 		mes "^0000FFPasar todos los afijos^000000";
 		mes callsub(L_CostLine, .@price[0]);
@@ -46,6 +58,9 @@ L_Main:
 		mes " ";
 		mes "^0000FFVolver a sortear^000000";
 		mes callsub(L_CostLine, .@price[1]);
+		mes " ";
+		mes "^0000FFEngarzar un trofeo^000000";
+		mes callsub(L_CostLine, .@price[4]);
 		next;
 		goto L_Main;
 	}
@@ -324,6 +339,123 @@ L_Main:
 	close;
 
 // ---------------------------------------------------------------------------
+// L_Trophy(precio): engarzar un trofeo de caza. Vuelve al menú si se cancela;
+// cierra el diálogo al terminar.
+L_Trophy:
+	.@cost = getarg(0);
+	setarray .@race$[0], "Amorfo", "No muerto", "Bestia", "Planta", "Insecto", "Pez", "Demonio", "Semihumano", "Angel", "Dragon";
+	getinventorylist;
+	.@tn = 0;
+	.@tm$ = "";
+	for (.@i = 0; .@i < @inventorylist_count; .@i++) {
+		.@id = @inventorylist_id[.@i];
+		if (@inventorylist_equip[.@i] || !callsub(L_IsTrophy, .@id))
+			continue;
+		.@tpos[.@tn] = .@i;
+		.@tn++;
+		.@tm$ += getitemname(.@id) + (@inventorylist_amount[.@i] > 1 ? " x" + @inventorylist_amount[.@i] : "") + ":";
+	}
+	mes "[Herrero de Afijos]";
+	if (!.@tn) {
+		mes "No llevas trofeos sin equipar. Los dan las marcas del gremio y los némesis vencidos.";
+		close;
+	}
+	mes "¿Qué trofeo engarzo? Se gasta en el trabajo.";
+	next;
+	.@c = select(.@tm$ + "Cancelar") - 1;
+	if (.@c >= .@tn)
+		return;
+	.@tr = .@tpos[.@c];
+	.@tid = @inventorylist_id[.@tr];
+	.@nem = (.@tid < 51600);
+	.@race = .@tid - (.@nem ? 51200 : 51600);
+	.@val = callfunc("F_ModSetting", "dungeon-chest", (.@nem ? "smith_trophy_nemesis" : "smith_trophy_mark"), (.@nem ? 8 : 5));
+	mes "[Herrero de Afijos]";
+	mes "Con un " + getitemname(.@tid) + " puedo dar a una pieza +" + .@val + "% contra la raza " + .@race$[.@race] + ".";
+	next;
+	.@k = select("ATK contra la raza " + .@race$[.@race] + ":MATK contra la raza " + .@race$[.@race] + ":Resistencia a la raza " + .@race$[.@race] + ":Cancelar");
+	if (.@k == 4)
+		return;
+	// Opciones de affixes.csv: daño 97, daño mágico 107, resistencia 87 (+ raza).
+	setarray .@base[1], 97, 107, 87;
+	.@opt = .@base[.@k] + .@race;
+	.@n = callsub(L_Collect, 2, -1);
+	if (.@n < 1) {
+		mes "[Herrero de Afijos]";
+		mes "No llevas ninguna pieza identificada y sin equipar donde engarzarlo.";
+		close;
+	}
+	.@t = callsub(L_Choose, "¿En qué pieza lo engarzo?", .@n);
+	if (.@t < 0)
+		return;
+	callsub L_ReadOpts, .@t, 5;
+	// Donde cae, como al pasar un afijo: sobre el mismo afijo (se queda el valor
+	// mayor), en un hueco libre o en el que el jugador ceda.
+	.@slot = -1;
+	for (.@j = 0; .@j < 5; .@j++)
+		if (@dc_sm_oid[5 + .@j] == .@opt)
+			.@slot = .@j;
+	.@same = (.@slot >= 0);
+	for (.@j = 0; .@j < 5 && .@slot < 0; .@j++)
+		if (@dc_sm_oid[5 + .@j] < 1)
+			.@slot = .@j;
+	if (.@slot < 0) {
+		.@slot = callsub(L_ChooseAffix, 5, "Esa pieza ya tiene cinco afijos. ¿Cuál reemplaza el del trofeo?");
+		if (.@slot < 0)
+			return;
+	}
+	.@v = .@val;
+	if (.@same && @dc_sm_oval[5 + .@slot] > .@v)
+		.@v = @dc_sm_oval[5 + .@slot];
+	mes "[Herrero de Afijos]";
+	mes "^0000FFEngarzar^000000 " + callsub(L_OptText, .@opt, .@val);
+	mes "^0000FFCon^000000 " + getitemname(.@tid) + " (se gasta)";
+	mes "^0000FFEn^000000 " + callsub(L_ItemLine, .@t);
+	if (.@same)
+		mes "Ya tiene ese afijo: se queda el valor mayor (" + .@v + ").";
+	else if (@dc_sm_oid[5 + .@slot] > 0)
+		mes "Reemplaza a: " + callsub(L_OptText, @dc_sm_oid[5 + .@slot], @dc_sm_oval[5 + .@slot]);
+	mes " ";
+	mes callsub(L_CostLine, .@cost);
+	next;
+	if (Zeny < .@cost) {
+		mes "[Herrero de Afijos]";
+		mes "No te alcanza. Vuelve con el precio completo.";
+		close;
+	}
+	if (select("Engárzalo:Ahora no") == 2)
+		return;
+	getinventorylist;
+	if (Zeny < .@cost || @inventorylist_id[.@tr] != .@tid || @inventorylist_equip[.@tr]) {
+		mes "[Herrero de Afijos]";
+		mes "Algo cambió en tu mochila. Prueba otra vez.";
+		close;
+	}
+	Zeny -= .@cost;
+	for (.@j = 0; .@j < 5; .@j++) {
+		@dc_sm_goid[.@j] = @dc_sm_oid[5 + .@j];
+		@dc_sm_goval[.@j] = @dc_sm_oval[5 + .@j];
+		@dc_sm_gopar[.@j] = @dc_sm_opar[5 + .@j];
+	}
+	@dc_sm_goid[.@slot] = .@opt;
+	@dc_sm_goval[.@slot] = .@v;
+	@dc_sm_gopar[.@slot] = 0;
+	callsub L_Compact;
+	// L_Swap rehace la pieza y gasta uno del trofeo.
+	callsub L_Swap, .@t, .@tr;
+	specialeffect2 154;
+	mes "[Herrero de Afijos]";
+	mes "Listo. Tu ^0000FF" + getitemname(@dc_sm_given) + "^000000 lleva ahora:";
+	for (.@j = 0; .@j < 5; .@j++)
+		if (@dc_sm_goid[.@j] > 0)
+			mes "- " + callsub(L_OptText, @dc_sm_goid[.@j], @dc_sm_goval[.@j]);
+	close;
+
+// L_IsTrophy(id) -> 1 si es un trofeo de marca o un talismán de némesis.
+L_IsTrophy:
+	return ((getarg(0) >= 51600 && getarg(0) <= 51609) || (getarg(0) >= 51200 && getarg(0) <= 51209));
+
+// ---------------------------------------------------------------------------
 // Ayudas. Los números de pieza son posiciones en los arrays de getinventorylist.
 
 // L_OptCount(pieza) -> cuántos afijos tiene.
@@ -434,6 +566,8 @@ L_Collect:
 			continue;
 		.@ty = getiteminfo(@inventorylist_id[.@i], ITEMINFO_TYPE);
 		if (.@ty != IT_ARMOR && .@ty != IT_WEAPON && .@ty != IT_SHADOWGEAR)
+			continue;
+		if (callsub(L_IsTrophy, @inventorylist_id[.@i]))
 			continue;
 		if (.@need == 1 && callsub(L_OptCount, .@i) < 1)
 			continue;

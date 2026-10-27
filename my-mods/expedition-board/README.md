@@ -19,14 +19,16 @@ se entrega»).
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.7.0 (la de `mod.json`), escrita el 2026-10-23. Las notas del diario van con `F_Adv_Note` de `adventure` 0.3 (`F_Expedition_Log`), que no se pierden en la cola; con un `adventure` anterior darían error, así que actualiza los dos juntos. El zeny y el refuerzo de las marcas pasan a **Settings** (ver «Ajustes»), con los mismos valores por defecto; pide la app 1.5.2 o posterior (`F_ModSetting`). También publica **relatos de `adventure`** 0.2 (dependencia suave). Abatir una marca da `mark:<id>` (Media) a su dueño y a su grupo en el mapa; completar una cacería da `hunt:<id>` (Menor) a quien la completa (cada compañero completa la suya). El `<id>` es el del CSV, así que cada contrato da su relato una sola vez. Tier: el del mapa del contrato. Sin probar en el juego. La 0.6.2: una cacería cuenta **todas las variantes con el mismo nombre** que el monstruo del contrato (los cinco «Goblin» 1122–1126), pero no las de nombre parecido (Goblin Archer). La comparación de nombres solo corre en el mapa de la cacería y cuando el id no coincide, así que una muerte de un bot o de alguien sin cacería cuesta lo mismo que antes. Sin probar en el juego; las cacerías aceptadas con la 0.6.1 siguen valiendo y ya cuentan las variantes. La 0.6.1: `OnNPCKillEvent` sale en su primera línea si nadie del servidor tiene una cacería (`$@eb_hunters`), antes de leer el mapa; importa con la población encendida, porque corre con cada monstruo que matan los bots. La 0.6.0 añadió el crédito compartido en grupo y contratos de Tier 2. La 0.5.0 añadió el Intendente y marcas de nivel acorde al mapa, la 0.4.0 las cacerías, la 0.3.0 la dificultad según el atlas y la 0.2.0 fue una reescritura de la primera versión, que no cargaba
+- **Versión:** 0.8.0 (la de `mod.json`), del 2026-10-24: **trofeos de caza y marcas de élite** (D40, ver «Trofeos y marcas de élite»). Toda marca abatida da un trofeo de su raza (dos las de élite), que se lleva puesto, sirve de prueba para una marca de élite, se engarza con el Herrero de `dungeon-chest` 0.7.0 o se cuelga con el nuevo **Coleccionista** (Payon, y en Prontera para las pruebas) por defensa permanente contra su raza. Siete contratos de élite, uno por ciudad (ids 101–107). Sin probar en el juego; comprobado sin el juego: llaves y cabeceras, `--check` del build de contratos, que todos los `callfunc` tienen su función, que el sprite `4_M_JOB_HUNTER` existe en el rAthena fijado y que las celdas de las élites y del Coleccionista son transitables en su map cache.
+- La 0.7.0, escrita el 2026-10-23. Las notas del diario van con `F_Adv_Note` de `adventure` 0.3 (`F_Expedition_Log`), que no se pierden en la cola; con un `adventure` anterior darían error, así que actualiza los dos juntos. El zeny y el refuerzo de las marcas pasan a **Settings** (ver «Ajustes»), con los mismos valores por defecto; pide la app 1.5.2 o posterior (`F_ModSetting`). También publica **relatos de `adventure`** 0.2 (dependencia suave). Abatir una marca da `mark:<id>` (Media) a su dueño y a su grupo en el mapa; completar una cacería da `hunt:<id>` (Menor) a quien la completa (cada compañero completa la suya). El `<id>` es el del CSV, así que cada contrato da su relato una sola vez. Tier: el del mapa del contrato. Sin probar en el juego. La 0.6.2: una cacería cuenta **todas las variantes con el mismo nombre** que el monstruo del contrato (los cinco «Goblin» 1122–1126), pero no las de nombre parecido (Goblin Archer). La comparación de nombres solo corre en el mapa de la cacería y cuando el id no coincide, así que una muerte de un bot o de alguien sin cacería cuesta lo mismo que antes. Sin probar en el juego; las cacerías aceptadas con la 0.6.1 siguen valiendo y ya cuentan las variantes. La 0.6.1: `OnNPCKillEvent` sale en su primera línea si nadie del servidor tiene una cacería (`$@eb_hunters`), antes de leer el mapa; importa con la población encendida, porque corre con cada monstruo que matan los bots. La 0.6.0 añadió el crédito compartido en grupo y contratos de Tier 2. La 0.5.0 añadió el Intendente y marcas de nivel acorde al mapa, la 0.4.0 las cacerías, la 0.3.0 la dificultad según el atlas y la 0.2.0 fue una reescritura de la primera versión, que no cargaba
 - **Probado en el juego:** el flujo completo de una marca en Prontera, y que la marca reforzada aguanta claramente más que una normal. El error de carga original (`abs()`) quedó resuelto
 - **Probado en el juego (0.6.0, 2026-10-17):** una cacería de Fabre en Prontera: cuenta solo los Fabre de su mapa (`prt_fild08`; en `prt_fild06` no cuenta, ni otros monstruos), avisa al completarla y se cobra en el tablero (el Intendente no la acepta: es lo esperado, él solo cobra marcas). Una marca de Prontera: aviso de objetivo abatido y cobro con el Intendente. El diario anota el contrato aceptado y la marca abatida
 - **Probado en el juego (0.6.1, 2026-10-23):** la cacería de Tier 2 «Goblins del camino este» (12 en `prt_fild11`) se cobra con **3125 zeny**, el +25 % de `F_Expedition_Zeny`; el tablero y el Intendente de Geffen, Payon, Morocc, Alberta y Aldebaran se ven y responden (en Payon también, aunque el mapa marca sus celdas como no caminables); la marca «Rastro en el campo sur» de Prontera deja *Marca de la presa* al matarte (ver [`wounds`](../wounds/README.md#estado))
 - **Visto en esa prueba, arreglado en 0.6.2:** la cacería contaba un solo id (`.mob[15] = 1126`) y no las otras variantes que el cliente también llama «Goblin» (1122–1126)
 - **Probado en el juego (0.7.0, 2026-10-24):** en «Goblins del camino este» suman **todas** las variantes de Goblin, lleven el arma que lleven, con el aviso «Caceria: N/12 Goblin»; el Goblin Archer no suma; el log tras un rato cazando no tiene errores de `expedition-board.txt`
+- **Probado en el juego (0.8.0, 2026-10-26),** con `adventure` 0.4.0: los relatos «Abatí la marca: …» y «Completé la cacería: …» (repetir el mismo contrato no da relato) y la nota «Acepte…» en la pestaña Diario (`F_Adv_Note`). Los trofeos, las marcas de élite y el Coleccionista siguen sin probar
 - **Sin probar:** el crédito en grupo (necesita dos personajes), las marcas de nivel acorde al mapa, las otras cacerías de Tier 2 (ids 16 a 21), las marcas de las otras seis ciudades y los casos límite de «Probarlo»
-- **Actualizado:** 2026-10-24
+- **Actualizado:** 2026-10-26
 
 ## Ajustes
 
@@ -40,6 +42,13 @@ servidor). Los marcados «de prueba» son los valores de las sesiones de prueba.
 | `mark_strength` | sí | reforzar la marca según el Tier |
 | `mark_hp_tier` | 50 | de prueba: % de HP extra por Tier (sobre +50 % en Tier 1) |
 | `mark_atk_tier` | 15 | de prueba: % de ATK extra por Tier |
+| `trophy_hours` | 12 | de prueba: horas entre trofeos del mismo contrato, por personaje (0 = siempre) |
+| `elite_trophies` | 2 | de prueba: trofeos de una marca de élite (una normal da 1) |
+| `elite_hp` | 100 | de prueba: % de HP extra de una marca de élite, encima del refuerzo por Tier |
+| `elite_atk` | 30 | de prueba: % de ATK extra de una marca de élite |
+| `collector_mark` | 1 | de prueba: % de defensa por un trofeo de marca colgado |
+| `collector_nemesis` | 2 | de prueba: % de defensa por un talismán de `nemesis` colgado |
+| `collector_cap` | 10 | de prueba: tope de defensa por raza |
 
 ## Qué hace
 
@@ -135,6 +144,72 @@ mira el mapa; solo en el mapa del contrato, y si el id no es el mismo, se
 comparan los nombres, y solo cuando la muerte cuenta se lee la tabla de
 contratos. Un personaje sin caza no ejecuta nada más. No hay temporizadores
 ni bucles.
+
+## Trofeos y marcas de élite
+
+Desde la 0.8.0 (D40). La inspiración: los trofeos de The Witcher 3 (uno puesto,
+y la prueba para cobrar), las almas de Dark Souls (gastarlo en una cosa o en
+otra) y las runas de Shadow of Mordor (el talismán de `nemesis`).
+
+**Trofeos de marca** (51600 + raza del monstruo, `db/item_db.yml`). Al abatir
+una marca, su dueño recibe uno de la raza del monstruo; una de élite da
+`elite_trophies` (2). Cada contrato da trofeos como mucho una vez cada
+`trophy_hours` (12) horas por personaje, para que no se saquen repitiendo la
+marca más fácil. Si no caben, los guarda el Intendente y los da al cobrar o
+al hablarle.
+
+| Id | Raza | Trofeo |
+|---|---|---|
+| 51600 | Amorfo | Esquirla de marca |
+| 51601 | No muerto | Hueso de marca |
+| 51602 | Bestia | Colmillo de marca |
+| 51603 | Planta | Raíz de marca |
+| 51604 | Insecto | Antena de marca |
+| 51605 | Pez | Aleta de marca |
+| 51606 | Demonio | Cuerno de marca |
+| 51607 | Semihumano | Insignia de marca |
+| 51608 | Ángel | Pluma de marca |
+| 51609 | Dragón | Escama de marca |
+
+Un trofeo se usa de una de estas cuatro maneras:
+
+| Uso | Dónde | Qué da | ¿Se gasta? |
+|---|---|---|---|
+| Llevarlo puesto | es un accesorio | +10 % de daño físico y mágico contra su raza | no |
+| Prueba | el Intendente de la ciudad | una marca de élite de esa raza | sí |
+| Engarzarlo | Herrero de Afijos (`dungeon-chest`) | +5 % de ATK, MATK o resistencia contra su raza en una pieza | sí |
+| Colgarlo | el Coleccionista | +1 % de defensa permanente contra su raza, hasta 10 % | sí |
+
+Los **talismanes de `nemesis`** (51200–51209) también se llevan puestos, se
+engarzan (+8 %) y se cuelgan (+2 %), pero no sirven de prueba.
+
+**El Coleccionista de Trofeos** está en `payon 180,104`, para que haya otra
+razón de ir a Payon; mientras duren las pruebas hay una copia en `prontera
+157,187`, junto al Herrero (D23). «Colgar un trofeo» lo gasta y sube
+`eb_def[raza]`; «Ver mi pared» lista la defensa de cada raza. La defensa es un
+`bonus_script` de texto fijo que lee `eb_def[]` y se pone al entrar al juego;
+no se pierde al morir.
+
+**Marcas de élite** (`type` `elite` en `contracts.csv`). Una por ciudad, de la
+misma raza que la marca normal de esa ciudad y en un mapa de un Tier más. No
+salen en el tablero: las da el **Intendente** a cambio de un trofeo de marca de
+la raza del monstruo, que se cobra solo si la marca quedó puesta. La marca se
+llama «Marca de elite», tiene `elite_hp` (+100 %) de HP y `elite_atk` (+30 %)
+de ATK encima del refuerzo por Tier, se cobra con el Intendente como una marca
+y da su relato `mark:<id>` como Mayor.
+
+| Id | Ciudad | Contrato | Monstruo | Mapa (Tier) | Prueba |
+|---|---|---|---|---|---|
+| 101 | Prontera | La flor del laberinto | Flora | `prt_maze03` (2) | planta |
+| 102 | Izlude | La sirena de la cueva marina | Obeaune | `iz_dun02` (2) | pez |
+| 103 | Geffen | La hidra del pozo | Hydra | `gef_dun01` (2) | planta |
+| 104 | Payon | El tirador de piedras | Stone Shooter | `pay_dun02` (2) | planta |
+| 105 | Morocc | La flor de la pirámide | Flora | `moc_pryd02` (2) | planta |
+| 106 | Alberta | La marina de Comodo | Marina | `cmd_fild01` (2) | planta |
+| 107 | Aldebaran | La luz bajo el reloj | Brilight | `alde_dun02` (3) | insecto |
+
+Las celdas de las marcas de élite son el centro transitable del mapa, sacado
+del map cache; `F_Expedition_Spawn` busca otra si no lo es.
 
 ## Qué cambió respecto a la primera versión
 
@@ -400,6 +475,9 @@ cuenta las muertes del propio personaje (y de su mascota). Las de Tier 3 o más
 | `$@eb_mark[char_id]` | servidor, temporal | GID de la marca viva de ese personaje |
 | `$@eb_markowner[gid]` | servidor, temporal | char_id del dueño de esa marca (para acreditarlo en grupo) |
 | `$@eb_hunters` | servidor, temporal | cuántos personajes conectados tienen una caza en curso |
+| `eb_trt[id]` | personaje, permanente | última vez (unix) que el contrato `id` dio trofeos |
+| `eb_tr_item`, `eb_tr_n` | personaje, permanente | trofeo que no cupo y cuántos; los entrega el Intendente |
+| `eb_def[raza]` | personaje, permanente | defensa del Coleccionista contra esa raza, en % |
 
 ## Estructura
 
@@ -407,9 +485,12 @@ cuenta las muertes del propio personaje (y de su mascota). Las de Tier 3 o más
 expedition-board/
 ├── mod.json
 ├── README.md
+├── db/item_db.yml                 trofeos de marca (51600–51609)
+├── System/itemInfo.lua            sus nombres y textos en el cliente
 └── npc/
-    ├── expedition-board.txt       tableros, Intendentes, marcas, cacerías y estado (a mano)
-    ├── expedition-strength.txt    refuerzo de la marca por Tier (a mano)
+    ├── expedition-board.txt       tableros, Intendentes, marcas, élites, cacerías y estado (a mano)
+    ├── expedition-strength.txt    refuerzo de la marca por Tier y de élite (a mano)
+    ├── expedition-trophies.txt    trofeos, el Coleccionista y su defensa (a mano)
     └── expedition-contracts.txt   datos de los contratos (generado)
 ```
 
@@ -417,9 +498,8 @@ expedition-board/
 
 Sin implementar.
 
-- **Recompensas reales:** las marcas sueltan un **trofeo** con nombre (para
-  cocinar, fabricar o restaurar refugios) además del zeny; las pociones son de
-  prueba.
+- **Recompensas reales:** ~~las marcas sueltan un trofeo~~ hecho en la 0.8.0
+  (D40); el zeny y las pociones siguen siendo de prueba.
 - **Contratos que llevan a algo:** una marca o caza que apunta a un punto de
   interés, la cadena «Rumor → Pista → Hallazgo» del plan. Los rumores vendrían
   de `tavern-rumors`.
@@ -429,5 +509,5 @@ Sin implementar.
   (Media); primera vez que se completa cada caza, `hunt:<contrato>` (Menor). Con
   `@adv_party = 1` para el crédito en grupo. Ver
   [`ADVENTURE.md`](../ADVENTURE.md).
-- **Tier 3 o más:** sin contratos todavía; con `adventure`, son donde más
+- **Tier 3 o más:** solo la élite de Aldebaran (0.8.0); con `adventure`, son donde más
   pagan las experiencias.

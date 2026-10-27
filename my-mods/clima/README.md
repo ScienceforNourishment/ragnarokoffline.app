@@ -25,6 +25,10 @@ Actualízala al cambiar el mod o al probarlo.
 - **Probado en el juego (0.4.1, 2026-10-23):** `@presion` cuenta **clima 1**
   en la Ventisca de `xmas_fild01` sin protección; la sed baja el doble con
   Calor intenso en `moc_fild11`
+- **Probado en el juego (0.5.0, 2026-10-26),** con `adventure` 0.4.0: los
+  dos relatos, «Mi equipo me protegió del clima: …» con la protección puesta
+  y «Aguanté el clima sin protección: …» al terminar el evento; los ajustes
+  se ven en Settings → Mods
 - **Observado (2026-10-23), sin reproducir:** el personaje se siguió viendo
   congelado después de cambiar de mapa, aunque ya podía moverse. Lo más
   probable es el `SC_FREEZE` de la Ventisca: roBrowser tira los paquetes de
@@ -39,7 +43,7 @@ Actualízala al cambiar el mod o al probarlo.
   Ventisca **no** suma frío a `temperature` (solo Frío extremo y Calor intenso
   ponen `@clima_*_extra_loss`), así que no lleva a Congelado
 - **Limitación:** el visual es fijo por mapa; ver «Limitación conocida»
-- **Actualizado:** 2026-10-24
+- **Actualizado:** 2026-10-26
 
 ## Ajustes
 

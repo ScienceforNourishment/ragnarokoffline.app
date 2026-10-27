@@ -11,7 +11,25 @@ con 1 a 4 afijos** del Tier del mapa; si no, una comida del Tier.
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.5.0 (la de `mod.json`): abrir un cofre publica dos
+- **Versión:** 0.7.1 (la de `mod.json`), del 2026-10-26: el cofre ya no se
+  **traba** al dar un objeto del bioma. En una mazmorra cuyo bioma tiene un
+  solo objeto (cueva, costa, pantano, selva, bosque, ruinas), el sorteo hacía
+  `rand(0, 0)`; rAthena lo trata como error y termina el script con el
+  diálogo abierto (visto en `prt_sewb1` el 2026-10-26). Todos los sorteos de
+  rango variable de `dungeon-loot.txt` pasan ahora por
+  `F_DungeonChest_Rand`, que con un solo valor lo devuelve. Sin probar en el
+  juego.
+- La 0.7.0, del 2026-10-24: el Herrero de Afijos **engarza trofeos de caza** (D40, ver «Herrero de Afijos»): gasta un trofeo de marca de `expedition-board` 0.8.0 o un talismán de `nemesis` 0.3.0 y pone en una pieza un afijo de su raza. Los trofeos ya no salen como pieza en sus menús. Sin probar en el juego; comprobado sin el juego: llaves, que cada `callsub` tiene su etiqueta y que las opciones 87, 97 y 107 + raza son la resistencia, el daño y el daño mágico contra esa raza en el rAthena fijado.
+- La 0.6.0, del 2026-10-24: **objetos del
+  bioma** (D38, paso 1 de «Botín de equipo»). Un 10 % de las aperturas da
+  una protección de `clima` o una prenda de `temperature` para el bioma de
+  la mazmorra, sin identificar. Regenerados `dungeon-loot-data.txt` y
+  `dungeon-chests.txt` (`--check` al día, con las tablas Renewal del rAthena
+  fijado). Sin probar en el juego; comprobado sin el juego: llaves y
+  cabeceras, que cada objeto de `loot_biomes.csv` existe en el item_db de
+  `clima` o `temperature` (lo valida el build) y que `getiteminfo` da −1
+  con un objeto que no existe, que es como se saltan los de un mod apagado
+- La 0.5.0: abrir un cofre publica dos
   **relatos de `adventure`** 0.2 (dependencia suave): `chest:<mapa>` (Menor,
   el primer cofre de cada mapa) y `chesttier:<n>` (Mayor, el primer cofre de
   cada Tier), compartidos con el grupo que esté en el mismo mapa.
@@ -51,9 +69,16 @@ Actualízala al cambiar el mod o al probarlo.
   `@cofre aqui`, `@cofre cerrar` (deja abrirlo otra vez) y `@cofre mover`;
   `@cofre prontera` dice «no tiene cofre». Los cofres de `iz_d04_i` (T5) e
   `iz_d05_i` (T6) aparecen y dan lo de su Tier
-- **Sin probar:** que el log, tras una sesión abriendo cofres, no se queje de
-  `getitem3` ni `getitem4` (se mira al final de la sesión de prueba)
-- **Actualizado:** 2026-10-24
+- **Probado en el juego (0.7.0, 2026-10-26):** los relatos de `adventure`:
+  al cerrar el diálogo, «Abrí el cofre de …» y «Mi primer cofre de Tier …»;
+  un cofre del mismo Tier en otro mapa da solo el primero
+- **Falla en el juego (0.7.0, 2026-10-26):** en `prt_sewb1` el cofre se
+  quedó trabado con el diálogo abierto (log: `buildin_rand: minimum (0) and
+  maximum (0) are equal` en `Cofre T1#dcp_prt_sewb1`). Arreglado en 0.7.1
+- **Sin probar:** el objeto del bioma (0.6.0), ahora con la 0.7.1; el
+  engarce de trofeos (0.7.0); que el log, tras una sesión abriendo cofres,
+  no se queje de `getitem3` ni `getitem4`. En el log del 2026-10-26 no salen
+- **Actualizado:** 2026-10-26
 
 - **Cantidad:** un cofre por mapa.
 - **Ubicación:** aleatoria dentro de cada mapa; solo se eligen celdas
@@ -194,29 +219,53 @@ vez, y no deben activarse con él (serían dos sistemas de afijos a la vez).
 
 ## Botín de equipo
 
-Decidido el 2026-10-23 (D35, D36). Al abrir un cofre:
+Decidido el 2026-10-23 (D35, D36) y el 2026-10-24 (D38). Al abrir un cofre:
 
 0. Con la probabilidad `costume_pct` (5 %) sale un **disfraz** de
    `costumes.csv`: una pieza de las ranuras de disfraz (cabeza alta, media o
    baja, y capa), que solo cambia el aspecto. Llega sin identificar y sin
    afijos. Son los 51 disfraces de `arpg-equipments`, de cualquier Tier.
-1. Si no, con la probabilidad `gear_pct` de su Tier (80 %) sale **equipo**;
+   Los mismos disfraces son también recompensas de los logros de
+   `adventure` (D39).
+1. Si no, con la probabilidad `biome_item_pct` (10 %) sale un **objeto del
+   bioma** de la mazmorra (columna `items` de `loot_biomes.csv`): la
+   protección de `clima` contra el clima de ese bioma y, en la nieve, la
+   montaña, el desierto y los volcanes, también la ropa de `temperature`.
+   Llega sin identificar. Hace falta `world-atlas` (el bioma); sin `clima` o
+   sin `temperature`, sus objetos no salen y el cofre sigue al paso 2.
+
+   | Bioma | Objetos |
+   |---|---|
+   | nieve | Armadura Horno; Capa de Piel, Chaleco de Lana |
+   | montaña | Abrigo Polar; Capa de Piel, Chaleco de Lana |
+   | desierto | Sombrero del Desierto; Manto de Lino, Túnica Fresca |
+   | volcán | Máscara de Gas Etéreo; Manto de Lino, Túnica Fresca |
+   | costa | Gafas de Claridad |
+   | selva, cueva | Máscara de Gas Etéreo |
+   | pantano, ruinas | Manto Bendecido |
+   | bosque | Scriptum Petreum |
+   | pradera | Manto de Lluvia, Botas de Estabilidad |
+
+   Hoy las mazmorras del atlas son de ruinas (102), cueva (39), costa (14),
+   selva (10), volcán (6), nieve (5), bosque (4) y pantano (3); los demás
+   biomas tienen fila para cuando las haya.
+2. Si no, con la probabilidad `gear_pct` de su Tier (80 %) sale **equipo**;
    si tampoco, la comida del Tier, como antes.
-2. **Qué pieza:** una de `loot.csv` de ese Tier. Con la probabilidad
+3. **Qué pieza:** una de `loot.csv` de ese Tier. Con la probabilidad
    `class_pct` (70 %) se elige entre las que puede equipar quien lo abre, si
    hay alguna; si no, cualquiera del Tier, también de otra clase. La clase se
    compara con los `Jobs` del item_db (un Lord Knight o un Rune Knight
    cuentan como Knight); no mira las restricciones de clase alta o bebé.
-3. **Sin identificar:** llega al inventario sin identificar, y el cofre solo
+4. **Sin identificar:** llega al inventario sin identificar, y el cofre solo
    dice si es un arma, una armadura o equipo de sombra. Una Lupa (611)
    enseña qué es y sus afijos.
-4. **Afijos**, con el sorteo de `affix-forge`: cuántos (1 a 4, por
+5. **Afijos**, con el sorteo de `affix-forge`: cuántos (1 a 4, por
    `count_weights`), de qué rareza (común, poco común, rara o épica, por
    `rarity_weights`), una opción de esa rareza que valga para armas o
    armaduras, sin repetir opción ni familia (MaxHP y MaxHP %), y un valor que
    escala como el de un monstruo de nivel `level`. Los Tiers altos dan más
    afijos, más raros y más fuertes.
-5. **Bioma:** con `world-atlas`, el primer afijo sale el 35 % de las veces de
+6. **Bioma:** con `world-atlas`, el primer afijo sale el 35 % de las veces de
    las opciones del bioma del mapa: resistir agua en la nieve y la costa,
    fuego en volcanes y desiertos, no muertos y sombra en las ruinas…
 
@@ -239,14 +288,14 @@ Todo son valores de prueba.
 | `costumes.csv` | los disfraces |
 | `affixes.csv` | los 214 afijos: rareza, rango, tipo de valor, armas o armaduras, tope y familia |
 | `affix_names.csv` | el nombre de cada afijo en español, como lo enseñan el cliente y el Herrero |
-| `loot_tiers.csv` | lo de la tabla de arriba y `costume_pct`, por Tier |
-| `loot_biomes.csv` | bioma, probabilidad y opciones del primer afijo |
+| `loot_tiers.csv` | lo de la tabla de arriba, `costume_pct` y `biome_item_pct`, por Tier |
+| `loot_biomes.csv` | bioma, probabilidad y opciones del primer afijo, y los objetos de `clima` y `temperature` del paso 1 |
 
 Se regenera con `node registry/tools/dungeon-chest/build_loot.cjs [carpeta
 db/re de rAthena]`, que escribe `npc/dungeon-loot-data.txt` y la tabla de
 nombres del cliente (no se editan a mano). Comprueba que cada pieza y cada
 disfraz sean equipo en las tablas Renewal, que las clases existan, que cada
-afijo tenga nombre, que las opciones de cada bioma estén en `affixes.csv` y
+afijo tenga nombre, que las opciones de cada bioma estén en `affixes.csv`, que sus objetos estén en el item_db de `clima` o `temperature` y
 que cada Tier tenga su fila. `--check` falla si alguno de los dos no está al
 día. El código del sorteo está en `npc/dungeon-loot.txt`, escrito a mano.
 
@@ -279,12 +328,14 @@ tiene.
 | Pasar un afijo | uno elegido de una pieza (que se pierde) pasa a otra: sobre el mismo afijo si ya lo tiene, a un hueco libre o al que cedas si tiene cinco | 60 000 (`smith_move_one`) |
 | Quitar un afijo | uno elegido; la pieza se queda | 30 000 (`smith_remove`) |
 | Volver a sortear | mismos afijos en número, nuevos, con el sorteo de los cofres y el Tier de la pieza (el de `loot.csv`, o la banda de su nivel), sin bioma | 50 000 (`smith_reroll`) |
+| Engarzar un trofeo (D40) | gasta un trofeo de marca (51600–51609, `expedition-board`) o un talismán de némesis (51200–51209, `nemesis`) y pone en una pieza ATK, MATK o resistencia contra su raza: +5 % el de marca (`smith_trophy_mark`), +8 % el talismán (`smith_trophy_nemesis`). Cae como al pasar un afijo; si la pieza ya lo tiene, se queda el valor mayor | 20 000 (`smith_trophy`) |
 
 Cada servicio enseña antes qué se pierde y qué queda. Al rehacer la pieza
 conserva refinado, cartas, atributo, grado y si está ligada. Los precios son
 valores de prueba y se cambian en Settings → Mods; 0 lo hace gratis. Como en
 `affix-forge`, pasar un afijo no comprueba la regla de una familia por pieza:
-se puede acabar con MaxHP y MaxHP % en la misma.
+se puede acabar con MaxHP y MaxHP % en la misma. Los trofeos y talismanes
+nunca son la pieza que se trabaja: no se les pueden sacar ni poner afijos.
 
 ### Créditos
 

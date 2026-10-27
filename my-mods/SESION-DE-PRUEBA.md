@@ -1,7 +1,7 @@
 # Sesión de prueba
 
 Guion de lo que **queda por probar en el juego**, sacado de la sección «Estado»
-de cada README (revisado el 2026-10-24). Lo ya probado no está aquí: está en el
+de cada README (revisado el 2026-10-26). Lo ya probado no está aquí: está en el
 «Estado» de cada mod, y los guiones anteriores siguen en el historial de git.
 
 Si este guion y un README no coinciden, manda el README. Marca cada caso al
@@ -10,187 +10,363 @@ los resultados a «Estado» y borra los pasos hechos.
 
 ## Antes de entrar
 
-Instalado el 2026-10-24: las versiones nuevas de `adventure` 0.3.0,
-`dungeon-chest` 0.5.0, `expedition-board` 0.7.0, `clima` 0.5.0,
-`survival` 1.3.0, `wounds` 0.7.0, `nemesis` 0.2.0 y `campfire` 0.2.0.
-Faltan dos arreglos de hoy:
+La sesión del 2026-10-26 encontró dos fallos, arreglados en estas versiones
+y **sin instalar todavía**:
 
-| Mod | Versión | Qué arregla |
+| Mod | Versión | Qué trae |
 |---|---|---|
-| `temperature` | 0.5.1 | el icono de calor que no salía en `moc_fild11` |
-| `refuges` | 0.1.2 | el refugio que no abría diálogo |
+| `dungeon-chest` | 0.7.1 | el cofre ya no se traba al dar un objeto del bioma (`rand(0, 0)` en `prt_sewb1`) |
+| `adventure` | 0.5.0 | `mod.json` declara `renewalFolder` (0.4.1: sin él, los logros no llegaban al servidor); además, publica los relatos contados (`adv_told$`) para las cadenas |
+| `tavern-rumors` | 0.3.0 | nuevo: el rumor de un alijo (sección 5) y la primera cadena de rumores (sección 6); trae `System/` |
 
-- [ ] Reemplaza la carpeta entera de esos dos mods (copiar encima no quita
-      archivos viejos), recarga los mods y mira `ragnarok-stack logs map 200`:
-      sin errores de nuestros mods ni `Duplicate unique name`. El único error
-      esperado es `Companion Recruiter`, del Population Engine.
+Las demás versiones ya están instaladas: `temperature` 0.5.2, `refuges`
+0.1.2, `expedition-board` 0.8.0, `nemesis` 0.3.0 y el resto.
+
+- [ ] Reemplaza la carpeta entera de `adventure`, `dungeon-chest` y
+      `tavern-rumors` (copiar
+      encima no quita archivos viejos), recarga los mods, **reinicia la
+      aplicación** y mira `ragnarok-stack logs map 200`: sin errores de
+      nuestros mods ni `Duplicate unique name`, y **`Loading '16' entries in
+      'db/import/achievement_db.yml'`** (el 2026-10-26 salió sin entradas).
+      El único error esperado es `Companion Recruiter`, del Population
+      Engine.
 
 **Rates (D8):** `quest_exp_rate` ya está a 1x, pero `base_exp_rate`,
 `job_exp_rate` y los drops siguen a **50x** en Settings. Para estas pruebas da
 igual; para medir el balance de H1 tienen que estar a 1x.
 
 **Personaje:** `tester` / `tester123`, con comandos de GM. No uses la cuenta
-`ragnarok`: el cliente la dibuja siempre como GM.
+`ragnarok`: el cliente la dibuja siempre como GM. Para los logros (parte 3)
+hace falta **otro personaje nuevo**: el del 2026-10-26 ya contó sus relatos
+Mayores sin que los logros existieran, y no los recibe.
 
-**Lo que vas a necesitar:** Stem ×20, Animal Skin ×10, Fluff ×20 (905, 919,
-914) y 3000 zeny para la etapa 1 del Refugio de la Abadía.
+**Ruido conocido en el log:** pares de `itemdb_search: Item ID 55000 / 55001
+/ 56000 does not exists` (objetos de `arpg-equipments`, apagado, que quedaron
+en algún personaje) y los `[wddebug]` de `wounds` (diagnóstico a propósito).
 
 | Comando | Qué hace |
 |---|---|
 | `@temperatura` | estado de temperatura y su desglose |
 | `@presion` | presión de cada sistema, total y si actúa el tope |
 | `@relatos` | expedición en curso y relatos sin contar |
-| `@fogata` | Descansado que te queda y si estás junto a una fogata |
-| `@refugios` | cada refugio y hasta qué etapa está restaurado |
-| `@refugio <id> <0-3>` | pone un refugio en esa etapa (GM); `monk` o `f11` |
 | `@cofre [mapa]` | te lleva junto al cofre del mapa (GM); `aqui`, `cerrar`, `mover` |
 | `@heridas` | heridas actuales |
 | `@herida <id>` | da una herida (GM); `@herida 0` las quita |
 | `@zeny <n>`, `@item <id> <n>` | dan zeny y objetos (GM) |
 
-## 1. Icono de calor (`temperature` 0.5.1)
+## 1. Iconos de frío y calor (`temperature` 0.5.2)
 
-Con la 0.5.0, el icono de frío salía bien y el de calor no salió en
-`moc_fild11`: el cliente perdía el paquete del icono mientras cargaba el mapa.
-Ahora el icono espera a que el cliente avise que terminó de cargar
-(`OnPCLoadMapEvent`). Ese aviso solo llega en los mapas del atlas, porque
-`adventure` les pone `loadevent`, así que `adventure` tiene que estar activo.
-Sin ropa de abrigo ni fresca:
+Con la 0.5.1 los dos iconos salían, pero **no se apagaban** al salir del
+mapa: el cliente perdía el paquete que los quita mientras cargaba el mapa
+nuevo. Ahora, con el mapa nuevo cargado, `temperature` vuelve a apagar el
+icono del mapa anterior (puede parpadear 1 s antes de irse). Detalle en
+«Estado» de [`temperature`](./temperature/README.md#estado). Sin ropa de
+abrigo ni fresca, y con un personaje **sin** Hecho al frío ni Hecho al calor
+(con ellos, Fresco y Cálido no sacan icono):
 
 - [ ] En Prontera, `@warp moc_fild11`: `@temperatura` dice Acalorado (2) o
       Sofocado (3), y el icono de calor sale entre 4 y 8 s después de que el
-      mapa se vea. Si sigue sin salir, apunta `@temperatura` y cuánto tardó
-      en cargar el mapa.
-- [ ] Vuelve a Prontera y luego a `xmas_fild01`: el icono de frío sale igual
-      que antes, y se apaga unos 5 s después de volver a Prontera.
+      mapa se vea.
+- [ ] Vuelve a Prontera: el icono de calor se va en unos 8 s o menos tras
+      cargar el mapa.
+- [ ] `@warp xmas_fild01`: sale el de frío; vuelve a Prontera: se va igual.
 - [ ] De `xmas_fild01` a `moc_fild11` sin pasar por una ciudad: el de frío se
-      apaga y el de calor sale en 8 s o menos tras cargar el mapa.
+      apaga y el de calor sale en 8 s o menos tras cargar el mapa. Y al
+      revés.
+- [ ] Si alguno se queda, apunta de qué mapa a qué mapa y cuánto tardó en
+      cargar.
 
-## 2. Refugios (`refuges` 0.1.2, `campfire`, `adventure`)
+## 2. Lo que quedó de `adventure` 0.3
 
-Lo de «En ruinas» ya está probado. El detalle de cada caso está en «Probarlo»
-de [`refuges/README.md`](./refuges/README.md#probarlo). Si algo no aparece,
-`ragnarok-stack logs map 200`.
+Detalle en «Probar la 0.3» del
+[README de `adventure`](./adventure/README.md#probar-la-03).
 
-**Restaurar la etapa 1** (en `prt_monk 90,238`; entra por `prt_fild03`)
-
-- [ ] Habla con el Refugio en ruinas: sale «Muros caídos, un hogar frío…» y,
-      tras «siguiente», el menú con «Siguiente etapa (Techo y fogata)»,
-      «Entregar materiales» y «Nada».
-- [ ] `@item 905 10` y «Entregar materiales»: entrega 10 Stem.
-      «Siguiente etapa» dice 10 / 20 y lo que llevas.
-- [ ] `@item 905 10`, `@item 919 10`, `@item 914 20`, `@zeny 3000` y
-      entregar: pide los 3000 zeny, se pagan y sale «Techo y fogata
-      terminado» en el mapa. Las ruinas pasan a ser una **hoguera** llamada
-      «Refugio de la Abadía» sin salir del mapa. Si no se ve pero se le puede
-      hablar, apúntalo.
-- [ ] `@relatos`: el relato «Restauré el Refugio de la Abadía».
-
-**Descansar y contar**
-
-- [ ] Con algún relato sin contar, «Descansar junto al fuego»: «Descansado
-      durante 20 minutos», «Bajo techo y sin prisa…» y luego «Cuentas N
-      relatos». `@relatos` sin expedición en curso; `@fogata` dice
-      Descansado.
-
-**Despensa y caravana**
-
-- [ ] `@refugio monk 2`: aparece el **Intendente del Refugio** al este de la
-      hoguera, con Red Potion, Apple, Meat, Milk, Leña, Venda y Cantimplora.
-- [ ] `@refugio monk 3`: aparece el **Caravanero** al oeste. Viajar a
-      Prontera cobra 300 zeny y deja junto a la Caravana. Desde la Caravana,
-      el Refugio de la Abadía sale en el menú y lleva junto a la hoguera.
-- [ ] Recarga los mods: el refugio sigue restaurado, con su nombre, la
-      hoguera, el Intendente y el Caravanero.
-- [ ] Deja los dos como estaban: `@refugio monk 0` y `@refugio f11 0`.
-
-## 3. Opcional: `nemesis` fuera del atlas
-
-Si en la prueba de `nemesis` no hiciste su paso 8: en un mapa que no esté en el
-atlas, `@nemesisgm <clase de un monstruo que te gane>` y déjate matar; sal y
-vuelve a entrar en ese mapa: el némesis debe reaparecer.
-
-## 4. `adventure` 0.3 y sus enganches
-
-Todo sin probar. El detalle de cada caso está en «Probar la 0.2» y «Probar la
-0.3» del [README de `adventure`](./adventure/README.md#probar-la-02); si no
-coincide con esto, manda el README.
-
-- [ ] Settings → Mods: `adventure`, `survival`, `clima`, `temperature`,
-      `expedition-board` y `nemesis` muestran sus ajustes nuevos. **Sin
-      tocarlos, todo se comporta como antes**, salvo la racha (abajo).
-- [ ] Para no esperar media hora a los rasgos de frío y calor, pon
-      `adventure` → `trait_minutes` a 1 y pulsa Apply. Devuélvelo a 30 al
-      terminar.
-
-Usa un **personaje nuevo**: los relatos y los rasgos son de una sola vez.
-
-**Racha y pestañas**
-
-- [ ] Primera salida a `prt_fild08`: los tres relatos de siempre. La pestaña
-      Relatos dice «racha +30 %» en la cabecera y un total de unos **+75 %**
-      (con la 0.1 eran ~64 %).
-- [ ] Cuenta con el Cronista: la racha desaparece. Tras contar dos
-      expediciones, la pestaña **Expediciones** tiene los dos resúmenes 🏕️, el
-      más reciente arriba.
-- [ ] La pestaña **Rasgos** lista los cuatro, con «0/1 min en la nieve»,
-      «0/5 biomas», etc.
-
-**Relatos de otros mods**
-
-- [ ] **Cofre:** `@cofre` en una mazmorra y ábrelo. Al cerrar el diálogo,
-      «Nuevo relato: Abrí el cofre de …» y «Mi primer cofre de Tier …». Un
-      cofre del mismo Tier en otro mapa: solo el primero.
-- [ ] **Marca:** abate la marca de un contrato: «Abatí la marca: …».
-- [ ] **Cacería:** complétala: «Completé la cacería: …». Repetir el mismo
-      contrato no da relato.
-- [ ] **Clima, protegido:** con la protección puesta durante un evento,
-      «Mi equipo me protegió del clima: …» (hasta 10 s después).
-- [ ] **Clima, sin protección:** quédate en el mapa sin protección desde al
-      menos 2 minutos antes del final del evento: al terminar, «Aguanté el
-      clima sin protección: …» (puede salir al cambiar de mapa).
-- [ ] **Temperatura:** en `xmas_fild01` con Capa de Piel y Chaleco de Lana
-      (`@temperatura` en 0): «Comodo en pleno frio gracias a mi ropa» (puede
-      salir al cambiar de mapa). Hazlo **antes** de ganar Hecho al frío.
-
-**Relatos propios de `adventure`**
-
-- [ ] **Expedición larga:** más de 30 minutos fuera en total (no hace falta
-      en un solo mapa): al cambiar de mapa, «Más de media hora fuera de las
-      ciudades». Se puede juntar con el resto de esta parte.
-- [ ] **Por los pelos:** vuelve a Prontera con menos del 20 % de HP: «Volví
-      por los pelos». Morir y reaparecer en la ciudad **no** lo da.
-- [ ] **MVP:** `@monster` un MVP y abátelo: «Abatí a …». Otro de la misma
+- [ ] **MVP** (necesita un personaje fuerte; se puede dejar para otra
+      sesión): `@monster` un MVP y abátelo: «Abatí a …». Otro de la misma
       especie: nada.
-
-**Notas del diario** (ya no se pierden en un diálogo)
-
-- [ ] Acepta un contrato, déjate matar en un campo y cura la herida: las
-      notas («Acepte…», la herida, la cura) salen en la pestaña Diario, como
-      mucho tras el siguiente cambio de mapa.
-
-**Rasgos** (con `trait_minutes` a 1)
-
-- [ ] **Hecho al frío:** algo más de un minuto en `xmas_fild01` sin ropa y
-      vuelve a Prontera: «Nuevo rasgo: Hecho al frío…», 🎖️ en el diario y
-      «Ganado» en la pestaña. De vuelta en `xmas_fild01` sin ropa,
-      `@temperatura` da **Fresco** (−1) en vez de Helado (−2), sin icono de
-      frío.
-- [ ] **Hecho al calor:** lo mismo en `moc_fild11`: Cálido en vez de
-      Acalorado.
-- [ ] **Buscavidas:** al tener relatos de 5 biomas, «Nuevo rasgo:
-      Buscavidas». Hambre y sed bajan un punto cada 18 s en vez de 15
-      (`@presion` antes y después de un minuto).
-- [ ] **Curtido por las heridas:** cura 3 heridas distintas en el Posadero o
-      el Sacerdote (`@herida <id>` para recibirlas). A la tercera, «Nuevo
-      rasgo: Curtido por las heridas»; luego una herida de atributo resta un
-      punto menos. `@herida 0` no cuenta como cura.
-
-**Ajustes** (opcional; devuélvelos después)
-
-- [ ] `adventure` → `pct_minor` a 8: un mapa nuevo vale el doble en la
-      pestaña Relatos. `streak_step` a 0: la cabecera ya no dice «racha».
+- [ ] **Ajustes** (opcional; devuélvelos después): `adventure` →
+      `pct_minor` a 8: un mapa nuevo vale el doble en la pestaña Relatos.
+      `streak_step` a 0: la cabecera ya no dice «racha».
 - [ ] `survival` → `need_seconds` a 5: hambre y sed bajan mucho más deprisa.
+
+## 3. Logros y objetos del bioma (`adventure` 0.4.1, `dungeon-chest` 0.7.1)
+
+El detalle está en «Probar la 0.4» del
+[README de `adventure`](./adventure/README.md#probar-la-04) y en «Botín de
+equipo» del de [`dungeon-chest`](./dungeon-chest/README.md#botín-de-equipo).
+
+**Logros** (con un personaje nuevo)
+
+- [ ] Al cargar, el log dice `Loading '16' entries in
+      'db/import/achievement_db.yml'` y ningún `Reward ... does not exist`.
+- [ ] Alt+K: los logros nuevos en Aventura → Rune Midgarts y Mazmorra,
+      Batalla → Entrenamiento y Duelo y Memorial → Midgard, cada uno con su
+      disfraz, y los de serie siguen ahí.
+- [ ] El relato del Tier 1 no completa el logro al ganarlo, sino al contarlo
+      con el Cronista: sale «< Primer paso en Tier 1 > achieved.». Ningún
+      `Achievement '9010xx' doesn't exist` en el log.
+- [ ] El botón de recompensa manda el Adventurer's Hat por correo.
+- [ ] El primer cofre de un Tier y un MVP: su logro al contarlos. Un segundo
+      MVP de otra especie no da otro.
+
+**Objetos del bioma** (10 % de las aperturas; con `@cofre`, abrir y
+`@cofre cerrar` hasta que salga)
+
+- [ ] En `prt_sewb1` (cueva, un solo objeto: es el caso que se trababa):
+      abrir el cofre unas 20 veces sin que el diálogo se quede colgado, y
+      ningún `buildin_rand` en el log. Cuando toque: «…encuentras ropa hecha
+      para este lugar, sin identificar.»; con la Lupa, la Máscara de Gas
+      Etéreo.
+- [ ] En `xmas_dun01` (nieve, Tier 1): la Armadura Horno, la Capa de Piel o
+      el Chaleco de Lana.
+
+## 4. Trofeos de caza (`expedition-board` 0.8.0, `nemesis` 0.3.0, `dungeon-chest` 0.7.1)
+
+Todo sin probar (D40). El detalle está en «Trofeos y marcas de élite» del
+[README de `expedition-board`](./expedition-board/README.md#trofeos-y-marcas-de-élite).
+Para no esperar 12 horas entre trofeos del mismo contrato, pon
+`expedition-board` → `trophy_hours` a 0 y pulsa Apply; devuélvelo a 12 al
+terminar.
+
+**Trofeo de marca**
+
+- [ ] Acepta «Rastro en el campo sur» en Prontera y abate la marca en
+      `prt_fild08`: «Expedicion: te llevas 1 Raiz de marca.» (Boiled Rice es
+      planta). Cóbrala con el Intendente.
+- [ ] Equípala como accesorio: la descripción dice +10 % contra plantas, y
+      a un Poring (planta) se le hace algo más de daño que sin ella.
+- [ ] Con `trophy_hours` en 12, repite el contrato: al abatirla, «ya te dio
+      su trofeo hace poco» y sin trofeo.
+- [ ] Con el peso casi lleno: «el Intendente te lo guarda», y te lo da al
+      cobrar.
+
+**Marca de élite**
+
+- [ ] Con una Raíz de marca, habla con el Intendente de Prontera sin
+      contrato: ofrece «[Elite] La flor del laberinto», pide 1 Raiz de marca
+      y dice cuántas llevas. Sin ninguna, no da el contrato.
+- [ ] Acéptalo: se gasta la Raíz y aparece «Marca de elite» (una Flora) en
+      `prt_maze03`, bastante más dura que una marca normal.
+- [ ] Abátela: 2 Raiz de marca y el relato «Abatí la marca de élite: La flor
+      del laberinto»; se cobra con el Intendente (zeny y un Yggdrasil Berry).
+- [ ] El tablero no lista los contratos de élite.
+
+**Coleccionista** (`prontera 157,187`; el de verdad en `payon 180,104`)
+
+- [ ] «Colgar un trofeo» con una Raíz de marca: «Defensa contra la raza
+      Planta: 0% -> 1%». «Ver mi pared» lo dice.
+- [ ] Sal y vuelve a entrar, y muere y reaparece: la defensa sigue (un Poring
+      te quita algo menos; difícil de ver con 1 %, mejor con
+      `collector_mark` a 10 para la prueba).
+- [ ] Con el tope (`collector_cap`) alcanzado, no deja colgar más de esa raza.
+
+**Talismán de némesis**
+
+- [ ] Deja que un monstruo te mate en un campo (con herida de `wounds`) y
+      vence a tu némesis: «Recibes … un talisman con tu nombre grabado: +12% de
+      dano contra su raza y algo de la herida que te dejo». Con la Lupa no hace
+      falta: llega identificado. Sus afijos: ATK y MATK +12 % contra su raza y
+      el atributo de la herida.
+- [ ] El talismán no se acepta como prueba en el Intendente, pero sí en el
+      Coleccionista (+2 %).
+
+**Engarce** (Herrero de Afijos, `prontera 155,187`)
+
+- [ ] «Engarzar un trofeo de caza» con una Raíz de marca y una pieza
+      identificada: elige ATK contra Planta; la pieza gana «ATK +5% contra la
+      raza Planta» y la Raíz se gasta. Con un talismán, +8 %.
+- [ ] Los trofeos no salen como pieza en «Pasar todos», «Quitar» ni
+      «Volver a sortear».
+
+## 5. El rumor de un alijo (`tavern-rumors` 0.2.0)
+
+Todo sin probar. El detalle está en «El rumor de un alijo» del
+[README de `tavern-rumors`](./tavern-rumors/README.md#el-rumor-de-un-alijo).
+**La recompensa es provisional:** que el alijo sea un cofre comprado le
+quita sentido a las mazmorras, y se va a rediseñar. Esta prueba confirma que
+la mecánica funciona (rumor, pista, colocar el alijo, persistir) y reúne
+impresiones para el rediseño (ver «Qué observar» al final).
+
+**Preparación**
+
+- `tavern-rumors` 0.2.0, `dungeon-chest` 0.7.1, `world-atlas` y `adventure`
+  activos. `tavern-rumors` → `find_rounds` en 3 (por defecto).
+- Un personaje de nivel 1–39 (el precio depende de la banda), sin rumor
+  pendiente y con **menos de 600 zeny** al empezar (`@zeny` con un número
+  negativo para bajar). Ten a mano un papel para apuntar el campo y el punto
+  que te dé el Tabernero.
+- Tabernero: `@warp prt_in 177 22`; está detrás de la barra, en `180,23`.
+
+**A. Carga**
+
+- [ ] `ragnarok-stack logs map 200` tras recargar los mods: sin errores de
+      `tavern-finds.txt` ni de `tavern-rumors.txt`, y sin
+      `Duplicate unique name` de `Alijo#tr` ni `tavern_finds`.
+
+**B. Comprar el rumor**
+
+- [ ] **Sin zeny bastante:** «Preguntar por algo escondido» dice el precio,
+      **600 zeny**. «Pagar» → «Con eso no llega…», y el zeny no cambia.
+      «Mejor no» vuelve al menú sin cobrar.
+- [ ] `@zeny 5000`. Pregunta otra vez y paga: el zeny baja exactamente 600 y
+      dice «Se habla de un alijo en Campo de Prontera NN, a pocos pasos de
+      (x, y).». **Apunta el campo y el punto.**
+- [ ] **Repetir gratis:** pregunta otra vez. «Lo que te conté sigue en pie:
+      …» con el mismo campo y el mismo punto, y el zeny no cambia.
+- [ ] `@diario`: hay una nota «El Tabernero me habló de un alijo en …».
+- [ ] El resto del menú sigue igual: «Preguntar por el tiempo» cobra una
+      ronda (200) y «Sentarme a contar lo vivido» sigue apareciendo.
+
+**C. Buscar y abrir**
+
+- [ ] Ve a ese campo **andando o con la Kafra**, no con `@warp` directo al
+      punto: así se ve si la pista basta para orientarse. En el campo, `/where`
+      da tu celda. A 8 celdas o menos del punto (en cada eje) hay un cofre
+      llamado «Alijo». Anota cuánto tardaste en encontrarlo desde que
+      entraste en el campo.
+- [ ] Háblale: «Bajo unas piedras, donde decía el rumor…». «Dejarlo» cierra
+      sin dar nada y el alijo sigue ahí.
+- [ ] Ábrelo: «Dentro hay un arma / una pieza de armadura… sin identificar.
+      Una Lupa dirá qué es y qué guarda.». La pieza está en el inventario,
+      sin identificar; con la Lupa, sus afijos son de Tier 1 o 2 (los de
+      `prt_fild11` son de Tier 2).
+- [ ] Al cerrar el diálogo, el alijo **desaparece** y el chat dice «Nuevo
+      relato: Encontré el alijo del rumor en Campo de Prontera NN.».
+      `@relatos` lo lista sin contar; `@diario`, la nota del hallazgo.
+- [ ] Vuelve a la taberna: «Preguntar por algo escondido» ofrece un rumor
+      **nuevo** y vuelve a cobrar 600.
+- [ ] «Sentarme a contar lo vivido»: entre los relatos contados está el del
+      alijo, y sube la EXP.
+
+**D. Persistir**
+
+- [ ] Compra otro rumor y **no vayas todavía**. Sal al menú de personajes y
+      vuelve a entrar: el Tabernero repite el mismo campo y punto.
+- [ ] Reinicia el servidor (o la aplicación) y vuelve a entrar: el Tabernero
+      lo repite igual. Ve al campo: el alijo está en su sitio y se abre.
+- [ ] Si el campo coincide con uno de un alijo ya abierto antes, el relato
+      **no** se repite (una vez por campo). Si no coincide, no pasa nada:
+      anótalo como no comprobado.
+
+**E. Casos límite (si da tiempo)**
+
+- [ ] **Mochila llena:** con un rumor pendiente, carga peso hasta el límite
+      (cualquier objeto pesado con `@item`) y abre el alijo: «Dentro hay algo
+      pesado y no puedes cargarlo…», no da nada y el alijo sigue ahí. Suelta
+      peso y ábrelo.
+- [ ] **No es tuyo:** con un rumor pendiente y su alijo ya colocado (has
+      entrado en su campo y no lo has abierto), entra con **otro personaje**
+      y háblale: «Un fardo
+      atado con un nudo que no conoces…», sin botín. El alijo sigue para su
+      dueño.
+- [ ] **Nivel más alto:** con un personaje de nivel 60–89, el rumor cuesta
+      2100 zeny (3 rondas de 700). El botín sigue siendo del Tier del campo.
+
+**Qué observar para el rediseño** (anótalo en «Qué se vio»):
+
+- ¿Cuánto tardaste en encontrar el alijo con la pista? ¿8 celdas es poco o
+  demasiado?
+- ¿Te dio ganas de salir de la ciudad, o se sintió como un recado?
+- La pieza del alijo, comparada con la de un cofre de mazmorra de Tier
+  parecido: ¿hace que la mazmorra sobre?
+- ¿El precio pesa a nivel 1–39?
+
+## 6. La primera cadena de rumores (`tavern-rumors` 0.3.0, `adventure` 0.5.0)
+
+Todo sin probar. Es «La puerta tapiada»: el detalle está en «Las cadenas de
+rumores» del
+[README de `tavern-rumors`](./tavern-rumors/README.md#las-cadenas-de-rumores)
+y el diseño en [`RUMORES.md`](./RUMORES.md). Es la prueba de que la mecánica
+entera funciona con un solo caso: si algo falla aquí, fallará en todas las
+cadenas.
+
+**Preparación**
+
+- La aplicación **reiniciada** tras instalar (trae `System/`).
+- Un personaje de nivel bajo que aguante `prt_sewb4` (Tier 1: Thief Bug
+  Male, Drainliar), con pociones. Lápiz y papel para los puntos.
+- `@rumor` en el chat: «Cadena en curso: ninguna» y `puerta: personaje 0
+  … mundo 0`. Si sale `mundo 1`, `@rumor puerta reset`.
+
+**A. Carga**
+
+- [ ] `ragnarok-stack logs map 200`: sin errores de `tavern-chains.txt` ni
+      de `tavern-chains-data.txt`, sin `npc_parsename … too long` y sin
+      `Duplicate unique name`. El `item_db` de `tavern-rumors` carga 1
+      entrada.
+- [ ] El **Viejo Trotamundos** se ve en la taberna (`@warp prt_in 177 22`;
+      está en `175,27`). Anota si cae dentro de una pared.
+- [ ] El **Capitán de la Guardia** se ve en Izlude (`129,121`, junto al
+      Cronista).
+
+**B. El disparador**
+
+- [ ] Habla con el Trotamundos sin nada contado: «Siéntate y cuéntale tus
+      viajes…», sin ofrecer nada.
+- [ ] Si el personaje **nunca** pisó `prt_sewb4`: ve hasta allí (las
+      Cloacas desde `prt_fild05`, o `@warp prt_sewb4`), vuelve y cuenta los
+      relatos con el Cronista o el Tabernero. `@rumor` dice ahora
+      «Relatos leídos: 0 de N» con N mayor que 0.
+- [ ] Si ya lo había pisado antes (su relato no se repite): `@rumor puerta`.
+- [ ] Habla con el Trotamundos: «Te oí contar lo tuyo.» y el rumor de la
+      puerta tapiada. «Ahora no» lo deja en espera; vuelve a hablarle y lo
+      ofrece otra vez.
+- [ ] «Ir a buscarlo»: dice `Cloacas de Prontera 4` (o el nombre del atlas)
+      y un punto. **Apunta el punto.** `@diario` tiene la nota «Rumor: La
+      puerta tapiada…». Hablarle otra vez repite la pista.
+
+**C. El rastro**
+
+- [ ] En `prt_sewb4`, a 8 celdas o menos del punto, unos **Restos de un
+      guardia** (sprite de esqueleto, 10016). Anota si no se ven: el sprite
+      no existe en el cliente.
+- [ ] Háblales: el texto del esqueleto; «Tomarlo» da la **Llave Oxidada**,
+      dice adónde llevarla (el Capitán, en Izlude) y los restos desaparecen.
+      El chat: «Nuevo relato: Encontré Llave Oxidada en …».
+- [ ] La llave: no se puede soltar ni guardar en el almacén. Su
+      descripción es la de la llave (el icono es de un trozo de madera, a
+      propósito por ahora).
+
+**D. El análisis**
+
+- [ ] El Capitán de Izlude, **sin** la llave en otro personaje o antes de
+      tenerla: «¿Buscas algo?…».
+- [ ] Con la llave: cuenta de dónde es, y dice volver a la puerta con la
+      celda. `@diario`: «Capitán de la Guardia leyó Llave Oxidada…».
+- [ ] El Trotamundos, ahora, dice volver a la puerta.
+
+**E. La puerta y el guardián**
+
+- [ ] De vuelta en `prt_sewb4`, donde estaban los restos, una **Puerta
+      Tapiada** (sprite 10371). Anota si no se ve.
+- [ ] «Abrir la puerta»: la puerta desaparece y sale el **Carcelero de la
+      Cloaca** junto a ella, con nombre, bastante más duro que un Thief Bug
+      Male normal. El chat: «Algo se mueve tras la puerta…».
+- [ ] Sal del mapa sin matarlo y vuelve: el Carcelero sigue ahí (o vuelve a
+      salir), y **no** hay dos.
+- [ ] Mátalo: «Has vencido a Carcelero de la Cloaca.», el texto del
+      pasadizo, la llave desaparece y dos relatos, «Vencí a …» y «Seguí el
+      rumor de «La puerta tapiada» hasta el final».
+- [ ] Un **Pasadizo a la Entrada** (portal) donde estaba la puerta.
+      Pisarlo lleva a la entrada de las Cloacas (`prt_sewb1 131,247`).
+- [ ] Cuenta los relatos: el Hito pesa (medio nivel de los de tu banda).
+
+**F. Persistir y el mundo**
+
+- [ ] Reinicia el servidor: el pasadizo sigue en `prt_sewb4`.
+- [ ] `@rumor`: `puerta: personaje 3 … mundo 1`.
+- [ ] Con **otro personaje**, `@rumor puerta` y habla con el Trotamundos:
+      «Lo de «La puerta tapiada» ya lo resolvió <el primero>…», sin cadena.
+      Ese personaje también ve y usa el pasadizo.
+- [ ] A mitad de una cadena (repítela con `@rumor puerta reset` y luego
+      `@rumor puerta`), sal del juego en la etapa de la puerta y vuelve a
+      entrar: la puerta sigue en su sitio.
+- [ ] «Olvidar este rumor» con el Trotamundos: quita la llave, la cadena
+      vuelve a esperar y el rastro o la puerta ya no salen.
+
+**Qué observar** (en «Qué se vio»): si la pista de 8 celdas basta en una
+mazmorra, si el viaje a Izlude se siente como parte de la historia o como un
+recado, si el guardián es un reto justo para Tier 1 y si el pasadizo se usa.
 
 ## Fuera de esta sesión
 
@@ -214,11 +390,14 @@ Necesitan algo que no cabe en una sesión de una persona:
 - [ ] `ragnarok-stack logs map 2000` **antes de cerrar o reiniciar el
       juego** (al reiniciar el servidor se pierde el log): sin errores de
       nuestros mods, sin `event queue is full` ni `experience key refused`,
-      nada de `duplicate`, `hideonnpc` ni `unloadnpc` (las fogatas) ni de
-      `setnpcdisplay`, `npcshopadditem`, `getitem3` o `getitem4` (refugios,
-      cofres y Herrero), ni `F_Adv_Note`, `F_Adv_Cured` o `F_ModSetting` en
-      un error.
-- [ ] Devuelve `trait_minutes` a 30 y cualquier otro ajuste que cambiaras.
+      nada de `buildin_rand`, `duplicate`, `hideonnpc` ni `unloadnpc` (las
+      fogatas) ni de `setnpcdisplay`, `npcshopadditem`, `getitem3` o
+      `getitem4` (refugios, cofres, Herrero y alijos), ni
+      `tavern-rumors: no passable cell` o `could not place the find`, ni `F_Adv_Note`,
+      `F_Adv_Cured` o `F_ModSetting` en un error. En Windows el binario está
+      en `%LOCALAPPDATA%\Programs\Ragnarok Offline\resources\payload\bin\ragnarok-stack.exe`.
+- [ ] Devuelve `trait_minutes` a 30 (estaba a 1 para los rasgos del 2026-10-26),
+      `trophy_hours` a 12 y cualquier otro ajuste que cambiaras.
 - [ ] Pasa los resultados a «Estado» de cada README y borra de aquí los pasos
       hechos.
 
@@ -227,23 +406,27 @@ Necesitan algo que no cabe en una sesión de una persona:
 | Paso | Bien / Falla | Qué se vio |
 |---|---|---|
 | Instalar y log | | |
-| 1. Icono de calor | | |
-| 2. Refugios: etapa 1 | | |
-| 2. Refugios: descansar y contar | | |
-| 2. Refugios: despensa y caravana | | |
-| 3. `nemesis` fuera del atlas | | |
-| 4. Ajustes visibles | | |
-| 4. Racha y pestañas | | |
-| 4. Relato de cofre | | |
-| 4. Relatos de marca y cacería | | |
-| 4. Relatos de clima | | |
-| 4. Relato de temperatura | | |
-| 4. Expedición larga | | |
-| 4. Por los pelos | | |
-| 4. MVP | | |
-| 4. Notas del diario | | |
-| 4. Rasgos de frío y calor | | |
-| 4. Buscavidas | | |
-| 4. Curtido por las heridas | | |
-| 4. Ajustes | | |
+| 1. Iconos (0.5.2) | | |
+| 2. MVP | | |
+| 2. Ajustes | | |
+| 3. Logros | | |
+| 3. Objetos del bioma | | |
+| 4. Trofeo de marca | | |
+| 4. Marca de élite | | |
+| 4. Coleccionista | | |
+| 4. Talismán de némesis | | |
+| 4. Engarce | | |
+| 5A. Carga del alijo | | |
+| 5B. Comprar y repetir | | |
+| 5C. Buscar y abrir | | |
+| 5D. Persistir | | |
+| 5E. Casos límite | | |
+| 5. Impresiones (rediseño) | | |
+| 6A. Carga de la cadena | | |
+| 6B. Disparador | | |
+| 6C. Rastro | | |
+| 6D. Análisis | | |
+| 6E. Puerta y guardián | | |
+| 6F. Persistir y el mundo | | |
+| 6. Impresiones | | |
 | Log final | | |

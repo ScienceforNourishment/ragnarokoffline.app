@@ -1,8 +1,8 @@
 {
   "name": "expedition-board",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "author": "Alejandro",
-  "description": "Tableros de contratos en las ciudades principales: expediciones a una marca y cacerías por zona; entrega en el tablero que lo publicó.",
+  "description": "Tableros de contratos en las ciudades principales: expediciones a una marca, cacerías por zona y marcas de élite; las marcas dan trofeos de su raza, que se llevan puestos, se engarzan o se cuelgan con el Coleccionista.",
   "requires": {
     "app": ">=1.5.2",
     "era": "any"
@@ -12,6 +12,13 @@
     { "key": "zeny_tier_pct", "type": "number", "default": 25, "min": 0, "max": 200, "label": "Zeny extra por Tier (%)", "description": "Valor de prueba. Por cada Tier del mapa por encima del 1." },
     { "key": "mark_strength", "type": "boolean", "default": true, "label": "Reforzar las marcas según el Tier", "description": "Más HP y ATK cuanto más alto es el Tier del mapa del contrato." },
     { "key": "mark_hp_tier", "type": "number", "default": 50, "min": 0, "max": 500, "label": "Marca: HP extra por Tier (%)", "description": "Valor de prueba. Sobre una base de +50 % en Tier 1." },
-    { "key": "mark_atk_tier", "type": "number", "default": 15, "min": 0, "max": 200, "label": "Marca: ATK extra por Tier (%)", "description": "Valor de prueba. Sin extra en Tier 1." }
+    { "key": "mark_atk_tier", "type": "number", "default": 15, "min": 0, "max": 200, "label": "Marca: ATK extra por Tier (%)", "description": "Valor de prueba. Sin extra en Tier 1." },
+    { "key": "trophy_hours", "type": "number", "default": 12, "min": 0, "max": 720, "label": "Horas entre trofeos del mismo contrato", "description": "Valor de prueba. Un contrato solo da trofeos una vez cada tantas horas por personaje. 0 = siempre." },
+    { "key": "elite_trophies", "type": "number", "default": 2, "min": 1, "max": 10, "label": "Trofeos de una marca de élite", "description": "Valor de prueba. Una marca normal da 1." },
+    { "key": "elite_hp", "type": "number", "default": 100, "min": 0, "max": 1000, "label": "Élite: HP extra (%)", "description": "Valor de prueba. Encima del refuerzo por Tier." },
+    { "key": "elite_atk", "type": "number", "default": 30, "min": 0, "max": 500, "label": "Élite: ATK extra (%)", "description": "Valor de prueba. Encima del refuerzo por Tier." },
+    { "key": "collector_mark", "type": "number", "default": 1, "min": 0, "max": 10, "label": "Coleccionista: defensa por trofeo de marca (%)", "description": "Valor de prueba. Defensa permanente contra la raza del trofeo." },
+    { "key": "collector_nemesis", "type": "number", "default": 2, "min": 0, "max": 10, "label": "Coleccionista: defensa por talismán de némesis (%)", "description": "Valor de prueba." },
+    { "key": "collector_cap", "type": "number", "default": 10, "min": 0, "max": 50, "label": "Coleccionista: tope por raza (%)", "description": "Valor de prueba. La defensa contra una raza nunca pasa de aquí." }
   ]
 }

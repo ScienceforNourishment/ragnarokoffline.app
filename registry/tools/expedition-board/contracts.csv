@@ -20,3 +20,10 @@ id,city,type,name,mob,map,x,y,count,zeny,item,amt,place,blurb
 19,morocc,hunt,Momias de la piramide,1041,moc_pryd03,0,0,10,3500,504,3,Piramide de Morocc 3,Las momias se agitan en las profundidades de la piramide.
 20,alberta,hunt,Ranas de la cueva,1034,beach_dun3,0,0,12,3000,502,10,Cueva de la Playa 3,Las ranas gigantes bloquean la cueva junto a la playa.
 21,aldebaran,hunt,Martins de la mina,1145,mjo_dun02,0,0,12,3200,504,3,Cueva Mjolnir 2,Los Martin han invadido la segunda planta de la cueva de Mjolnir.
+101,prontera,elite,La flor del laberinto,1118,prt_maze03,100,100,1,6000,607,1,Laberinto de Prontera 3,Una Flora enorme ha echado raices en el laberinto. El gremio solo manda a quien ya ha cazado una planta marcada.
+102,izlude,elite,La sirena de la cueva marina,1044,iz_dun02,200,200,1,7000,607,1,Cueva Marina de Izlude 2,Una Obeaune canta en la segunda cueva y los pescadores no vuelven. Hace falta alguien que ya haya cazado un pez marcado.
+103,geffen,elite,La hidra del pozo,1068,gef_dun01,151,152,1,7000,607,1,Mazmorra de Geffen 1,Una Hydra crece en la humedad bajo la torre. Los magos piden a quien ya haya traido una planta marcada.
+104,payon,elite,El tirador de piedras,1495,pay_dun02,148,148,1,7000,607,1,Cueva de Payon 2,Un Stone Shooter se ha metido en la cueva y dispara a todo lo que se mueve. Solo para quien ya cazo una planta marcada.
+105,morocc,elite,La flor de la piramide,1118,moc_pryd02,100,100,1,8000,607,1,Piramide de Morocc 2,Algo verde crece donde no deberia crecer nada. Los ladrones pagan a quien ya haya traido una planta marcada.
+106,alberta,elite,La marina de Comodo,1141,cmd_fild01,199,201,1,7000,607,1,Campo de Comodo 01,Una Marina se ha quedado en la orilla de Comodo y arrastra a los banistas. Para quien ya cazo una planta marcada.
+107,aldebaran,elite,La luz bajo el reloj,1211,alde_dun02,142,158,1,9000,607,1,Sotano de la Torre del Reloj 2,Un Brilight ciega a los relojeros en el sotano. El gremio pide a quien ya haya traido un insecto marcado.

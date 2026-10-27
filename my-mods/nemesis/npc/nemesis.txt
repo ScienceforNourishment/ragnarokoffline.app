@@ -2,8 +2,15 @@
 //= El monstruo que te mata fuera de una ciudad se convierte en tu nemesis: la
 //= proxima vez que entres en ese mapa te espera, con nombre y mas fuerte, cerca
 //= de donde caiste. Si vuelve a matarte sube de rango (hasta 3). Vencerlo da
-//= un trofeo firmado con tu nombre, un relato de adventure y cura las heridas
+//= un talisman firmado con tu nombre, un relato de adventure y cura las heridas
 //= que te dejo (wounds).
+//=
+//= El talisman (D40) es un accesorio de su raza (51200 + raza) cuyos afijos
+//= cuentan su historia: ATK y MATK +(talisman_base + talisman_rank x rango) %
+//= contra su raza (12/14/16 por defecto) y, si te dejo una herida, el
+//= atributo que esa herida te quitaba (S_WoundAffix). Tambien se cuelga con el
+//= Coleccionista de expedition-board o se engarza con el Herrero de
+//= dungeon-chest; no sirve de prueba para las marcas de elite.
 //=
 //= Un solo nemesis a la vez: mientras tengas uno, morir ante otro monstruo no
 //= crea otro. No cuentan los MVP, las marcas de expedition-board ni el nemesis
@@ -14,7 +21,9 @@
 //=   nm_map$       mapa donde te espera
 //=   nm_x, nm_y    celda donde caiste; aparece cerca
 //=   nm_rank       1 a 3; sube cada vez que vuelve a matarte
-//=   nm_owed       trofeo que no cupo (id del objeto), nm_owed_n cuantos
+//=   nm_owed       talisman que no cupo (id del objeto); nm_owed_n el rango del
+//=                 nemesis y nm_owed_w la herida que dejo (0 = ninguna). Antes
+//=                 de la 0.3, nm_owed_n era cuantos trofeos: era el mismo numero
 //= Estado del servidor (se pierde al reiniciar, a proposito):
 //=   $@nm_gid[char_id]  GID del nemesis vivo de ese personaje
 //=   $@nm_owner[gid]    char_id del dueno de ese nemesis
@@ -93,6 +102,8 @@ OnInit:
 	.max_rank = callfunc("F_ModSetting", "nemesis", "max_rank", 3);
 	.rank_hp = callfunc("F_ModSetting", "nemesis", "rank_hp", 50);
 	.rank_atk = callfunc("F_ModSetting", "nemesis", "rank_atk", 20);
+	.tal_base = callfunc("F_ModSetting", "nemesis", "talisman_base", 10);
+	.tal_rank = callfunc("F_ModSetting", "nemesis", "talisman_rank", 2);
 	// Sin atlas, estas son las ciudades (la misma lista que wounds).
 	.safe_maps$ = "|prontera|izlude|geffen|payon|morocc|alberta|aldebaran|";
 	bindatcmd "nemesis", "nemesis_mgr::OnShow", 0, 99;
@@ -268,7 +279,7 @@ OnNemesisDead:
 	callsub S_Defeat;
 	end;
 
-// Premio y cierre: trofeos (uno por rango), cura de sus heridas y relato.
+// Premio y cierre: el talisman, cura de sus heridas y relato.
 S_Defeat:
 	.@cls = nm_mob;
 	.@rank = nm_rank;
@@ -285,6 +296,17 @@ S_Defeat:
 		.@race = 0;
 	nm_owed = 51200 + .@race;
 	nm_owed_n = .@rank;
+	// La primera herida que te dejo esta clase (wounds la apunta en wd_src$
+	// como "herida:clase|..."), antes de que su caida la cure.
+	nm_owed_w = 0;
+	if (wd_src$ != "") {
+		explode(.@s$, wd_src$, "|");
+		for (.@i = 0; .@i < getarraysize(.@s$) && !nm_owed_w; .@i++) {
+			explode(.@p$, .@s$[.@i], ":");
+			if (getarraysize(.@p$) >= 2 && atoi(.@p$[1]) == .@cls)
+				nm_owed_w = atoi(.@p$[0]);
+		}
+	}
 	callsub S_GiveOwed;
 	if (getnpcid(0, "wounds_mgr")) {
 		.@cured = callfunc("F_Wounds_CureFrom", .@cls);
@@ -304,19 +326,51 @@ S_Defeat:
 	callfunc "F_Nemesis_Log", "Venci a mi nemesis, " + .@name$ + ", en " + callfunc("F_Nemesis_Place", .@map$) + ".";
 	return;
 
-// Entrega los trofeos pendientes (nm_owed, nm_owed_n) si caben.
+// Entrega el talisman pendiente (nm_owed, de rango nm_owed_n y con la herida
+// nm_owed_w) si cabe: firmado (card0 254 y el char_id en card2 y card3, como
+// getnameditem) y con sus afijos.
 S_GiveOwed:
-	if (!checkweight(nm_owed, nm_owed_n)) {
-		dispbottom "No puedes cargar el trofeo de tu nemesis. Haz sitio y escribe " + ($@nm_sym$ == "" ? "@" : $@nm_sym$) + "nemesis.";
+	if (!checkweight(nm_owed, 1)) {
+		dispbottom "No puedes cargar el talisman de tu nemesis. Haz sitio y escribe " + ($@nm_sym$ == "" ? "@" : $@nm_sym$) + "nemesis.";
 		return;
 	}
 	.@item = nm_owed;
-	.@n = nm_owed_n;
+	.@rank = max(1, nm_owed_n);
+	.@race = .@item - 51200;
+	.@v = .tal_base + .tal_rank * .@rank;
+	// ATK y MATK +% contra la raza: opciones 97 y 107 + raza (affixes.csv).
+	setarray .@oid[0], 97 + .@race, 107 + .@race;
+	setarray .@oval[0], .@v, .@v;
+	setarray .@opar[0], 0, 0;
+	callsub S_WoundAffix, nm_owed_w, .@rank;
+	if (@nm_wo > 0) {
+		.@oid[2] = @nm_wo;
+		.@oval[2] = @nm_wv;
+		.@opar[2] = 0;
+	}
 	nm_owed = 0;
 	nm_owed_n = 0;
-	for (.@i = 0; .@i < .@n; .@i++)
-		getnameditem .@item, getcharid(0);
-	dispbottom "Recibes " + .@n + " " + getitemname(.@item) + ", con tu nombre grabado.";
+	nm_owed_w = 0;
+	.@cid = getcharid(0);
+	getitem3 .@item, 1, 1, 0, 0, 254, 0, .@cid & 0xFFFF, (.@cid >> 16) & 0xFFFF, .@oid, .@oval, .@opar;
+	dispbottom "Recibes " + getitemname(.@item) + ", un talisman con tu nombre grabado: +" + .@v + "% de dano contra su raza" + (@nm_wo > 0 ? " y algo de la herida que te dejo" : "") + ".";
+	return;
+
+// S_WoundAffix(herida, rango): deja en @nm_wo y @nm_wv el afijo que esa herida
+// de wounds da al talisman: el atributo que quitaba, +1 + rango (los de % y
+// FLEE, mas). 0 si no hay herida o no se conoce.
+S_WoundAffix:
+	@nm_wo = 0;
+	@nm_wv = 0;
+	.@w = getarg(0);
+	.@r = getarg(1);
+	// Por herida (1-10 de wounds): opcion de affixes.csv y valor.
+	setarray .@opt[1], 4, 5, 6, 7, 9, 10, 8, 3, 22, 4;
+	setarray .@val[1], 1 + .@r, 1 + .@r, 1 + .@r, 1 + .@r, 2 * .@r, 2 * .@r, 1 + .@r, 1 + .@r, 3 * .@r, 1 + .@r;
+	if (.@w < 1 || .@w > 10)
+		return;
+	@nm_wo = .@opt[.@w];
+	@nm_wv = .@val[.@w];
 	return;
 
 // S_PartyAid(party id, char id) -> account id de ese miembro si esta
@@ -335,7 +389,7 @@ S_PartyAid:
 	}
 	return 0;
 
-// @nemesis: quien te espera y donde; entrega un trofeo pendiente.
+// @nemesis: quien te espera y donde; entrega un talisman pendiente.
 OnShow:
 	// El prefijo de comandos (Ajustes -> Rates -> Command prefix puede hacerlo
 	// "!" o "."), guardado para el aviso de S_GiveOwed, que tambien sale tras

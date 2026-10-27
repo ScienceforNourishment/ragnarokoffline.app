@@ -18,8 +18,8 @@ Actualízala al cambiar el mod o al probarlo.
 - **Probado en el juego (0.6.1, 2026-10-23):** la herida de la marca: si la marca de `expedition-board` te mata, siempre deja *Marca de la presa* (log `marca 9`), y la marca no se vuelve tu némesis. El Posadero y el Sacerdote de Geffen, Payon, Morocc, Alberta y Aldebaran se ven y responden
 - **Probado en el juego (0.5.0, 2026-10-23):** con «Probarlo» de [`nemesis`](../nemesis/README.md#probarlo): el origen de cada herida (`wd_src$`) y `F_Wounds_CureFrom`, que cierra las heridas del némesis vencido
 - **Probado en el juego (0.7.0, 2026-10-24),** con «Probarlo» de [`campfire`](../campfire/README.md#probarlo): la venda deja la herida «(vendada)» y resta la mitad hasta curarla, no se ofrece para una herida ya vendada ni para una maldición, y una herida curada y vuelta a recibir sale sin vendar. Con Descansado, la primera muerte fuera de una ciudad no deja herida («Ibas descansado…») y la segunda sí
-- **Sin probar (0.7.0):** las notas con `F_Adv_Note` (parte de `adventure` en [`SESION-DE-PRUEBA.md`](../SESION-DE-PRUEBA.md))
-- **Actualizado:** 2026-10-24
+- **Probado en el juego (0.7.0, 2026-10-26):** las notas con `F_Adv_Note` (la herida y la cura salen en la pestaña Diario de `adventure`, como mucho tras el siguiente cambio de mapa); con 3 heridas distintas curadas en el Posadero o el Sacerdote, el rasgo **Curtido por las heridas** de `adventure`, y luego una herida de atributo resta un punto menos
+- **Actualizado:** 2026-10-26
 
 Morir fuera de una ciudad puede dejar una secuela con nombre ("Cicatriz del
 lobo", "Maldición sombría") que debilita al personaje hasta que se cura en una

@@ -20,7 +20,8 @@ const MOB_INDEX = path.join(ROOT, 'mods', 'navigation-server-monsters', 'mob-ind
 const CITIES = ['prontera', 'izlude', 'geffen', 'payon', 'morocc', 'alberta', 'aldebaran'];
 const CITY_NAMES = { prontera: 'Prontera', izlude: 'Izlude', geffen: 'Geffen', payon: 'Payon', morocc: 'Morocc', alberta: 'Alberta', aldebaran: 'Aldebaran' };
 // expedition: a marked monster waits at a point. hunt: kill `count` of a species in a zone.
-const TYPES = { expedition: 1, hunt: 2 };
+// elite: an expedition the Intendente gives for a mark trophy of the monster's race (D40).
+const TYPES = { expedition: 1, hunt: 2, elite: 3 };
 const COLUMNS = ['id', 'city', 'type', 'name', 'mob', 'map', 'x', 'y', 'count', 'zeny', 'item', 'amt', 'place', 'blurb'];
 
 function parse(text) {
@@ -68,7 +69,7 @@ function validate(rows, spawns) {
     if (+r.amt > 30000) errors.push(`${at}: amt too large`);
     if (!/^\d+$/.test(r.x) || !/^\d+$/.test(r.y) || !/^\d+$/.test(r.count)) {
       errors.push(`${at}: x, y and count must be whole numbers`);
-    } else if (r.type === 'expedition') {
+    } else if (r.type === 'expedition' || r.type === 'elite') {
       if (+r.x < 1 || +r.x > 999 || +r.y < 1 || +r.y > 999) errors.push(`${at}: an expedition needs a map cell x,y (1-999)`);
       if (r.count !== '1') errors.push(`${at}: an expedition has count 1 (the mark)`);
     } else if (r.type === 'hunt') {
@@ -119,8 +120,9 @@ function render(rows) {
 // ${rows.length} contracts. Every array is indexed by the contract id, which a
 // character saves in eb_qid, so an id is never renumbered. .valid[id] is 1 for
 // an id that exists and .max is the highest id. .type[id] is 1 for an
-// expedition (a marked monster at x,y) and 2 for a hunt (.count[id] kills of
-// .mob[id] on .map$[id]; x and y are 0).
+// expedition (a marked monster at x,y), 2 for a hunt (.count[id] kills of
+// .mob[id] on .map$[id]; x and y are 0) and 3 for an elite mark (an
+// expedition the Intendente gives for a trophy of the monster's race).
 
 -${T}script${T}ExpeditionData${T}-1,{
 OnInit:

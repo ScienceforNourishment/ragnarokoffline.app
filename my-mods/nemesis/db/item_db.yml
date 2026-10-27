@@ -2,67 +2,119 @@ Header:
   Type: ITEM_DB
   Version: 3
 
-# Trofeos de nemesis: uno por raza del monstruo (51200 + raza, 0-9). Se dan
-# con getnameditem, firmados con el nombre del personaje. Sin efecto: son
-# recuerdos y, mas adelante, material de campfire o refuges.
+# Talismanes de nemesis (D40): uno por raza del monstruo (51200 + raza,
+# 0-9). Accesorios sin script: nemesis.txt los da firmados (card0 254) y
+# con afijos (random options) que salen de la historia del nemesis: dano
+# contra su raza por rango y un atributo de la herida que te dejo. Sin
+# precio: no se venden.
 Body:
   - Id: 51200
     AegisName: Nm_Trophy_Formless
     Name: Esquirla del Nemesis
-    Type: Etc
-    Buy: 20
+    Type: Armor
     Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
   - Id: 51201
     AegisName: Nm_Trophy_Undead
     Name: Hueso del Nemesis
-    Type: Etc
-    Buy: 20
+    Type: Armor
     Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
   - Id: 51202
     AegisName: Nm_Trophy_Brute
     Name: Colmillo del Nemesis
-    Type: Etc
-    Buy: 20
+    Type: Armor
     Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
   - Id: 51203
     AegisName: Nm_Trophy_Plant
     Name: Raiz del Nemesis
-    Type: Etc
-    Buy: 20
+    Type: Armor
     Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
   - Id: 51204
     AegisName: Nm_Trophy_Insect
     Name: Antena del Nemesis
-    Type: Etc
-    Buy: 20
+    Type: Armor
     Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
   - Id: 51205
     AegisName: Nm_Trophy_Fish
     Name: Cola del Nemesis
-    Type: Etc
-    Buy: 20
+    Type: Armor
     Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
   - Id: 51206
     AegisName: Nm_Trophy_Demon
     Name: Cuerno del Nemesis
-    Type: Etc
-    Buy: 20
+    Type: Armor
     Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
   - Id: 51207
     AegisName: Nm_Trophy_Demihuman
     Name: Trenza del Nemesis
-    Type: Etc
-    Buy: 20
+    Type: Armor
     Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
   - Id: 51208
     AegisName: Nm_Trophy_Angel
     Name: Pluma del Nemesis
-    Type: Etc
-    Buy: 20
+    Type: Armor
     Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true
   - Id: 51209
     AegisName: Nm_Trophy_Dragon
     Name: Escama del Nemesis
-    Type: Etc
-    Buy: 20
+    Type: Armor
     Weight: 10
+    Jobs:
+      All: true
+    Classes:
+      All: true
+    Locations:
+      Both_Accessory: true

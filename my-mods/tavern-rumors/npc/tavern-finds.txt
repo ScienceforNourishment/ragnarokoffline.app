@@ -1,0 +1,179 @@
+//===== Ragnarok Offline: tavern-rumors, alijos =============================
+//= El rumor de un alijo (0.2.0): la cadena «Rumor → Pista → Hallazgo» de
+//= PLAN.md. El Tabernero vende el rumor; dice el campo y un punto, y el alijo
+//= está a 8 celdas o menos de ese punto, a la vista. Quien compró el rumor lo
+//= abre: una pieza de equipo sin identificar con afijos del Tier del mapa
+//= (las funciones de dungeon-chest) y un relato de adventure.
+//=
+//= Un rumor por personaje, sin caducidad: comprar otro descarta el anterior.
+//= Sin temporizadores: el alijo se coloca al entrar en su mapa
+//= (OnPCLoadMapEvent), así que vuelve tras reiniciar el servidor.
+//=
+//= Variables de personaje (permanentes):
+//=   tr_hm$          mapa del alijo; "" sin rumor
+//=   tr_hx, tr_hy    su celda
+//=   tr_px, tr_py    el punto que dijo el Tabernero
+//= Servidor:
+//=   $@tr_hn$[char_id]  nombre único de la copia de Alijo#tr de ese personaje.
+//=                      Tras abrirlo queda oculta (un NPC no puede descargarse
+//=                      a sí mismo) y se descarga al comprar el siguiente rumor.
+//=
+//= Dependencias suaves: dungeon-chest (el botín; sin él, zeny), world-atlas
+//= (Tier y nombre del mapa), adventure (la nota del diario y el relato).
+//===========================================================================
+
+// Los campos de F_Tavern_Fields: OnPCLoadMapEvent solo corre con loadevent.
+prt_fild00	mapflag	loadevent
+prt_fild01	mapflag	loadevent
+prt_fild02	mapflag	loadevent
+prt_fild03	mapflag	loadevent
+prt_fild04	mapflag	loadevent
+prt_fild05	mapflag	loadevent
+prt_fild06	mapflag	loadevent
+prt_fild07	mapflag	loadevent
+prt_fild08	mapflag	loadevent
+prt_fild09	mapflag	loadevent
+prt_fild10	mapflag	loadevent
+prt_fild11	mapflag	loadevent
+
+// F_Tavern_Rand(min, max) -> un entero de min a max, ambos incluidos. rand
+// falla con un solo valor y corta el script (CONVENTIONS.md).
+function	script	F_Tavern_Rand	{
+	if (getarg(1) <= getarg(0))
+		return getarg(0);
+	return rand(getarg(0), getarg(1));
+}
+
+// F_Tavern_FindPrice() -> zeny del rumor de un alijo: find_rounds rondas.
+function	script	F_Tavern_FindPrice	{
+	return callfunc("F_Tavern_Price") * callfunc("F_ModSetting", "tavern-rumors", "find_rounds", 3);
+}
+
+// F_Tavern_NewFind(ciudad$) -> 1 si dejó un rumor nuevo al personaje adjunto
+// en uno de los campos de esa ciudad, 0 si no encontró sitio. Descarga el
+// alijo anterior, abierto o no.
+function	script	F_Tavern_NewFind	{
+	.@list$ = callfunc("F_Tavern_Fields", getarg(0));
+	if (.@list$ == "")
+		return 0;
+	explode(.@f$, .@list$, "|");
+	.@n = getarraysize(.@f$);
+	.@m$ = .@f$[callfunc("F_Tavern_Rand", 0, .@n - 1)];
+	// Los campos miden 400 o menos; una celda fuera del mapa no es transitable.
+	.@ok = 0;
+	for (.@try = 0; .@try < 500; .@try++) {
+		.@x = rand(20, 380);
+		.@y = rand(20, 380);
+		if (checkcell(.@m$, .@x, .@y, cell_chkpass)) {
+			.@ok = 1;
+			break;
+		}
+	}
+	if (!.@ok) {
+		debugmes "tavern-rumors: no passable cell on " + .@m$ + " after 500 attempts";
+		return 0;
+	}
+	.@cid = getcharid(0);
+	if ($@tr_hn$[.@cid] != "") {
+		if (getnpcid(0, $@tr_hn$[.@cid]))
+			unloadnpc $@tr_hn$[.@cid];
+		$@tr_hn$[.@cid] = "";
+	}
+	tr_hm$ = .@m$;
+	tr_hx = .@x;
+	tr_hy = .@y;
+	tr_px = .@x + rand(-8, 8);
+	tr_py = .@y + rand(-8, 8);
+	if (tr_px < 1)
+		tr_px = 1;
+	if (tr_py < 1)
+		tr_py = 1;
+	return 1;
+}
+
+// F_Tavern_FindText() -> la pista del rumor del personaje adjunto, en
+// minúscula: "un alijo en <lugar>, a pocos pasos de (x, y)."
+function	script	F_Tavern_FindText	{
+	return "un alijo en " + callfunc("F_Tavern_Place", tr_hm$) + ", a pocos pasos de (" + tr_px + ", " + tr_py + ").";
+}
+
+-	script	tavern_finds	-1,{
+	end;
+
+// Coloca el alijo del personaje al entrar en su mapa, si no está ya.
+OnPCLoadMapEvent:
+	if (tr_hm$ == "" || tr_hm$ != strcharinfo(3))
+		end;
+	.@cid = getcharid(0);
+	if ($@tr_hn$[.@cid] != "" && getnpcid(0, $@tr_hn$[.@cid]))
+		end;
+	// 3075 = WA_TREASURE, el sprite de los cofres de dungeon-chest. Un NPC
+	// flotante no tiene sprite propio: se pasa a duplicate (campfire).
+	.@npc$ = duplicate("Alijo#tr", tr_hm$, tr_hx, tr_hy, "Alijo", 3075);
+	if (.@npc$ == "") {
+		debugmes "tavern-rumors: could not place the find on " + tr_hm$ + " " + tr_hx + "," + tr_hy;
+		end;
+	}
+	$@tr_hn$[.@cid] = .@npc$;
+	end;
+}
+
+// Plantilla del alijo. Solo existe para duplicarla: flotante y sin OnInit.
+// Sus variables las comparten todas las copias, así que no guarda nada en ellas.
+-	script	Alijo#tr	-1,{
+	if (tr_hm$ == "" || $@tr_hn$[getcharid(0)] != strnpcinfo(3)) {
+		mes "[Alijo]";
+		mes "Un fardo atado con un nudo que no conoces. Alguien lo dejó para otro.";
+		close;
+	}
+	.@m$ = strcharinfo(3);
+	.@tier = 1;
+	if ($@wa_ready) {
+		.@t = callfunc("F_Atlas_Tier", .@m$);
+		if (.@t >= 1 && .@t <= 6)
+			.@tier = .@t;
+	}
+	mes "[Alijo]";
+	mes "Bajo unas piedras, donde decía el rumor, hay un fardo envuelto en tela encerada.";
+	next;
+	if (select("Abrirlo:Dejarlo") == 2)
+		close;
+	.@gear = 0;
+	if ($@dc_ready)
+		.@gear = callfunc("F_DungeonChest_PickGear", .@tier);
+	mes "[Alijo]";
+	if (.@gear) {
+		if (!checkweight(.@gear, 1)) {
+			mes "Dentro hay algo pesado y no puedes cargarlo. Aligera la mochila y vuelve.";
+			close;
+		}
+		callfunc "F_DungeonChest_GiveGear", .@gear, .@tier, .@m$;
+		.@kind = getiteminfo(.@gear, ITEMINFO_TYPE);
+		if (.@kind == IT_WEAPON)
+			mes "Dentro hay un arma sin identificar.";
+		else if (.@kind == IT_SHADOWGEAR)
+			mes "Dentro hay una pieza de equipo de sombra sin identificar.";
+		else
+			mes "Dentro hay una pieza de armadura sin identificar.";
+		mes "Una Lupa dirá qué es y qué guarda.";
+	} else {
+		// Sin dungeon-chest: el doble de lo que costó el rumor.
+		.@z = callfunc("F_Tavern_FindPrice") * 2;
+		Zeny += .@z;
+		mes "Dentro hay una bolsa con " + .@z + " zeny.";
+	}
+	tr_hm$ = "";
+	tr_hx = 0;
+	tr_hy = 0;
+	tr_px = 0;
+	tr_py = 0;
+	.@name$ = callfunc("F_Tavern_Place", .@m$);
+	close2;
+	hideonnpc strnpcinfo(3);
+	// Tras close2: el relato se comparte con el grupo en el mapa.
+	if (getnpcid(0, "Adventure")) {
+		callfunc "F_Adv_Note", "note", "Encontré el alijo del rumor en " + .@name$ + ".";
+		callfunc "F_Adv_Experience", "rumor:" + .@m$, 1, .@tier, "Encontré el alijo del rumor en " + .@name$, 1;
+	}
+	end;
+}

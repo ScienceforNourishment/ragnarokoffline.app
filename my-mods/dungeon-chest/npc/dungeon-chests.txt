@@ -92,8 +92,9 @@ function	script	F_DungeonChest_Open	{
 		return 0;
 	}
 
-	// Un disfraz (costume_pct), equipo con afijos (gear_pct) o la comida. Todo
-	// el equipo llega sin identificar (dungeon-loot.txt).
+	// Un disfraz (costume_pct), un objeto de clima o temperature del bioma
+	// (biome_item_pct, D38), equipo con afijos (gear_pct) o la comida. Todo el
+	// equipo llega sin identificar (dungeon-loot.txt).
 	if ($@dc_ready && $@dc_cosn > 0 && rand(100) < $@dc_cosp[.@tier]) {
 		.@cos = $@dc_cos[rand(0, $@dc_cosn - 1)];
 		if (!checkweight(.@cos, 1)) {
@@ -105,6 +106,22 @@ function	script	F_DungeonChest_Open	{
 		getitem2 .@cos, 1, 0, 0, 0, 0, 0, 0, 0;
 		mes "[Cofre de Tier " + .@tier + "]";
 		mes "Entre telas viejas encuentras una prenda vistosa, sin identificar.";
+		mes "Una Lupa dirá qué es.";
+		return .@tier;
+	}
+	.@bitem = 0;
+	if ($@dc_ready && rand(100) < $@dc_bip[.@tier])
+		.@bitem = callfunc("F_DungeonChest_BiomeItem", strnpcinfo(4));
+	if (.@bitem) {
+		if (!checkweight(.@bitem, 1)) {
+			mes "[Cofre de Tier " + .@tier + "]";
+			mes "No tienes espacio suficiente para cargar el botín.";
+			return 0;
+		}
+		set getvariableofnpc(.opened, .@npc$), 1;
+		getitem2 .@bitem, 1, 0, 0, 0, 0, 0, 0, 0;
+		mes "[Cofre de Tier " + .@tier + "]";
+		mes "Entre los restos de otro viajero encuentras ropa hecha para este lugar, sin identificar.";
 		mes "Una Lupa dirá qué es.";
 		return .@tier;
 	}

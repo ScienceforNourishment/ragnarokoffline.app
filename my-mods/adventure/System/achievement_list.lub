@@ -1,0 +1,118 @@
+-- Lo que la ventana de logros (Alt+K) dice de los logros de adventure, y
+-- solo de ellos: la app carga este archivo despues de la tabla del cliente.
+-- Solo ASCII (el cliente no lo lee como UTF-8), sin tildes. Los ids y las
+-- recompensas son los de renewal/db/achievement_db.yml. Ids 901000-901999.
+achievement_tbl = {
+	[901001] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 0,
+		title = "Primer paso en Tier 1",
+		content = { summary = "Saliste de las murallas.", details = "Cuenta el relato de tu primer paso en tierras de Tier 1." },
+		resource = { [1] = { text = "Contar: Primer paso en tierras de Tier 1" } },
+		reward = { item = 19581 }, score = 20
+	},
+	[901002] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 0,
+		title = "Primer paso en Tier 2",
+		content = { summary = "Mas alla de los primeros campos.", details = "Cuenta el relato de tu primer paso en tierras de Tier 2." },
+		resource = { [1] = { text = "Contar: Primer paso en tierras de Tier 2" } },
+		reward = { item = 20405 }, score = 20
+	},
+	[901003] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 0,
+		title = "Primer paso en Tier 3",
+		content = { summary = "Donde ya no llegan los novatos.", details = "Cuenta el relato de tu primer paso en tierras de Tier 3." },
+		resource = { [1] = { text = "Contar: Primer paso en tierras de Tier 3" } },
+		reward = { item = 20737 }, score = 20
+	},
+	[901004] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 0,
+		title = "Primer paso en Tier 4",
+		content = { summary = "Tierras que pocos cuentan.", details = "Cuenta el relato de tu primer paso en tierras de Tier 4." },
+		resource = { [1] = { text = "Contar: Primer paso en tierras de Tier 4" } },
+		reward = { item = 20571 }, score = 20
+	},
+	[901005] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 0,
+		title = "Primer paso en Tier 5",
+		content = { summary = "Volviste para contarlo.", details = "Cuenta el relato de tu primer paso en tierras de Tier 5." },
+		resource = { [1] = { text = "Contar: Primer paso en tierras de Tier 5" } },
+		reward = { item = 20727 }, score = 20
+	},
+	[901006] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 0,
+		title = "Primer paso en Tier 6",
+		content = { summary = "El borde del mundo conocido.", details = "Cuenta el relato de tu primer paso en tierras de Tier 6." },
+		resource = { [1] = { text = "Contar: Primer paso en tierras de Tier 6" } },
+		reward = { item = 20765 }, score = 20
+	},
+	[901011] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 5,
+		title = "Primer cofre de Tier 1",
+		content = { summary = "Alguien lo dejo atras.", details = "Cuenta el relato de tu primer cofre de una mazmorra de Tier 1." },
+		resource = { [1] = { text = "Contar: Mi primer cofre de Tier 1" } },
+		reward = { item = 420209 }, score = 10
+	},
+	[901012] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 5,
+		title = "Primer cofre de Tier 2",
+		content = { summary = "Mas hondo, mas botin.", details = "Cuenta el relato de tu primer cofre de una mazmorra de Tier 2." },
+		resource = { [1] = { text = "Contar: Mi primer cofre de Tier 2" } },
+		reward = { item = 20315 }, score = 10
+	},
+	[901013] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 5,
+		title = "Primer cofre de Tier 3",
+		content = { summary = "Valio la pena bajar.", details = "Cuenta el relato de tu primer cofre de una mazmorra de Tier 3." },
+		resource = { [1] = { text = "Contar: Mi primer cofre de Tier 3" } },
+		reward = { item = 31186 }, score = 10
+	},
+	[901014] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 5,
+		title = "Primer cofre de Tier 4",
+		content = { summary = "Un cofre que pocos han visto.", details = "Cuenta el relato de tu primer cofre de una mazmorra de Tier 4." },
+		resource = { [1] = { text = "Contar: Mi primer cofre de Tier 4" } },
+		reward = { item = 31618 }, score = 10
+	},
+	[901015] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 5,
+		title = "Primer cofre de Tier 5",
+		content = { summary = "Lo abriste y saliste vivo.", details = "Cuenta el relato de tu primer cofre de una mazmorra de Tier 5." },
+		resource = { [1] = { text = "Contar: Mi primer cofre de Tier 5" } },
+		reward = { item = 420029 }, score = 10
+	},
+	[901016] = {
+		UI_Type = 0, group = "ADVENTURE", major = 2, minor = 5,
+		title = "Primer cofre de Tier 6",
+		content = { summary = "El cofre mas hondo.", details = "Cuenta el relato de tu primer cofre de una mazmorra de Tier 6." },
+		resource = { [1] = { text = "Contar: Mi primer cofre de Tier 6" } },
+		reward = { item = 31737 }, score = 10
+	},
+	[901021] = {
+		UI_Type = 0, group = "BATTLE", major = 3, minor = 1,
+		title = "Primer MVP abatido",
+		content = { summary = "Cayo algo mas grande que tu.", details = "Abate a un MVP y cuentalo." },
+		resource = { [1] = { text = "Contar: Abati a un MVP" } },
+		reward = { item = 20762 }, score = 10
+	},
+	[901031] = {
+		UI_Type = 0, group = "BATTLE", major = 3, minor = 0,
+		title = "Primer nemesis vencido",
+		content = { summary = "Te esperaba. Ya no.", details = "Vence al monstruo que te mato y cuentalo." },
+		resource = { [1] = { text = "Contar: Venci a mi nemesis" } },
+		reward = { item = 19553 }, score = 10
+	},
+	[901032] = {
+		UI_Type = 0, group = "BATTLE", major = 3, minor = 0,
+		title = "Nemesis de rango 3 vencido",
+		content = { summary = "Te mato tres veces. La cuarta, no.", details = "Vence a un nemesis de rango 3 y cuentalo." },
+		resource = { [1] = { text = "Contar: Venci a un nemesis de rango 3" } },
+		reward = { item = 20525 }, score = 20
+	},
+	[901041] = {
+		UI_Type = 0, group = "ADVENTURE", major = 5, minor = 0,
+		title = "Primer refugio restaurado",
+		content = { summary = "Un techo y un fuego donde no habia nada.", details = "Termina la primera etapa de un refugio en ruinas y cuentalo." },
+		resource = { [1] = { text = "Contar: Restaure un refugio" } },
+		reward = { item = 31178 }, score = 10
+	},
+}

@@ -1,0 +1,562 @@
+//===== Ragnarok Offline: tavern-rumors, cadenas de rumores ==================
+//= Las cadenas de RUMORES.md (D42-D44): un relato contado abre un rumor, el
+//= rumor lleva a un rastro dentro de una mazmorra, el rastro se lleva a quien
+//= sabe leerlo en otra ciudad, eso abre una puerta con un guardián y vencerlo
+//= deja algo cambiado para el mundo. No dan botín: el botín es de los cofres.
+//=
+//= Los datos de cada cadena salen de tavern-chains-data.txt (NPC
+//= tavern_chains), generado desde registry/tools/tavern-rumors/chains.csv con
+//= build_chains.cjs, igual que los objetos de rastro (db/, System/).
+//=
+//= El disparador es un relato contado: adventure (0.5.0) publica la clave de
+//= cada relato que se cuenta en adv_told$[] y adv_told_n. El Viejo Trotamundos
+//= de la taberna los lee al hablarle (F_Chain_Scan), así que da igual dónde se
+//= contaron: el rumor espera en la taberna.
+//=
+//= Etapas, en variables de personaje (tr_ci$ es la cadena en curso, "" sin
+//= ninguna; una a la vez):
+//=   tr_cs 1   buscar el rastro en el mapa de la cadena, cerca de tr_cpx,tr_cpy
+//=   tr_cs 2   llevar el objeto del rastro a quien lo lee (otra ciudad)
+//=   tr_cs 3   volver y abrir la puerta, en la celda del rastro (tr_cx,tr_cy)
+//=   tr_cs 4   la puerta está abierta y el guardián suelto
+//= Mod store, alcance char: c.<id> 1 en espera, 2 en curso, 3 terminada;
+//=   told = cuántos relatos de adv_told$ se leyeron ya.
+//= Mod store, alcance global (la consecuencia es del mundo, como refuges, D32):
+//=   w.<id>.on 1, w.<id>.x, w.<id>.y (dónde), w.<id>.by (quién).
+//= Servidor: $@tr_cn$[char_id] la copia (rastro o puerta) de ese personaje y
+//=   $@tr_cst[char_id] la etapa para la que se hizo; $@tr_cg[char_id] el
+//=   guardián y $@tr_cgo[gid] su dueño; $@tr_wn$[i] el pasadizo de la cadena i.
+//=
+//= Sin temporizadores: todo se coloca al entrar en el mapa (OnPCLoadMapEvent;
+//= la mapflag loadevent se pone en OnReady) y vuelve tras reiniciar.
+//= Dependencias suaves: adventure (disparador, notas y relatos), world-atlas
+//= (Tier y nombres).
+//===========================================================================
+
+// F_Chain_Find(id$) -> índice de la cadena en tavern_chains, o -1.
+function	script	F_Chain_Find	{
+	.@n = getvariableofnpc(.n, "tavern_chains");
+	for (.@i = 0; .@i < .@n; .@i++)
+		if (getvariableofnpc(.id$[.@i], "tavern_chains") == getarg(0))
+			return .@i;
+	return -1;
+}
+
+// F_Chain_Mes(texto$): una línea de diálogo por cada parte separada por "|".
+function	script	F_Chain_Mes	{
+	explode(.@l$, getarg(0), "|");
+	for (.@i = 0; .@i < getarraysize(.@l$); .@i++)
+		mes .@l$[.@i];
+	return;
+}
+
+// F_Chain_Tier(mapa$) -> Tier del atlas, 0 sin él.
+function	script	F_Chain_Tier	{
+	if (!$@wa_ready)
+		return 0;
+	return callfunc("F_Atlas_Tier", getarg(0));
+}
+
+// F_Chain_Scan: pone en espera las cadenas cuyos relatos contó el personaje
+// adjunto desde la última vez (adv_told$, de adventure). Una ya terminada por
+// este personaje, o cuya consecuencia ya existe en el mundo, no se pone.
+function	script	F_Chain_Scan	{
+	.@seen = modstore_get("char", "told", 0);
+	if (.@seen < adv_told_n - 64)
+		.@seen = adv_told_n - 64;
+	.@n = getvariableofnpc(.n, "tavern_chains");
+	for (.@k = .@seen; .@k < adv_told_n; .@k++) {
+		.@key$ = "told:" + adv_told$[.@k % 64];
+		for (.@i = 0; .@i < .@n; .@i++) {
+			if (getvariableofnpc(.trig$[.@i], "tavern_chains") != .@key$)
+				continue;
+			.@id$ = getvariableofnpc(.id$[.@i], "tavern_chains");
+			if (modstore_get("char", "c." + .@id$, 0) == 0)
+				modstore_set "char", "c." + .@id$, 1;
+		}
+	}
+	if (adv_told_n > modstore_get("char", "told", 0))
+		modstore_set "char", "told", adv_told_n;
+	return;
+}
+
+// F_Chain_Start(i) -> 1 si empezó la cadena i para el personaje adjunto: una
+// celda transitable al azar en su mapa para el rastro, y un punto a 8 celdas
+// o menos que es lo que dice el rumor. 0 si no encontró celda.
+function	script	F_Chain_Start	{
+	.@i = getarg(0);
+	.@m$ = getvariableofnpc(.map$[.@i], "tavern_chains");
+	.@ok = 0;
+	// Una celda fuera del mapa no es transitable (map_getcellp).
+	for (.@try = 0; .@try < 500; .@try++) {
+		.@x = rand(10, 390);
+		.@y = rand(10, 390);
+		if (checkcell(.@m$, .@x, .@y, cell_chkpass)) {
+			.@ok = 1;
+			break;
+		}
+	}
+	if (!.@ok) {
+		debugmes "tavern-rumors: no passable cell on " + .@m$ + " for chain " + getvariableofnpc(.id$[.@i], "tavern_chains");
+		return 0;
+	}
+	tr_ci$ = getvariableofnpc(.id$[.@i], "tavern_chains");
+	tr_cs = 1;
+	tr_cx = .@x;
+	tr_cy = .@y;
+	tr_cpx = max(1, .@x + rand(-8, 8));
+	tr_cpy = max(1, .@y + rand(-8, 8));
+	modstore_set "char", "c." + tr_ci$, 2;
+	if (getnpcid(0, "Adventure"))
+		callfunc "F_Adv_Note", "note", "Rumor: " + getvariableofnpc(.title$[.@i], "tavern_chains") + ". Busco en " + callfunc("F_Tavern_Place", .@m$) + ", cerca de (" + tr_cpx + ", " + tr_cpy + ").";
+	return 1;
+}
+
+// F_Chain_Hint(i): qué toca ahora, en el diálogo.
+function	script	F_Chain_Hint	{
+	.@i = getarg(0);
+	.@place$ = callfunc("F_Tavern_Place", getvariableofnpc(.map$[.@i], "tavern_chains"));
+	if (tr_cs == 1)
+		mes "Lo que buscas está en " + .@place$ + ", a pocos pasos de (" + tr_cpx + ", " + tr_cpy + ").";
+	else if (tr_cs == 2)
+		mes "Lleva " + getitemname(getvariableofnpc(.item[.@i], "tavern_chains")) + " a " + getvariableofnpc(.an_name$[.@i], "tavern_chains") + ", en " + callfunc("F_Tavern_Place", getvariableofnpc(.an_map$[.@i], "tavern_chains")) + ".";
+	else
+		mes "Vuelve a " + .@place$ + ", a (" + tr_cx + ", " + tr_cy + "): " + getvariableofnpc(.door_name$[.@i], "tavern_chains") + " te espera.";
+	return;
+}
+
+// F_Chain_Clear: el personaje adjunto deja su cadena en curso. Descarga su
+// copia y retira su guardián.
+function	script	F_Chain_Clear	{
+	.@cid = getcharid(0);
+	if ($@tr_cn$[.@cid] != "") {
+		if (getnpcid(0, $@tr_cn$[.@cid]))
+			unloadnpc $@tr_cn$[.@cid];
+		$@tr_cn$[.@cid] = "";
+	}
+	.@gid = $@tr_cg[.@cid];
+	if (.@gid > 0) {
+		$@tr_cg[.@cid] = 0;
+		$@tr_cgo[.@gid] = 0;
+		if (unitexists(.@gid))
+			unitkill .@gid;
+	}
+	tr_ci$ = "";
+	tr_cs = 0;
+	tr_cx = 0;
+	tr_cy = 0;
+	tr_cpx = 0;
+	tr_cpy = 0;
+	return;
+}
+
+// F_Chain_Reward(i): pone la consecuencia de la cadena i si el mundo ya la
+// tiene y no está puesta. Sin personaje.
+function	script	F_Chain_Reward	{
+	.@i = getarg(0);
+	.@id$ = getvariableofnpc(.id$[.@i], "tavern_chains");
+	if (!modstore_get("w." + .@id$ + ".on", 0))
+		return;
+	if ($@tr_wn$[.@i] != "" && getnpcid(0, $@tr_wn$[.@i]))
+		return;
+	// Solo existe el pasadizo (build_chains.cjs lo comprueba). 45 = WARPNPC, el
+	// portal de siempre; 1,1 es su área de contacto.
+	.@npc$ = duplicate("Pasadizo#trc", getvariableofnpc(.map$[.@i], "tavern_chains"), modstore_get("w." + .@id$ + ".x", 0), modstore_get("w." + .@id$ + ".y", 0), getvariableofnpc(.rw_name$[.@i], "tavern_chains"), 45, 0, 1, 1);
+	if (.@npc$ == "")
+		debugmes "tavern-rumors: could not place the passage of chain " + .@id$;
+	$@tr_wn$[.@i] = .@npc$;
+	return;
+}
+
+// F_Chain_Analyst(i): quien lee el rastro de la cadena i. Lo llaman los NPC
+// generados en tavern-chains-data.txt.
+function	script	F_Chain_Analyst	{
+	.@i = getarg(0);
+	.@who$ = "[" + getvariableofnpc(.an_name$[.@i], "tavern_chains") + "]";
+	.@item = getvariableofnpc(.item[.@i], "tavern_chains");
+	mes .@who$;
+	if (tr_ci$ != getvariableofnpc(.id$[.@i], "tavern_chains") || tr_cs < 2) {
+		mes "¿Buscas algo? Aquí solo se habla de lo que uno trae.";
+		close;
+	}
+	if (tr_cs >= 3) {
+		mes "Ya te lo dije. Ahora te toca a ti.";
+		next;
+		callfunc "F_Chain_Hint", .@i;
+		close;
+	}
+	if (!countitem(.@item)) {
+		mes "Dices que encontraste algo, pero no lo traes. Sin verlo no puedo decirte nada.";
+		close;
+	}
+	mes "Enséñame eso... " + getitemname(.@item) + ".";
+	next;
+	mes .@who$;
+	callfunc "F_Chain_Mes", getvariableofnpc(.an_text$[.@i], "tavern_chains");
+	tr_cs = 3;
+	next;
+	callfunc "F_Chain_Hint", .@i;
+	if (getnpcid(0, "Adventure"))
+		callfunc "F_Adv_Note", "note", getvariableofnpc(.an_name$[.@i], "tavern_chains") + " leyó " + getitemname(.@item) + ". Tengo que volver a " + callfunc("F_Tavern_Place", getvariableofnpc(.map$[.@i], "tavern_chains")) + ".";
+	close;
+}
+
+// F_Chain_Finish(i): el personaje adjunto venció al guardián de la cadena i.
+// Corre en un evento (OnGuardDead), no en un diálogo.
+function	script	F_Chain_Finish	{
+	.@i = getarg(0);
+	.@id$ = getvariableofnpc(.id$[.@i], "tavern_chains");
+	.@m$ = getvariableofnpc(.map$[.@i], "tavern_chains");
+	.@item = getvariableofnpc(.item[.@i], "tavern_chains");
+	.@gd$ = getvariableofnpc(.gd_name$[.@i], "tavern_chains");
+	.@title$ = getvariableofnpc(.title$[.@i], "tavern_chains");
+	.@x = tr_cx;
+	.@y = tr_cy;
+	if (countitem(.@item))
+		delitem .@item, countitem(.@item);
+	callfunc "F_Chain_Clear";
+	modstore_set "char", "c." + .@id$, 3;
+	dispbottom "Has vencido a " + .@gd$ + ".";
+	// La primera vez, el mundo cambia (D32): lo ve el compañero también.
+	if (!modstore_get("w." + .@id$ + ".on", 0)) {
+		modstore_set "w." + .@id$ + ".x", .@x;
+		modstore_set "w." + .@id$ + ".y", .@y;
+		modstore_set "w." + .@id$ + ".by", strcharinfo(0);
+		modstore_set "w." + .@id$ + ".on", 1;
+		callfunc "F_Chain_Reward", .@i;
+		dispbottom getvariableofnpc(.rw_text$[.@i], "tavern_chains");
+	}
+	if (getnpcid(0, "Adventure")) {
+		.@tier = callfunc("F_Chain_Tier", .@m$);
+		callfunc "F_Adv_Note", "note", "Terminé «" + .@title$ + "»: vencí a " + .@gd$ + " en " + callfunc("F_Tavern_Place", .@m$) + ".";
+		callfunc "F_Adv_Experience", "final:" + .@id$, 3, .@tier, "Vencí a " + .@gd$, 1;
+		callfunc "F_Adv_Experience", "cadena:" + .@id$, 4, .@tier, "Seguí el rumor de «" + .@title$ + "» hasta el final";
+	}
+	return;
+}
+
+// F_Chain_Guard(i): el guardián de la cadena i, junto a la puerta, para el
+// personaje adjunto, si no está ya en pie. Más fuerte que el monstruo normal:
+// gd_hp y gd_atk por ciento. La llaman la puerta y el cambio de mapa.
+function	script	F_Chain_Guard	{
+	.@i = getarg(0);
+	.@cid = getcharid(0);
+	.@gid = $@tr_cg[.@cid];
+	if (.@gid > 0 && unitexists(.@gid) && $@tr_cgo[.@gid] == .@cid)
+		return;
+	.@m$ = getvariableofnpc(.map$[.@i], "tavern_chains");
+	.@sx = 0;
+	.@sy = 0;
+	for (.@t = 0; .@t < 30; .@t++) {
+		.@nx = tr_cx + rand(-3, 3);
+		.@ny = tr_cy + rand(-3, 3);
+		if (checkcell(.@m$, .@nx, .@ny, cell_chkpass)) {
+			.@sx = .@nx;
+			.@sy = .@ny;
+			break;
+		}
+	}
+	monster .@m$, .@sx, .@sy, getvariableofnpc(.gd_name$[.@i], "tavern_chains"), getvariableofnpc(.gd_mob[.@i], "tavern_chains"), 1, "tavern_chains_mgr::OnGuardDead";
+	.@gid = $@mobid[0];
+	if (.@gid < 1) {
+		debugmes "tavern-rumors: monster() failed for the guard of chain " + tr_ci$;
+		return;
+	}
+	$@tr_cg[.@cid] = .@gid;
+	$@tr_cgo[.@gid] = .@cid;
+	// getunitdata sobre algo que no es un monstruo tumba el map-server.
+	if (getunittype(.@gid) == BL_MOB) {
+		getunitdata .@gid, .@u;
+		.@maxhp = .@u[UMOB_MAXHP] * getvariableofnpc(.gd_hp[.@i], "tavern_chains") / 100;
+		.@atk = getvariableofnpc(.gd_atk[.@i], "tavern_chains");
+		setunitdata .@gid, UMOB_MAXHP, .@maxhp;
+		setunitdata .@gid, UMOB_HP, .@maxhp;
+		setunitdata .@gid, UMOB_ATKMIN, .@u[UMOB_ATKMIN] * .@atk / 100;
+		setunitdata .@gid, UMOB_ATKMAX, .@u[UMOB_ATKMAX] * .@atk / 100;
+	}
+	dispbottom "Algo se mueve tras la puerta: " + getvariableofnpc(.gd_name$[.@i], "tavern_chains") + ".";
+	return;
+}
+
+-	script	tavern_chains_mgr	-1,{
+	end;
+
+OnInit:
+	bindatcmd "rumor", "tavern_chains_mgr::OnGM", 99, 99;
+	end;
+
+// Lo lanza tavern_chains al cargar sus datos: loadevent en los mapas de las
+// cadenas y las consecuencias que ya existen.
+OnReady:
+	.@n = getvariableofnpc(.n, "tavern_chains");
+	for (.@i = 0; .@i < .@n; .@i++) {
+		setmapflag getvariableofnpc(.map$[.@i], "tavern_chains"), mf_loadevent;
+		callfunc "F_Chain_Reward", .@i;
+	}
+	end;
+
+// Coloca lo que toca de la cadena del personaje al entrar en su mapa.
+OnPCLoadMapEvent:
+	if (tr_ci$ == "")
+		end;
+	.@i = callfunc("F_Chain_Find", tr_ci$);
+	if (.@i < 0)
+		end;
+	if (strcharinfo(3) != getvariableofnpc(.map$[.@i], "tavern_chains"))
+		end;
+	if (tr_cs == 4) {
+		callfunc "F_Chain_Guard", .@i;
+		end;
+	}
+	if (tr_cs != 1 && tr_cs != 3)
+		end;
+	.@cid = getcharid(0);
+	if ($@tr_cn$[.@cid] != "" && getnpcid(0, $@tr_cn$[.@cid])) {
+		if ($@tr_cst[.@cid] == tr_cs)
+			end;
+		unloadnpc $@tr_cn$[.@cid];
+	}
+	// Un NPC flotante no tiene sprite: se pasa a duplicate (campfire).
+	if (tr_cs == 1)
+		.@npc$ = duplicate("Rastro#trc", strcharinfo(3), tr_cx, tr_cy, getvariableofnpc(.tr_name$[.@i], "tavern_chains"), getvariableofnpc(.tr_spr[.@i], "tavern_chains"));
+	else
+		.@npc$ = duplicate("Puerta#trc", strcharinfo(3), tr_cx, tr_cy, getvariableofnpc(.door_name$[.@i], "tavern_chains"), getvariableofnpc(.door_spr[.@i], "tavern_chains"));
+	if (.@npc$ == "") {
+		debugmes "tavern-rumors: could not place stage " + tr_cs + " of chain " + tr_ci$ + " at " + tr_cx + "," + tr_cy;
+		end;
+	}
+	$@tr_cn$[.@cid] = .@npc$;
+	$@tr_cst[.@cid] = tr_cs;
+	end;
+
+// Corre con quien mató al guardián. Se acredita al dueño: al propio killer o
+// a su compañero de grupo si está conectado y en el mismo mapa (regla común
+// de grupo, como nemesis).
+OnGuardDead:
+	if (!playerattached())
+		end;
+	.@gid = killedgid;
+	.@owner = $@tr_cgo[.@gid];
+	if (.@owner < 1)
+		end;
+	$@tr_cgo[.@gid] = 0;
+	if (.@owner != getcharid(0)) {
+		.@map$ = strcharinfo(3);
+		.@pid = getcharid(1);
+		if (!.@pid)
+			end;
+		.@aid = callsub(S_PartyAid, .@pid, .@owner);
+		if (!.@aid)
+			end;
+		if (!attachrid(.@aid))
+			end;
+		if (strcharinfo(3) != .@map$)
+			end;
+	}
+	// Desde aquí el personaje adjunto es el dueño.
+	if ($@tr_cg[getcharid(0)] != .@gid || tr_cs != 4)
+		end;
+	$@tr_cg[getcharid(0)] = 0;
+	.@i = callfunc("F_Chain_Find", tr_ci$);
+	if (.@i >= 0)
+		callfunc "F_Chain_Finish", .@i;
+	end;
+
+S_PartyAid:
+	getpartymember getarg(0), 1;
+	.@n = $@partymembercount;
+	if (.@n < 1)
+		return 0;
+	copyarray .@cid[0], $@partymembercid[0], .@n;
+	getpartymember getarg(0), 2;
+	copyarray .@aid[0], $@partymemberaid[0], .@n;
+	for (.@i = 0; .@i < .@n; .@i++) {
+		if (.@cid[.@i] == getarg(1))
+			return .@aid[.@i];
+	}
+	return 0;
+
+// @rumor (GM): sin nada, el estado de las cadenas del personaje; @rumor <id>
+// pone esa cadena en espera, como si hubiera contado su relato; @rumor <id>
+// reset la borra del personaje y del mundo (quita el pasadizo).
+OnGM:
+	.@n = getvariableofnpc(.n, "tavern_chains");
+	if (.@atcmd_numparameters < 1) {
+		dispbottom "Cadena en curso: " + (tr_ci$ == "" ? "ninguna" : tr_ci$ + ", etapa " + tr_cs) + ". Relatos leídos: " + modstore_get("char", "told", 0) + " de " + adv_told_n + ".";
+		for (.@i = 0; .@i < .@n; .@i++) {
+			.@id$ = getvariableofnpc(.id$[.@i], "tavern_chains");
+			dispbottom .@id$ + ": personaje " + modstore_get("char", "c." + .@id$, 0) + " (1 espera, 2 en curso, 3 hecha), mundo " + modstore_get("w." + .@id$ + ".on", 0) + ".";
+		}
+		end;
+	}
+	.@i = callfunc("F_Chain_Find", .@atcmd_parameters$[0]);
+	if (.@i < 0) {
+		dispbottom "No hay ninguna cadena " + .@atcmd_parameters$[0] + ".";
+		end;
+	}
+	.@id$ = getvariableofnpc(.id$[.@i], "tavern_chains");
+	if (.@atcmd_numparameters > 1 && .@atcmd_parameters$[1] == "reset") {
+		if (tr_ci$ == .@id$)
+			callfunc "F_Chain_Clear";
+		.@item = getvariableofnpc(.item[.@i], "tavern_chains");
+		if (countitem(.@item))
+			delitem .@item, countitem(.@item);
+		modstore_delete "char", "c." + .@id$;
+		modstore_delete "w." + .@id$;
+		if ($@tr_wn$[.@i] != "") {
+			if (getnpcid(0, $@tr_wn$[.@i]))
+				unloadnpc $@tr_wn$[.@i];
+			$@tr_wn$[.@i] = "";
+		}
+		dispbottom "Cadena " + .@id$ + " borrada del personaje y del mundo.";
+		end;
+	}
+	if (modstore_get("char", "c." + .@id$, 0) != 2)
+		modstore_set "char", "c." + .@id$, 1;
+	dispbottom "Cadena " + .@id$ + " en espera: habla con el Viejo Trotamundos.";
+	end;
+}
+
+// El Viejo Trotamundos (D44): escucha lo que se cuenta y da los rumores. Junto
+// al Tabernero; duplicarlo en cada taberna (H3).
+prt_in,175,27,4	script	Viejo Trotamundos#trc_prt	4_M_ORIENT01,{
+	callfunc "F_Chain_Scan";
+	mes "[Viejo Trotamundos]";
+	if (tr_ci$ != "") {
+		.@i = callfunc("F_Chain_Find", tr_ci$);
+		if (.@i < 0) {
+			callfunc "F_Chain_Clear";
+			mes "De aquello ya no se acuerda nadie. Olvídalo.";
+			close;
+		}
+		mes "¿Sigues con lo de «" + getvariableofnpc(.title$[.@i], "tavern_chains") + "»?";
+		callfunc "F_Chain_Hint", .@i;
+		next;
+		if (select("Sigo con ello:Olvidar este rumor") == 1)
+			close;
+		mes "[Viejo Trotamundos]";
+		mes "Como quieras. Si un día vuelves a pensarlo, aquí estaré.";
+		.@item = getvariableofnpc(.item[.@i], "tavern_chains");
+		if (countitem(.@item))
+			delitem .@item, countitem(.@item);
+		modstore_set "char", "c." + tr_ci$, 1;
+		callfunc "F_Chain_Clear";
+		close;
+	}
+	// La primera cadena en espera; las que ya resolvió el mundo se cierran.
+	.@n = getvariableofnpc(.n, "tavern_chains");
+	.@i = -1;
+	for (.@k = 0; .@k < .@n && .@i < 0; .@k++) {
+		.@id$ = getvariableofnpc(.id$[.@k], "tavern_chains");
+		if (modstore_get("char", "c." + .@id$, 0) != 1)
+			continue;
+		if (modstore_get("w." + .@id$ + ".on", 0)) {
+			modstore_set "char", "c." + .@id$, 3;
+			.@by$ = modstore_get("w." + .@id$ + ".by", "alguien");
+			mes "Lo de «" + getvariableofnpc(.title$[.@k], "tavern_chains") + "» ya lo resolvió " + .@by$ + ". Buen trabajo.";
+			next;
+			mes "[Viejo Trotamundos]";
+			continue;
+		}
+		.@i = .@k;
+	}
+	if (.@i < 0) {
+		mes "Siéntate y cuéntale tus viajes a quien escriba. Yo escucho desde aquí:";
+		mes "a veces lo que uno cuenta me recuerda algo que oí.";
+		close;
+	}
+	mes "Te oí contar lo tuyo.";
+	callfunc "F_Chain_Mes", getvariableofnpc(.rumor$[.@i], "tavern_chains");
+	next;
+	if (select("Ir a buscarlo:Ahora no") == 2) {
+		mes "[Viejo Trotamundos]";
+		mes "No corre prisa. Lo que está escondido no se mueve.";
+		close;
+	}
+	mes "[Viejo Trotamundos]";
+	if (!callfunc("F_Chain_Start", .@i)) {
+		mes "Hoy no me acuerdo bien de dónde era. Vuelve otro día.";
+		close;
+	}
+	callfunc "F_Chain_Hint", .@i;
+	mes "Y ve preparado: allí abajo nadie te va a ayudar.";
+	close;
+}
+
+// Plantillas. Solo existen para duplicarlas: flotantes y sin OnInit. Sus
+// variables las comparten todas las copias, así que no guardan nada en ellas.
+
+// El rastro: solo lo toma su dueño, en la etapa 1.
+-	script	Rastro#trc	-1,{
+	.@i = callfunc("F_Chain_Find", tr_ci$);
+	if (.@i < 0 || tr_cs != 1 || $@tr_cn$[getcharid(0)] != strnpcinfo(3)) {
+		mes "Restos de alguien que no conoces. Mejor dejarlos en paz.";
+		close;
+	}
+	.@item = getvariableofnpc(.item[.@i], "tavern_chains");
+	callfunc "F_Chain_Mes", getvariableofnpc(.tr_text$[.@i], "tavern_chains");
+	next;
+	if (select("Tomarlo:Dejarlo") == 2)
+		close;
+	if (!checkweight(.@item, 1)) {
+		mes "No puedes cargar con nada más. Aligera la mochila y vuelve.";
+		close;
+	}
+	getitem .@item, 1;
+	tr_cs = 2;
+	mes "Te llevas " + getitemname(.@item) + ".";
+	callfunc "F_Chain_Hint", .@i;
+	.@m$ = getvariableofnpc(.map$[.@i], "tavern_chains");
+	.@id$ = tr_ci$;
+	close2;
+	hideonnpc strnpcinfo(3);
+	if (getnpcid(0, "Adventure")) {
+		callfunc "F_Adv_Note", "note", "Encontré " + getitemname(.@item) + " en " + callfunc("F_Tavern_Place", .@m$) + ".";
+		callfunc "F_Adv_Experience", "rastro:" + .@id$, 1, callfunc("F_Chain_Tier", .@m$), "Encontré " + getitemname(.@item) + " en " + callfunc("F_Tavern_Place", .@m$);
+	}
+	end;
+}
+
+// La puerta: la abre su dueño con el objeto del rastro, en la etapa 3.
+-	script	Puerta#trc	-1,{
+	.@i = callfunc("F_Chain_Find", tr_ci$);
+	if (.@i < 0 || tr_cs != 3 || $@tr_cn$[getcharid(0)] != strnpcinfo(3)) {
+		mes "Una puerta cerrada. No es asunto tuyo.";
+		close;
+	}
+	.@item = getvariableofnpc(.item[.@i], "tavern_chains");
+	callfunc "F_Chain_Mes", getvariableofnpc(.door_text$[.@i], "tavern_chains");
+	if (!countitem(.@item)) {
+		mes "Sin " + getitemname(.@item) + " no hay forma de abrirla.";
+		close;
+	}
+	next;
+	if (select("Abrir la puerta:Todavía no") == 2)
+		close;
+	tr_cs = 4;
+	mes "La cerradura cede con un chirrido. Del otro lado llega un olor a encierro.";
+	close2;
+	hideonnpc strnpcinfo(3);
+	callfunc "F_Chain_Guard", .@i;
+	end;
+}
+
+// El pasadizo, la consecuencia de una cadena: lo ve y lo usa todo el mundo.
+-	script	Pasadizo#trc	-1,{
+	callsub S_Cross;
+	end;
+
+OnTouch:
+	callsub S_Cross;
+	end;
+
+S_Cross:
+	.@n = getvariableofnpc(.n, "tavern_chains");
+	for (.@i = 0; .@i < .@n; .@i++) {
+		if ($@tr_wn$[.@i] != strnpcinfo(3))
+			continue;
+		warp getvariableofnpc(.rw_map$[.@i], "tavern_chains"), getvariableofnpc(.rw_x[.@i], "tavern_chains"), getvariableofnpc(.rw_y[.@i], "tavern_chains");
+		return;
+	}
+	return;
+}

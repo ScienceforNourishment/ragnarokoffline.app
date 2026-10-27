@@ -14,8 +14,33 @@ decidido, en [`DECISIONS.md`](../DECISIONS.md) (D9–D12, D25–D27).
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.3.0 (la de `mod.json`), escrita el 2026-10-23 y **sin
-  probar en el juego**. Trae los **rasgos** (ver «Rasgos»), con su pestaña
+- **Versión:** 0.5.0 (la de `mod.json`), del 2026-10-26: publica **qué
+  relatos se contaron**, para que otros mods reaccionen (las cadenas de
+  rumores de `tavern-rumors` 0.3.0, D43). Cada relato guarda su clave
+  (`pk.<n>` en el mod store) y, al contarlo, `F_Adv_Told` la añade a las
+  variables de personaje `adv_told$[]` y `adv_told_n` (ver «Para otros
+  mods»). Los relatos ganados antes de la 0.5.0 no tienen clave y no se
+  publican. Sin probar en el juego; comprobadas las llaves del script.
+- La 0.4.1, del 2026-10-26: `mod.json` declara
+  `"renewalFolder": "renewal"`. Sin él, el cargador no leía `renewal/` y los
+  logros no llegaban al servidor: en la prueba del 2026-10-26,
+  `db/import/achievement_db.yml` cargó sin entradas y cada relato Mayor dio
+  `Achievement '9010xx' doesn't exist`. Sin probar en el juego.
+- La 0.4.0, del 2026-10-24: **logros** (D39,
+  ver «Logros»). Los relatos Mayores e Hitos completan un logro de la ventana
+  Alt+K al contarlos, con un disfraz por correo. Pide la app **1.6.7** o
+  más. Solo Renewal. Sin probar en el juego; comprobado sin el juego: llaves
+  y cabeceras del script, que los 16 ids y sus recompensas coinciden entre
+  `renewal/db/achievement_db.yml` y `System/achievement_list.lub`, que los
+  AegisName existen en las tablas Renewal del rAthena fijado y que el `.lub`
+  es ASCII. Un personaje que ya contó esos relatos antes de la 0.4.0 no
+  recibe sus logros.
+- La 0.3.1, del 2026-10-24: solo el diario.
+  Con `streak_step` o `streak_max` a 0, la cabecera de la pestaña Relatos
+  seguía diciendo «racha» (el cliente tomaba el 0 por «sin valor» y usaba
+  10 y 50); el servidor ya hacía bien la cuenta. Hallado al revisar el
+  código, sin probar en el juego.
+- La 0.3.0, escrita el 2026-10-23 y **sin probar en el juego**. Trae los **rasgos** (ver «Rasgos»), con su pestaña
   en el diario, y los valores de la EXP, la racha y los rasgos como
   **Settings** (ver «Ajustes»), con los mismos valores por defecto. Los
   rasgos los leen `temperature` 0.5.0, `wounds` 0.7.0 y `survival` 1.3.0.
@@ -55,16 +80,34 @@ Actualízala al cambiar el mod o al probarlo.
   a 1x (D8)
 - **Probado en el juego (0.1.0, 2026-10-23):** el Cronista de Geffen, Payon,
   Morocc, Alberta y Aldebaran se ve y responde
-- **Sin probar:** `Adventure::OnRest` llamado desde otro mod (lo cubre
-  [`tavern-rumors`](../tavern-rumors/README.md#probarlo))
+- **Probado en el juego (0.4.0, 2026-10-26),** con un personaje nuevo, lo
+  de la 0.2 y la 0.3 de un jugador. Los ajustes se ven en Settings → Mods.
+  La primera salida a `prt_fild08` dice «racha +30 %» y un total de unos
+  +75 %; contar con el Cronista quita la racha; la pestaña **Expediciones**
+  lista los resúmenes 🏕️ con el más reciente arriba; la pestaña **Rasgos**
+  lista los cuatro con su progreso. Los relatos de otros mods: cofre, marca,
+  cacería (sin repetir), clima protegido y sin protección, temperatura y el
+  del refugio de `refuges`. Los propios: expedición larga y «Volví por los
+  pelos» (morir y reaparecer no lo da). Las notas de `F_Adv_Note` salen en
+  la pestaña Diario. Los cuatro rasgos, con `trait_minutes` a 1: Hecho al
+  frío, Hecho al calor, Buscavidas y Curtido por las heridas, cada uno con
+  su efecto
+- **Falla en el juego (0.4.0, 2026-10-26):** los logros no cargaron (ver la
+  0.4.1, arriba)
+- **Sin probar:** el relato del primer MVP de cada especie; los ajustes
+  `pct_minor` y `streak_step` (la 0.3.1); los logros, con la 0.4.1;
+  `Adventure::OnRest` llamado desde otro mod (lo cubre
+  [`tavern-rumors`](../tavern-rumors/README.md#probarlo)). Contar en la
+  hoguera de `refuges` ya está probado
 - **Pedido (2026-10-23):** una pestaña solo con las expediciones terminadas,
-  para leer la historia del personaje. Hecha en la 0.2.0, sin probar
+  para leer la historia del personaje. Hecha en la 0.2.0 y probada el
+  2026-10-26
 - **Cambia los números de la 0.1:** con la racha, los tres relatos de la
   primera salida a nivel 1 dan unos 75 % en vez de ~64 % (mapa 4 %, bioma
   10 × 1,1 = 11 %, Tier 50 × 1,2 = 60 %, justo el tope), y una expedición
   larga paga hasta un 50 % más por relato
 - **Problemas abiertos:** ninguno conocido. Las notas que se envían con `doevent "TravelJournal::OnLog"` todavía pueden perderse en la cola de 2 huecos; desde la 0.3 nuestros mods usan `F_Adv_Note`, que no se pierde
-- **Actualizado:** 2026-10-23
+- **Actualizado:** 2026-10-26
 
 ## Instalar
 
@@ -215,6 +258,14 @@ personaje, así que funciona desde cualquier mod y en un diálogo.
 **Leer un rasgo:** `if (adv_trait_cold) …` desde cualquier NPC; no hace falta
 comprobar que `adventure` esté activo (sin él vale 0).
 
+**Reaccionar a lo contado** (desde la 0.5.0, lo usa `tavern-rumors`): al
+contar, cada relato deja su clave, en la forma del mod store
+(`map.prt_sewb4`, `wound.3`), en un anillo de 64 variables de personaje:
+`adv_told$[k % 64]` es el relato número `k`, y `adv_told_n` cuántos se
+publicaron. Guarda en tu mod store hasta qué `k` leíste y lee de
+`max(leídos, adv_told_n - 64)` a `adv_told_n - 1`. Sin `adventure`, las dos
+valen vacío y 0.
+
 **Contar desde otro lugar de descanso** (taberna, refugio):
 `doevent "Adventure::OnRest";` con el jugador adjunto.
 
@@ -272,6 +323,7 @@ Mod store, alcance `char`:
 | Clave | Contenido |
 |---|---|
 | `x.<tipo>.<id>` | 1 cuando ya ganó esa experiencia. `x.map.<mapa>` es también «mapa visitado» (también para los seguros, sin relato) |
+| `ach.<id>` | un logro que espera a que se cuente su relato (ver «Logros»); se borra al contar |
 | `client.n`, `client.e.<n>` | el diario: `<unix>\|<tipo>\|<texto>`, las últimas 300 |
 | `client.p.<n>` | relato sin contar: `<base>\|<job>\|<‰ de nivel>\|<tier>\|<texto>` |
 | `client.t.*` | copia de los rasgos para el diario: `cold`, `heat`, `forager`, `tough` (1 si se tiene) y el progreso, `cold_s`, `heat_s`, `biomes`, `cures` |
@@ -286,10 +338,41 @@ adventure/
 ├── mod.json
 ├── README.md
 ├── client/index.js            ventana del diario
-└── npc/
-    ├── adventure.txt          funciones, Adventure, TravelJournal y el Cronista
-    └── adventure-maps.txt     GENERADO: loadevent en cada mapa del atlas
+├── npc/
+│   ├── adventure.txt          funciones, Adventure, TravelJournal y el Cronista
+│   └── adventure-maps.txt     GENERADO: loadevent en cada mapa del atlas
+├── renewal/db/achievement_db.yml   los logros: id, recompensa y puntos (solo Renewal)
+└── System/achievement_list.lub     lo que la ventana de logros dice de ellos
 ```
+
+## Logros
+
+Desde la 0.4.0 (D39). Un relato **Mayor o Hito** completa un logro de la
+ventana de logros (**Alt+K**) cuando se **cuenta**, igual que da su EXP; el
+del grupo lo gana cada compañero que ganó el relato. La recompensa es un
+disfraz que se reclama en la ventana y llega por correo. Los disfraces son de
+`registry/tools/dungeon-chest/costumes.csv`, así que alguno puede salir
+también de un cofre (D36). Ids **901000–901999** (`CONVENTIONS.md`); nunca
+reutilizar uno.
+
+| Id | Relato | Pestaña | Disfraz | Puntos |
+|---|---|---|---|---|
+| 901001–901006 | Hito: primer paso en Tier 1 a 6 (`tier:<n>`) | Aventura → Rune Midgarts | Adventurer's Hat, Eremes Scarf, Kirin Wing, Valkyrie Wings, Brilliant Golden Wings, Archangel Wing | 20 |
+| 901011–901016 | primer cofre de Tier 1 a 6 (`chesttier:<n>`, `dungeon-chest`) | Aventura → Mazmorra | Cookie Ribbon, Analyze Eye, Black Cat, Butterfly Charm, Imperial Glory, Lucifer's Wings | 10 |
+| 901021 | el primer MVP (`mvp:<id>`) | Batalla → Entrenamiento | Great Devil Wings | 10 |
+| 901031 | el primer némesis vencido (`nemesis:<clase>`) | Batalla → Duelo | Assassin Mask | 10 |
+| 901032 | un némesis de rango 3 (el mismo relato, como Hito) | Batalla → Duelo | Crimson Wings | 20 |
+| 901041 | el primer refugio restaurado (`refuge:<id>`, `refuges`) | Memorial → Midgard | Fire Muffler | 10 |
+
+Cómo funciona: `F_Adv_Gain` apunta en el store `ach.<id>` al ganar el relato,
+y `F_Adv_Rest` completa esos logros al contar (`achievementcomplete`) y los
+borra. Los logros solo existen en Renewal (`renewal/db/`): varios de esos
+disfraces no están en las tablas Pre-Renewal, y allí el script no los
+completa (`checkre(0)`). Para añadir uno: su fila en los dos archivos, con el
+mismo id, y su caso en `F_Adv_AchQueue`.
+
+Al apagar el mod, rAthena borra estos logros de cada personaje al entrar
+(`docs/mods/CUSTOM_ACHIEVEMENTS.md`).
 
 `adventure-maps.txt` se genera desde `registry/tools/world-atlas/atlas.csv`:
 
@@ -360,7 +443,8 @@ Con un personaje nuevo, `adventure` 0.2.0 y los mods de la tabla activos:
    final del evento: al terminar, «Aguanté el clima sin protección: …» (el
    aviso puede salir al cambiar de mapa).
 6. **Temperatura** (`temperature` 0.5.0). En un mapa de temperatura ±2
-   (`xmas_fild01` con Capa de Piel y Chaleco de Lana, `@temperatura` en 0):
+   (`xmas_fild01` con solo la Capa de Piel, `@temperatura` en 0; con la
+   Ventisca, que suma −1, hace falta también el Chaleco de Lana):
    «Comodo en pleno frio gracias a mi ropa» (puede salir al cambiar de mapa).
 7. **Grupo.** Con dos personajes en un grupo y en la misma mazmorra, uno abre
    el cofre: los dos ganan los dos relatos del cofre. Igual al abatir la
@@ -404,3 +488,25 @@ Con `adventure` 0.3.0, `temperature` 0.5.0, `wounds` 0.7.0 y `survival`
     diálogo abierto si puedes: las notas («Acepté…», la herida) salen en el
     diario, como mucho al siguiente cambio de mapa. En el log no debe salir
     `event queue is full` para `TravelJournal::OnLog`.
+
+### Probar la 0.4
+
+Reinicia la aplicación (el `.lub` se carga con el cliente) y mira
+`ragnarok-stack logs map 200`: `Loading '16' entries in
+'db/import/achievement_db.yml'` (o más, si otro mod trae logros) y ningún
+`Reward ... does not exist`.
+
+1. **La ventana.** Alt+K: los logros salen en Aventura → Rune Midgarts y
+   Mazmorra, Batalla → Entrenamiento y Duelo y Memorial → Midgard, con su
+   disfraz como recompensa, y los logros de serie siguen ahí.
+2. **Al contar, no antes.** Con un personaje nuevo, sal a `prt_fild08`: el
+   relato del Tier 1 sale, pero el logro todavía no. Cuéntalo con el
+   Cronista: el aviso «< Primer paso en Tier 1 > achieved.» y el logro
+   completado en Alt+K.
+3. **La recompensa.** Pulsa el botón de recompensa: el Adventurer's Hat
+   llega por correo.
+4. **Otros.** El primer cofre de un Tier (`@cofre`) y un MVP (`@monster`):
+   sus logros al contarlos, no al ganar el relato. Un segundo MVP de otra
+   especie no da otro logro.
+5. En `ragnarok-stack logs map 2000`: sin errores de `achievementcomplete`
+   ni de `F_Adv_AchTell`.
