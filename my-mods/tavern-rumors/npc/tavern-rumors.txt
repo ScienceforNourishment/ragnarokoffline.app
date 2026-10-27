@@ -31,13 +31,18 @@ function	script	F_Tavern_Say	{
 function	script	F_Tavern_Price	{
 	.@base = callfunc("F_ModSetting", "tavern-rumors", "round_price", 200);
 	setarray .@f[1], 10, 20, 35, 50, 75, 100;
-	.@band = 1;
-	if (BaseLevel >= 150) .@band = 6;
-	else if (BaseLevel >= 120) .@band = 5;
-	else if (BaseLevel >= 90) .@band = 4;
-	else if (BaseLevel >= 60) .@band = 3;
-	else if (BaseLevel >= 40) .@band = 2;
-	return .@base * .@f[.@band] / 10;
+	return .@base * .@f[callfunc("F_Tavern_Band")] / 10;
+}
+
+// F_Tavern_Band() -> la banda de nivel del personaje adjunto, 1 a 6 (la de
+// adventure y dungeon-chest; coincide con los Tiers del atlas).
+function	script	F_Tavern_Band	{
+	if (BaseLevel >= 150) return 6;
+	if (BaseLevel >= 120) return 5;
+	if (BaseLevel >= 90) return 4;
+	if (BaseLevel >= 60) return 3;
+	if (BaseLevel >= 40) return 2;
+	return 1;
 }
 
 // F_Tavern_Place(mapa$) -> nombre del lugar según el atlas, o el código.
@@ -62,6 +67,15 @@ function	script	F_Tavern_Fields	{
 	if (getarg(0) == "prontera")
 		return "prt_fild00|prt_fild01|prt_fild02|prt_fild03|prt_fild04|prt_fild05|prt_fild06|prt_fild07|prt_fild08|prt_fild09|prt_fild10|prt_fild11";
 	return "";
+}
+
+// F_Tavern_Region(ciudad$) -> las ciudades ancla de la región de esa ciudad,
+// entre "|" (también al principio y al final). Lo de otra región es «lejos»
+// para el alijo. Se amplía con cada región (H3).
+function	script	F_Tavern_Region	{
+	if (getarg(0) == "prontera" || getarg(0) == "izlude")
+		return "|prontera|izlude|";
+	return "|" + getarg(0) + "|";
 }
 
 // F_Tavern_Sky(mapa$) -> 1 si añadió lo que se sabe del tiempo en ese mapa.
@@ -298,14 +312,20 @@ S_Find:
 		next;
 		return;
 	}
-	if (callfunc("F_Tavern_Fields", getarg(0)) == "") {
+	.@far = callfunc("F_Tavern_FindFar");
+	if (!.@far && callfunc("F_Tavern_Fields", getarg(0)) == "") {
 		mes "Por aquí no se oye de nada escondido.";
 		next;
 		return;
 	}
 	.@cost = callfunc("F_Tavern_FindPrice");
-	mes "Dicen que alguien escondió algo en los campos y no volvió a por ello.";
-	mes "Eso vale más que una ronda: son " + .@cost + " zeny.";
+	if (.@far) {
+		mes "Los que vienen de lejos cuentan de cosas escondidas en tierras que pocos pisan.";
+		mes "Llegar no es fácil, y volver tampoco. Eso vale más que una ronda: son " + .@cost + " zeny.";
+	} else {
+		mes "Dicen que alguien escondió algo en los campos y no volvió a por ello.";
+		mes "Eso vale más que una ronda: son " + .@cost + " zeny.";
+	}
 	next;
 	if (select("Pagar:Mejor no") == 2)
 		return;

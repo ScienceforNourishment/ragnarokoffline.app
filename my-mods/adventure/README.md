@@ -14,7 +14,17 @@ decidido, en [`DECISIONS.md`](../DECISIONS.md) (D9–D12, D25–D27).
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.5.0 (la de `mod.json`), del 2026-10-26: publica **qué
+- **Versión:** 0.6.0 (la de `mod.json`), del 2026-10-27: el primer relato
+  nuevo de D55, el **cambio de clase** (`job.<Class>`, Hito; D59). La
+  variable de personaje `adv_job` guarda la última clase vista (`Class` + 1)
+  y, si al cambiar de mapa, al hablar con el Cronista o con `@relatos` la
+  clase es otra, se gana «Me convertí en <clase>». La primera vez que ve a un
+  personaje solo apunta su clase, así que quien cambió antes de la 0.6.0 no
+  gana nada por ello; pasar a Novice, High Novice o Baby no es relato. Sin
+  probar en el juego; comprobado contra el rAthena fijado (`8aea17a`,
+  descargando los archivos): `jobname`, la variable `Class` y que las
+  constantes se exportan como `JOB_NOVICE`, `JOB_NOVICE_HIGH` y `JOB_BABY`
+- La 0.5.0, del 2026-10-26: publica **qué
   relatos se contaron**, para que otros mods reaccionen (las cadenas de
   rumores de `tavern-rumors` 0.3.0, D43). Cada relato guarda su clave
   (`pk.<n>` en el mod store) y, al contarlo, `F_Adv_Told` la añade a las
@@ -138,6 +148,7 @@ alto. Sobrevive a salir del juego.
 | `long.30`, `long.60`, `long.120` | primera expedición con más de 30, 60 y 120 minutos fuera (desde la 0.3) | Media |
 | `close.return` | volver a una ciudad con menos del 20 % de HP, o con hambre o sed a 0, sin haber muerto (desde la 0.3) | Media |
 | `mvp.<id>` | primer MVP de cada especie (desde la 0.3; también para el grupo en el mapa) | Mayor |
+| `job.<Class>` | cambiar a una clase por primera vez (desde la 0.6; `Class` es el número de rAthena, 1 Swordman, 7 Knight, 4002 High Swordman…); no cuentan Novice, High Novice ni Baby | Hito |
 
 **Relatos que publican otros mods** (desde la 0.2, todos con dependencia
 suave; «grupo» quiere decir que también lo ganan los del grupo en el mismo

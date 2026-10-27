@@ -5,7 +5,14 @@
 //= abre: una pieza de equipo sin identificar con afijos del Tier del mapa
 //= (las funciones de dungeon-chest) y un relato de adventure.
 //=
+//= Desde la 0.4.0 (D45) el alijo es de lugares lejanos: un campo del atlas de
+//= otra región ($@wa_field$, F_Tavern_Region), del Tier de la banda de nivel
+//= + 1 o el más cercano a ese. Con el ajuste find_nearby (las pruebas, D23), o
+//= sin atlas, sigue en los campos de la ciudad (F_Tavern_Fields).
+//=
 //= Un rumor por personaje, sin caducidad: comprar otro descarta el anterior.
+//= Es independiente de las cadenas (tavern-chains.txt): variables distintas,
+//= así que se puede tener un alijo y una cadena a la vez.
 //= Sin temporizadores: el alijo se coloca al entrar en su mapa
 //= (OnPCLoadMapEvent), así que vuelve tras reiniciar el servidor.
 //=
@@ -49,16 +56,58 @@ function	script	F_Tavern_FindPrice	{
 	return callfunc("F_Tavern_Price") * callfunc("F_ModSetting", "tavern-rumors", "find_rounds", 3);
 }
 
+// F_Tavern_FindFar() -> 1 si el alijo va lejos: find_nearby apagado y el atlas
+// cargado (sin él no se sabe qué es lejos).
+function	script	F_Tavern_FindFar	{
+	return $@wa_ready && !callfunc("F_ModSetting", "tavern-rumors", "find_nearby", 1);
+}
+
+// F_Tavern_FindMap(ciudad$) -> el campo del próximo alijo del personaje
+// adjunto, o "" si no hay ninguno. Lejos: un campo de otra región con el Tier
+// de su banda + 1; si no hay, el más cercano a ese Tier, y ante un empate el
+// más bajo. Cerca: uno de los campos de la ciudad.
+function	script	F_Tavern_FindMap	{
+	if (!callfunc("F_Tavern_FindFar")) {
+		.@list$ = callfunc("F_Tavern_Fields", getarg(0));
+		if (.@list$ == "")
+			return "";
+		explode(.@f$, .@list$, "|");
+		return .@f$[callfunc("F_Tavern_Rand", 0, getarraysize(.@f$) - 1)];
+	}
+	.@home$ = callfunc("F_Tavern_Region", getarg(0));
+	.@want = min(6, callfunc("F_Tavern_Band") + 1);
+	.@best = 999;
+	.@n = 0;
+	for (.@k = 0; .@k < getarraysize($@wa_field$); .@k++) {
+		.@m$ = $@wa_field$[.@k];
+		if (compare(.@home$, "|" + callfunc("F_Atlas_Anchor", .@m$) + "|"))
+			continue;
+		.@t = callfunc("F_Atlas_Tier", .@m$);
+		// Lo que se pasa del Tier buscado pesa un poco más que lo que se queda corto.
+		.@d = (.@t > .@want ? (.@t - .@want) * 2 + 1 : (.@want - .@t) * 2);
+		if (.@d > .@best)
+			continue;
+		if (.@d < .@best) {
+			.@best = .@d;
+			.@n = 0;
+		}
+		.@c$[.@n] = .@m$;
+		.@n++;
+	}
+	if (!.@n)
+		return "";
+	return .@c$[callfunc("F_Tavern_Rand", 0, .@n - 1)];
+}
+
 // F_Tavern_NewFind(ciudad$) -> 1 si dejó un rumor nuevo al personaje adjunto
-// en uno de los campos de esa ciudad, 0 si no encontró sitio. Descarga el
+// (en el campo de F_Tavern_FindMap), 0 si no encontró sitio. Descarga el
 // alijo anterior, abierto o no.
 function	script	F_Tavern_NewFind	{
-	.@list$ = callfunc("F_Tavern_Fields", getarg(0));
-	if (.@list$ == "")
+	.@m$ = callfunc("F_Tavern_FindMap", getarg(0));
+	if (.@m$ == "")
 		return 0;
-	explode(.@f$, .@list$, "|");
-	.@n = getarraysize(.@f$);
-	.@m$ = .@f$[callfunc("F_Tavern_Rand", 0, .@n - 1)];
+	// Sin esto, el alijo de un campo lejano no aparece (OnPCLoadMapEvent).
+	setmapflag .@m$, mf_loadevent;
 	// Los campos miden 400 o menos; una celda fuera del mapa no es transitable.
 	.@ok = 0;
 	for (.@try = 0; .@try < 500; .@try++) {
@@ -92,12 +141,28 @@ function	script	F_Tavern_NewFind	{
 }
 
 // F_Tavern_FindText() -> la pista del rumor del personaje adjunto, en
-// minúscula: "un alijo en <lugar>, a pocos pasos de (x, y)."
+// minúscula: "un alijo en <lugar> (por <ciudad>), a pocos pasos de (x, y)."
 function	script	F_Tavern_FindText	{
-	return "un alijo en " + callfunc("F_Tavern_Place", tr_hm$) + ", a pocos pasos de (" + tr_px + ", " + tr_py + ").";
+	.@by$ = "";
+	if ($@wa_ready) {
+		.@a$ = callfunc("F_Atlas_Anchor", tr_hm$);
+		if (.@a$ != "")
+			.@by$ = " (por " + callfunc("F_Tavern_Place", .@a$) + ")";
+	}
+	return "un alijo en " + callfunc("F_Tavern_Place", tr_hm$) + .@by$ + ", a pocos pasos de (" + tr_px + ", " + tr_py + ").";
 }
 
 -	script	tavern_finds	-1,{
+	end;
+
+// La mapflag loadevent de los campos lejanos se pierde al reiniciar: se vuelve
+// a poner en todos los del atlas. El atlas se llena en su propio OnInit, sin
+// orden garantizado, así que se le espera unos segundos.
+OnInit:
+	for (.@t = 0; .@t < 30 && !$@wa_ready; .@t++)
+		sleep 1000;
+	for (.@k = 0; .@k < getarraysize($@wa_field$); .@k++)
+		setmapflag $@wa_field$[.@k], mf_loadevent;
 	end;
 
 // Coloca el alijo del personaje al entrar en su mapa, si no está ya.

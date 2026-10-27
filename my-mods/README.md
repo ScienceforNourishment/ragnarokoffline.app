@@ -34,6 +34,7 @@ La planificación está repartida en estos documentos; léelos en este orden:
 | [`CONVENTIONS.md`](./CONVENTIONS.md) | rangos de IDs, prefijos, eventos públicos, regla de grupo y restricciones técnicas |
 | [`MODPACK.md`](./MODPACK.md) | qué mods y Settings forman la partida |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | límites de la plataforma: clima eventual, día y noche y presupuesto de rendimiento |
+| [`CURVA.md`](./CURVA.md) | la curva de progresión: los Tiers por etapa de clase, las rutas por clase y la del renacido, mapas por ruta, EXP de monstruos a 1x frente a los relatos y el orden propuesto de las regiones de H3 |
 | [`RUMORES.md`](./RUMORES.md) | los rumores que llevan a algo: la cadena desde un relato contado hasta una consecuencia en el mundo (D42–D43) |
 | [`NOVEDADES.md`](./NOVEDADES.md) | funciones nuevas de la plataforma por aprovechar, con lo investigado: iconos de estado propios, logros, música |
 | [`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md) | el guion de la próxima sesión de prueba larga en el juego, con su tabla de resultados |
@@ -58,6 +59,7 @@ tarea:
 | Diseñar un sistema o revisar el conjunto | `FLUJO.md` |
 | Cualquier cosa de EXP, expediciones, relatos o el diario | `ADVENTURE.md` |
 | Castigos, recompensas o valores de balance | `BALANCE.md` |
+| Bandas de nivel, Tiers, qué región sigue o ampliar una región (H3) | `CURVA.md` |
 | Rumores, cadenas de pistas o lo que desbloquea un relato contado | `RUMORES.md` |
 | Algo que la plataforma quizá no permite (clima, luz, cliente, rendimiento) | `ARCHITECTURE.md` y la tabla de restricciones de `CONVENTIONS.md` |
 | Activar o recomendar un mod del registro, o cambiar Settings | `MODPACK.md` |
@@ -279,9 +281,10 @@ las ideas para futuras iteraciones:
   escondido en un campo, con el botín de los cofres de `dungeon-chest` y un
   relato (provisional). Desde la 0.3 (D42–D44), su **Viejo Trotamundos**
   convierte los relatos contados de `adventure` (`adv_told$`, desde la 0.5)
-  en **cadenas de rumores**: un rastro en una mazmorra, alguien que lo lee
-  en otra ciudad, un guardián y algo que queda para el mundo
-  ([`RUMORES.md`](./RUMORES.md)). Todo con dependencias suaves. Ver
+  y, desde la 0.4, los talismanes de `nemesis` en **cadenas de rumores**:
+  un rastro en una mazmorra, alguien que lo lee en otra ciudad, un guardián
+  y algo que queda para el mundo, como un pasadizo o un cazador que se
+  instala ([`RUMORES.md`](./RUMORES.md)). Todo con dependencias suaves. Ver
   [`tavern-rumors/README.md`](./tavern-rumors/README.md).
 
 - **`campfire`** pone fogatas en el campo: la leña o un kit encienden una

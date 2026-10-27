@@ -16,13 +16,14 @@ y **sin instalar todavía**:
 | Mod | Versión | Qué trae |
 |---|---|---|
 | `dungeon-chest` | 0.7.1 | el cofre ya no se traba al dar un objeto del bioma (`rand(0, 0)` en `prt_sewb1`) |
-| `adventure` | 0.5.0 | `mod.json` declara `renewalFolder` (0.4.1: sin él, los logros no llegaban al servidor); además, publica los relatos contados (`adv_told$`) para las cadenas |
-| `tavern-rumors` | 0.3.0 | nuevo: el rumor de un alijo (sección 5) y la primera cadena de rumores (sección 6); trae `System/` |
+| `adventure` | 0.6.0 | `mod.json` declara `renewalFolder` (0.4.1: sin él, los logros no llegaban al servidor); publica los relatos contados (`adv_told$`) para las cadenas (0.5.0); nuevo: el relato de cambio de clase (0.6.0, sección 2) |
+| `tavern-rumors` | 0.4.0 | nuevo: el rumor de un alijo, cerca o lejos (sección 5), y las dos cadenas de rumores (secciones 6 y 7); trae `System/` |
+| `world-atlas` | 0.2.2 | la lista de campos que usa el alijo lejano; sin cambios de datos |
 
 Las demás versiones ya están instaladas: `temperature` 0.5.2, `refuges`
 0.1.2, `expedition-board` 0.8.0, `nemesis` 0.3.0 y el resto.
 
-- [ ] Reemplaza la carpeta entera de `adventure`, `dungeon-chest` y
+- [ ] Reemplaza la carpeta entera de `adventure`, `dungeon-chest`, `world-atlas` y
       `tavern-rumors` (copiar
       encima no quita archivos viejos), recarga los mods, **reinicia la
       aplicación** y mira `ragnarok-stack logs map 200`: sin errores de
@@ -88,6 +89,14 @@ Detalle en «Probar la 0.3» del
       `pct_minor` a 8: un mapa nuevo vale el doble en la pestaña Relatos.
       `streak_step` a 0: la cabecera ya no dice «racha».
 - [ ] `survival` → `need_seconds` a 5: hambre y sed bajan mucho más deprisa.
+- [ ] **Cambio de clase** (`adventure` 0.6.0), con un personaje nuevo:
+      en Novice, `@jobchange 1` (Swordman) y cambia de mapa: «Nuevo relato:
+      Me convertí en Swordman». `@relatos` lo lista; el Cronista lo paga
+      como Hito (pestaña Relatos, ~50 % de nivel). `@jobchange 0` y de nuevo
+      `@jobchange 1`: nada (ya lo tenías), y volver a Novice tampoco da
+      relato. `@jobchange 7` (Knight) **junto al Cronista**, sin cambiar de
+      mapa: hablarle ya lo cuenta. Un personaje que ya era de 1.ª clase
+      antes de instalar la 0.6.0 no gana nada al entrar.
 
 ## 3. Logros y objetos del bioma (`adventure` 0.4.1, `dungeon-chest` 0.7.1)
 
@@ -178,14 +187,15 @@ terminar.
 - [ ] Los trofeos no salen como pieza en «Pasar todos», «Quitar» ni
       «Volver a sortear».
 
-## 5. El rumor de un alijo (`tavern-rumors` 0.2.0)
+## 5. El rumor de un alijo (`tavern-rumors` 0.4.0, `world-atlas` 0.2.2)
 
 Todo sin probar. El detalle está en «El rumor de un alijo» del
 [README de `tavern-rumors`](./tavern-rumors/README.md#el-rumor-de-un-alijo).
-**La recompensa es provisional:** que el alijo sea un cofre comprado le
-quita sentido a las mazmorras, y se va a rediseñar. Esta prueba confirma que
-la mecánica funciona (rumor, pista, colocar el alijo, persistir) y reúne
-impresiones para el rediseño (ver «Qué observar» al final).
+Desde la 0.4.0 el alijo va a **tierras lejanas** (D45), pero el ajuste
+`find_nearby` viene **encendido** para las pruebas y lo deja en los campos
+de Prontera: los pasos de abajo valen tal cual. Esta prueba confirma que
+la mecánica funciona (rumor, pista, colocar el alijo, persistir). Al final,
+el paso F prueba el modo lejano.
 
 **Preparación**
 
@@ -209,8 +219,8 @@ impresiones para el rediseño (ver «Qué observar» al final).
       **600 zeny**. «Pagar» → «Con eso no llega…», y el zeny no cambia.
       «Mejor no» vuelve al menú sin cobrar.
 - [ ] `@zeny 5000`. Pregunta otra vez y paga: el zeny baja exactamente 600 y
-      dice «Se habla de un alijo en Campo de Prontera NN, a pocos pasos de
-      (x, y).». **Apunta el campo y el punto.**
+      dice «Se habla de un alijo en Campo de Prontera NN (por Prontera), a
+      pocos pasos de (x, y).». **Apunta el campo y el punto.**
 - [ ] **Repetir gratis:** pregunta otra vez. «Lo que te conté sigue en pie:
       …» con el mismo campo y el mismo punto, y el zeny no cambia.
 - [ ] `@diario`: hay una nota «El Tabernero me habló de un alijo en …».
@@ -262,7 +272,24 @@ impresiones para el rediseño (ver «Qué observar» al final).
 - [ ] **Nivel más alto:** con un personaje de nivel 60–89, el rumor cuesta
       2100 zeny (3 rondas de 700). El botín sigue siendo del Tier del campo.
 
-**Qué observar para el rediseño** (anótalo en «Qué se vio»):
+**F. Lejos, y junto a una cadena** (0.4.0, D45)
+
+- [ ] Abre (o descarta comprando otro) el alijo pendiente. Settings → Mods
+      → `tavern-rumors` → apaga **«Alijos cerca»** y aplica.
+- [ ] Compra un rumor: el Tabernero habla de «tierras que pocos pisan» y
+      nombra uno de estos cinco: Montañas Mjolnir 12 (por Aldebaran), Campo
+      de Lutie 01 (por Aldebaran), Campo de Comodo 01, Campo de Umbala 01 o
+      Campo de Mosk 02 (los tres por Alberta). Son los únicos campos de
+      otra región en el atlas, todos de Tier 2.
+- [ ] Reinicia el servidor (prueba que la mapflag de los campos lejanos se
+      repone) y ve allí (aquí sí vale `@warp` al campo, no al punto): el
+      alijo aparece y su pieza es de Tier 2.
+- [ ] Con ese alijo pendiente, toma una cadena con el Trotamundos
+      (`@rumor puerta`): las dos conviven. El Tabernero repite el alijo y el
+      Trotamundos la cadena; terminar una no toca la otra.
+- [ ] Vuelve a encender «Alijos cerca» al terminar.
+
+**Qué observar** (anótalo en «Qué se vio»):
 
 - ¿Cuánto tardaste en encontrar el alijo con la pista? ¿8 celdas es poco o
   demasiado?
@@ -292,8 +319,8 @@ cadenas.
 
 - [ ] `ragnarok-stack logs map 200`: sin errores de `tavern-chains.txt` ni
       de `tavern-chains-data.txt`, sin `npc_parsename … too long` y sin
-      `Duplicate unique name`. El `item_db` de `tavern-rumors` carga 1
-      entrada.
+      `Duplicate unique name`. El `item_db` de `tavern-rumors` carga 3
+      entradas (dos rastros y el ungüento de la sección 7).
 - [ ] El **Viejo Trotamundos** se ve en la taberna (`@warp prt_in 177 22`;
       está en `175,27`). Anota si cae dentro de una pared.
 - [ ] El **Capitán de la Guardia** se ve en Izlude (`129,121`, junto al
@@ -341,7 +368,7 @@ cadenas.
       Tapiada** (sprite 10371). Anota si no se ve.
 - [ ] «Abrir la puerta»: la puerta desaparece y sale el **Carcelero de la
       Cloaca** junto a ella, con nombre, bastante más duro que un Thief Bug
-      Male normal. El chat: «Algo se mueve tras la puerta…».
+      Male normal. El chat: «Algo se acerca: Carcelero de la Cloaca.».
 - [ ] Sal del mapa sin matarlo y vuelve: el Carcelero sigue ahí (o vuelve a
       salir), y **no** hay dos.
 - [ ] Mátalo: «Has vencido a Carcelero de la Cloaca.», el texto del
@@ -367,6 +394,85 @@ cadenas.
 **Qué observar** (en «Qué se vio»): si la pista de 8 celdas basta en una
 mazmorra, si el viaje a Izlude se siente como parte de la historia o como un
 recado, si el guardián es un reto justo para Tier 1 y si el pasadizo se usa.
+
+## 7. La segunda cadena: «La madre de la manada» (`tavern-rumors` 0.4.0)
+
+Todo sin probar. Prueba lo que la primera no tenía: el **talismán** como
+disparador, el final en **otro mapa** y la consecuencia **servicio**. Detalle
+en «Las cadenas de rumores» del
+[README de `tavern-rumors`](./tavern-rumors/README.md#las-cadenas-de-rumores).
+Haz antes la sección 6: si la mecánica común falla allí, fallará aquí.
+
+**Preparación**
+
+- Un personaje que aguante `prt_maze03` (Tier 2; la loba es un Wolf de
+  nivel 45 con el 400 % de HP), con pociones y zeny (1500 para el
+  ungüento).
+- Un **Colmillo del Némesis** (51202): `@nemesisgm 1013` (un Wolf némesis a
+  tu lado) y véncelo; o, para ir rápido, `@item 51202 1` (un talismán sin
+  firmar sirve igual para la cadena).
+- `@rumor`: `manada: personaje 0 … mundo 0`. Si no, `@rumor manada reset`.
+
+**A. Carga**
+
+- [ ] El **Cazador Viejo** se ve en Prontera (`145,187`, al lado de los
+      vendedores del tablero). Anota si no se ve: el sprite `4_M_EINOLD`.
+- [ ] En `prt_fild01 139,366` (junto a la salida del Laberinto) **no** hay
+      nadie todavía.
+
+**B. El talismán**
+
+- [ ] Con el Colmillo **puesto**, habla con el Trotamundos: te pide que te
+      lo quites y no ofrece nada más que lo de siempre.
+- [ ] Quítatelo y habla otra vez: te lo pide. «Guardarlo»: sigue en la
+      mochila y no hay cadena.
+- [ ] «Dárselo»: el Colmillo desaparece, «Lo gira despacio entre los
+      dedos.» y el rumor del Laberinto (sin «Te oí contar lo tuyo.»). «Ahora
+      no»: `@rumor` dice `manada: personaje 1`; hablarle otra vez lo ofrece
+      **sin** pedir otro talismán.
+- [ ] «Ir a buscarlo»: `Laberinto de Prontera 2` y un punto. Apúntalo.
+
+**C. Rastro y análisis**
+
+- [ ] En `prt_maze02`, cerca del punto, unos **Huesos roídos** (sprite
+      471). Anota si no se ven o si caen en una sala sin salida.
+- [ ] «Tomarlo»: el **Hueso Marcado**, el relato del rastro, y te manda al
+      Cazador Viejo de Prontera.
+- [ ] El Cazador Viejo lee el hueso y da **otra** celda, en
+      `Laberinto de Prontera 3`. Apúntala. `@diario`: «… Tengo que ir a
+      Laberinto de Prontera 3.».
+
+**D. La madriguera y la loba**
+
+- [ ] En `prt_maze03`, en esa celda, una **Madriguera** (sprite 10026).
+      En `prt_maze02` ya no queda nada.
+- [ ] «Dejar el hueso como cebo»: sale la **Madre de la Manada** junto a
+      ella, con nombre; el chat: «Algo se acerca: Madre de la Manada.».
+- [ ] Sal del mapa sin matarla y vuelve: sigue ahí (o vuelve a salir), y
+      no hay dos.
+- [ ] Mátala: el hueso desaparece, el texto «Sin su madre, la manada se
+      dispersa…» y los dos relatos.
+
+**E. El cazador que se instala**
+
+- [ ] En `prt_fild01 139,366` está el **Cazador del Laberinto**. Dice quién
+      acabó con la loba.
+- [ ] «Ver qué vendes»: el **Ungüento del Cazador** a 1500 y flechas,
+      flechas de fuego, trampas y pociones naranjas a su precio de siempre.
+      El ungüento tiene su descripción en la ventana (icono de poción).
+- [ ] Úsalo y pega a un Wolf: más daño que antes (alrededor de un 10 %).
+      Muere: el efecto se va. Usa dos seguidos: no se suma.
+- [ ] «Contar una historia de caza»: una de cuatro, al azar. No cuenta tus
+      relatos.
+- [ ] Reinicia el servidor: el cazador sigue. Con **otro personaje** también
+      se ve, y el Trotamundos no le pide su Colmillo (dice que ya lo
+      resolvió el primero si lo pone en espera con `@rumor manada`).
+- [ ] `@rumor manada reset`: el cazador desaparece.
+
+**Qué observar:** si entregar el talismán se siente como una elección (frente
+a colgarlo o engarzarlo), si el Laberinto hace difícil encontrar el rastro
+con la pista de 8 celdas, si la loba es justa para Tier 2 y si el ungüento
+vale lo que cuesta.
 
 ## Fuera de esta sesión
 
@@ -409,6 +515,7 @@ Necesitan algo que no cabe en una sesión de una persona:
 | 1. Iconos (0.5.2) | | |
 | 2. MVP | | |
 | 2. Ajustes | | |
+| 2. Cambio de clase | | |
 | 3. Logros | | |
 | 3. Objetos del bioma | | |
 | 4. Trofeo de marca | | |
@@ -421,7 +528,8 @@ Necesitan algo que no cabe en una sesión de una persona:
 | 5C. Buscar y abrir | | |
 | 5D. Persistir | | |
 | 5E. Casos límite | | |
-| 5. Impresiones (rediseño) | | |
+| 5F. Lejos y con una cadena | | |
+| 5. Impresiones | | |
 | 6A. Carga de la cadena | | |
 | 6B. Disparador | | |
 | 6C. Rastro | | |
@@ -429,4 +537,10 @@ Necesitan algo que no cabe en una sesión de una persona:
 | 6E. Puerta y guardián | | |
 | 6F. Persistir y el mundo | | |
 | 6. Impresiones | | |
+| 7A. Carga | | |
+| 7B. Talismán | | |
+| 7C. Rastro y análisis | | |
+| 7D. Madriguera y loba | | |
+| 7E. El cazador | | |
+| 7. Impresiones | | |
 | Log final | | |

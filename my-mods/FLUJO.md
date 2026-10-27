@@ -60,7 +60,7 @@ interiores y ciudades: es parte de «hacer funcionales las ciudades».
 |---|---|---|
 | Saber qué tiempo hará | **Pronosticador** (`168,193`): el evento de cada mapa, lo que queda y el siguiente, ya sorteado, con su protección. Gratis | `clima` |
 | Saber más, por una ronda | **Tabernero** (`prt_in 180,23`): el tiempo donde está tu contrato o tu némesis, dónde anda tu marca y qué elemento le duele, dónde te espera tu némesis | `tavern-rumors` |
-| Un motivo para salir, por unas rondas | **Tabernero**: el rumor de un alijo escondido en un campo, con botín de cofre (D41) | `tavern-rumors` 0.2 |
+| Un motivo para salir, por unas rondas | **Tabernero**: el rumor de un alijo escondido en un campo de otra región, un Tier por encima, con botín de cofre (D41, D45) | `tavern-rumors` 0.4 |
 | Un objetivo | **Tablero** (`160,193`): marcas y cacerías de la ciudad. **Intendente** (`162,193`): cobra las marcas y da las **marcas de élite** a cambio de un trofeo | `expedition-board` |
 | Ropa para el frío o el calor | **Sastre del Viajero** (`149,187`): Capa de Piel, Chaleco de Lana, Manto de Lino, Túnica Fresca | `temperature` |
 | Agua para el camino | **Vendedor de Cantimploras** (`147,187`) | `survival` |
@@ -331,10 +331,10 @@ Huecos que se ven al recorrer el bucle (el orden y el estado, en
   identidad de cada ciudad: posada, taberna y templo en interiores; la
   taberna solo existe en Prontera; el Coleccionista solo en Payon.
 - **Informarse:** no hay bestiario ni pistas del contrato más allá del
-  Tabernero. La cadena «Rumor → Pista → Hallazgo» tiene un primer caso
-  provisional, el alijo de `tavern-rumors` 0.2.0 (D41); las cadenas de
-  verdad, que nacen de un relato contado y llevan a una mazmorra (D42–D43),
-  están diseñadas en [`RUMORES.md`](./RUMORES.md).
+  Tabernero. La cadena «Rumor → Pista → Hallazgo» tiene dos formas: el
+  alijo de `tavern-rumors`, que lleva a tierras lejanas (D41, D45), y las
+  cadenas que nacen de un relato contado o de un talismán y llevan a una
+  mazmorra (D42–D44, dos escritas en la 0.4.0; [`RUMORES.md`](./RUMORES.md)).
 - **Fuera:** sin **restos ni lore** (`remnants` espera a `LORE.md`), sin
   encuentros en el camino, sin oficios (pesca y minería primero), sin
   pasadizos ni trampas. El clima cambia el estado pero no el cielo (visual

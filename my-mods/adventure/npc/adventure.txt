@@ -551,6 +551,26 @@ function	script	F_Adv_Close	{
 	return;
 }
 
+// F_Adv_Job(): the class change relato (Hito, once per class, D55): job.<Class>
+// when Class differs from the last one seen. adv_job keeps that class + 1
+// (0 = never seen), so the first look at a character only records it: one
+// who changed class before 0.6.0 gains nothing for it. A change to a Novice
+// (Novice, High Novice, Baby) records it and is no relato. Checked on every
+// map change, safe maps included (the guilds are in cities and interiors),
+// with the Cronista and with @relatos. Tier 0: the character's own band.
+function	script	F_Adv_Job	{
+	if (adv_job == Class + 1)
+		return;
+	.@seen = adv_job;
+	adv_job = Class + 1;
+	if (!.@seen)
+		return;
+	if (Class == JOB_NOVICE || Class == JOB_NOVICE_HIGH || Class == JOB_BABY)
+		return;
+	callfunc "F_Adv_Gain", "job." + Class, 4, 0, "Me convertí en " + jobname(Class);
+	return;
+}
+
 -	script	Adventure	-1,{
 	end;
 
@@ -577,6 +597,7 @@ OnCommand:
 // @relatos: the expedition and its untold relatos, in the chat.
 OnTales:
 	callfunc "F_Adv_Drain", 1;
+	callfunc "F_Adv_Job";
 	callfunc "F_Adv_TraitClock", @adv_tk$;
 	callfunc "F_Adv_Traits";
 	.@pn = modstore_get("char", "client.x.pn", 0);
@@ -623,6 +644,7 @@ OnPCLogoutEvent:
 
 OnPCLoadMapEvent:
 	callfunc "F_Adv_Drain", 1;
+	callfunc "F_Adv_Job";
 	.@map$ = strcharinfo(3);
 	if (.@map$ == @adv_map$)
 		end;
@@ -773,6 +795,7 @@ OnLog:
 //--- Cronista: where relatos are told, beside the board while testing (D23) ---
 prontera,158,193,4	script	Cronista#adv_prt	1_M_BARD,{
 	callfunc "F_Adv_Drain";
+	callfunc "F_Adv_Job";
 	.@on = modstore_get("char", "client.x.on", 0);
 	.@pn = modstore_get("char", "client.x.pn", 0);
 	mes "[Cronista]";

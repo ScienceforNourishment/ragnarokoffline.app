@@ -30,7 +30,7 @@ pegados, sin margen; desde ahora cada mod nuevo recibe un **bloque de 100**.
 | 51100–51199 | `campfire` | 51100–51102 leña, kit y venda; 51110–51115 platos (recetas en `registry/tools/campfire/recipes.csv`) |
 | 51200–51299 | `nemesis` | talismanes: 51200–51209 (51200 + raza del monstruo; accesorios con afijos, D40) |
 | 51300–51399 | `refuges` | sin objetos en 0.1; reservado para materiales propios de oficios (D33) |
-| 51400–51499 | `tavern-rumors` | objetos de rastro de las cadenas (0.3.0): 51400 Llave Oxidada; la lista, en `registry/tools/tavern-rumors/chains.csv` |
+| 51400–51499 | `tavern-rumors` | 51400–51449 objetos de rastro de las cadenas (0.3.0): 51400 Llave Oxidada, 51401 Hueso Marcado; la lista, en `registry/tools/tavern-rumors/chains.csv`. 51450–51499 lo que venden los servicios de las cadenas (0.4.0): 51450 Ungüento del Cazador; la lista, en `registry/tools/tavern-rumors/wares.csv` |
 | 51500–51599 | `remnants` | (planeado) objetos con lore |
 | 51600–51699 | `expedition-board` | trofeos de marca: 51600–51609 (51600 + raza, accesorios, D40) |
 | 51700–51799 | `dungeon-chest` | (planeado) botín propio |
@@ -59,7 +59,7 @@ Cada mod tiene un **prefijo** corto para todo lo que otros podrían ver:
 
 | Mod | Variables de personaje | Temporales y globales | Funciones | NPC |
 |---|---|---|---|---|
-| `world-atlas` | — | `$@wa_ready` | `F_Atlas_*` | `WorldAtlas`, `atlas_cmd` |
+| `world-atlas` | — | `$@wa_ready`, `$@wa_field$[]` (los campos del atlas, 0.2.2) | `F_Atlas_*` | `WorldAtlas`, `atlas_cmd` |
 | `survival` | `hm_*`, `thirst_*` (nombres heredados, no cambiar) | `@hm_penalty_*`, `@thirst_penalty_*`, `@sv_*` | `F_Survival_*` | `survival_mgr` |
 | `clima` | — | publica `@clima_*` | `F_Clima_*` | `Clima#clima`, `Pronosticador#clima_prt` |
 | `temperature` | — | `@tp_*` | `F_Temperature_*` | `temp_mgr` |
@@ -67,10 +67,10 @@ Cada mod tiene un **prefijo** corto para todo lo que otros podrían ver:
 | `nemesis` | `nm_*` | `$@nm_gid[]`, `$@nm_owner[]`, `$@nm_sym$` | `F_Nemesis_*` | `nemesis_mgr` |
 | `expedition-board` | `eb_*` (también `eb_trt[]`, `eb_tr_*`, `eb_def[]` de los trofeos) | `$@eb_*` | `F_Expedition_*` | `ExpeditionCtrl`, `ExpeditionData`, `ExpeditionTrophies`, `Coleccionista#eb_*` |
 | `dungeon-chest` | — | `$@dc_*` (datos del botín); `@dc_ro_*` (afijos sorteados), `@dc_sm_*` (Herrero) | `F_DungeonChest_*` | `Cofre T<n>#dcp_<mapa>`, `dungeon_loot`, `Herrero de Afijos#dc` |
-| `tavern-rumors` | `tr_hm$`, `tr_hx`, `tr_hy`, `tr_px`, `tr_py` (el rumor de un alijo, 0.2.0); `tr_ci$`, `tr_cs`, `tr_cx`, `tr_cy`, `tr_cpx`, `tr_cpy` (la cadena en curso, 0.3.0) | `@tr_l$[]`; `$@tr_hn$[char_id]` (el alijo de cada personaje); `$@tr_cn$[]`, `$@tr_cst[]`, `$@tr_cg[]`, `$@tr_cgo[]`, `$@tr_wn$[]` (las cadenas); mod store: global `w.<cadena>.*` (on, x, y, by), de personaje `c.<cadena>` (1 en espera, 2 en curso, 3 hecha) y `told` (hasta dónde leyó `adv_told$`) | `F_Tavern_*`, `F_Chain_*` | `Tabernero#tr_*`, `tavern_data`, `tavern_finds`, `Alijo#tr`, `tavern_chains`, `tavern_chains_mgr`, `Viejo Trotamundos#trc_*`, `<analista>#trc_<cadena>`, plantillas `Rastro#trc`, `Puerta#trc`, `Pasadizo#trc` |
+| `tavern-rumors` | `tr_hm$`, `tr_hx`, `tr_hy`, `tr_px`, `tr_py` (el rumor de un alijo, 0.2.0); `tr_ci$`, `tr_cs`, `tr_cx`, `tr_cy`, `tr_cpx`, `tr_cpy` (la cadena en curso, 0.3.0) | `@tr_l$[]`; `$@tr_hn$[char_id]` (el alijo de cada personaje); `$@tr_cn$[]`, `$@tr_cst[]`, `$@tr_cg[]`, `$@tr_cgo[]`, `$@tr_wn$[]` (las cadenas); mod store: global `w.<cadena>.*` (on, x, y, by), de personaje `c.<cadena>` (1 en espera, 2 en curso, 3 hecha) y `told` (hasta dónde leyó `adv_told$`) | `F_Tavern_*`, `F_Chain_*` | `Tabernero#tr_*`, `tavern_data`, `tavern_finds`, `Alijo#tr`, `tavern_chains`, `tavern_chains_mgr`, `Viejo Trotamundos#trc_*`, `<analista>#trc_<cadena>`, `<servicio>#trw_<cadena>` y su tienda `trs_<cadena>` (0.4.0), plantillas `Rastro#trc`, `Puerta#trc`, `Pasadizo#trc` |
 | `campfire` | — | `@cf_*`; `$@cf_*` (las fogatas) | `F_Campfire_*` | `campfire_mgr`, `campfire_recipes`, `Fogata#cf` (plantilla; sus copias se llaman `Fogata`), `Proveedor de Campamento#cf` |
 | `refuges` | — | — (estado en el mod store global, `r.<id>.*`) | `F_Refuge_*` | `refuges_mgr`, `refuges_data`, plantillas `Refugio#rf`, `Caravanero#rf`, `Caravana#rf` (copias `#rf_<id>`, `#rf_<id>_c`, `#rf_<ciudad>`), `Intendente del Refugio#rf_<id>_s` |
-| `adventure` | `adv_trait_*`, `adv_t_*`, `adv_cured` (rasgos) | `@adv_*` (entrada, colas `@adv_q*` y `@adv_n*`, con `@adv_qm$` para el grupo); `@tj_*` (entrada del diario, heredada de `travel-journal`) | `F_Adv_*` | `Adventure`, `TravelJournal`, `Cronista#adv_*` |
+| `adventure` | `adv_trait_*`, `adv_t_*`, `adv_cured` (rasgos); `adv_told$[]`, `adv_told_n` (lo contado, 0.5.0); `adv_job` (la última clase vista + 1, 0.6.0) | `@adv_*` (entrada, colas `@adv_q*` y `@adv_n*`, con `@adv_qm$` para el grupo); `@tj_*` (entrada del diario, heredada de `travel-journal`) | `F_Adv_*` | `Adventure`, `TravelJournal`, `Cronista#adv_*` |
 
 Un mod nuevo elige un prefijo de 2 a 4 letras, comprueba que nadie lo use
 (`grep -rn "<prefijo>_" my-mods mods registry/mods`) y lo añade a esta tabla.

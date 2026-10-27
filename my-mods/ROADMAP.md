@@ -85,8 +85,8 @@ fallos, arreglados sin probar (`adventure` 0.4.1, los logros no cargaban;
 `dungeon-chest` 0.7.1, el cofre se trababa al dar un objeto del bioma).
 Queda en [`SESION-DE-PRUEBA.md`](./SESION-DE-PRUEBA.md): esos dos arreglos,
 los iconos de `temperature` 0.5.2, el MVP, los logros, los objetos del bioma,
-los trofeos, el rumor de un alijo de `tavern-rumors` 0.2.0 y la primera
-cadena de rumores (`tavern-rumors` 0.3.0, `adventure` 0.5.0).
+los trofeos, el rumor de un alijo de `tavern-rumors` 0.2.0 y las dos
+cadenas de rumores (`tavern-rumors` 0.3.0 y 0.4.0, `adventure` 0.5.0).
 
 ### H1. Porción vertical: Prontera e Izlude, Tier 1 y 2
 
@@ -143,11 +143,14 @@ mundo.
       2026-10-23 y probado en el juego el mismo día (con `clima` 0.4.1).
 - [ ] Un rumor que lleve a algo: la cadena «Rumor → Pista → Hallazgo».
       `tavern-rumors` 0.2.0 (2026-10-26, D41): el Tabernero vende el rumor
-      de un alijo en un campo, con botín de cofre y un relato. Sin probar,
-      y **provisional**: lo reemplazan las cadenas de D42–D43, diseñadas en
+      de un alijo en un campo, con botín de cofre y un relato. Sin probar.
+      Desde la 0.4.0 se queda como recompensa de lugares lejanos (D45),
+      junto a las cadenas de D42–D43, diseñadas en
       [`RUMORES.md`](./RUMORES.md). La primera, «La puerta tapiada», en
       `tavern-rumors` 0.3.0 con `adventure` 0.5.0 (2026-10-26, D44), sin
-      probar. Siguiente: probarla y hacer «La madre de la manada».
+      probar. La segunda, «La madre de la manada» (talismán → servicio),
+      en `tavern-rumors` 0.4.0 (2026-10-26), sin probar. Siguiente:
+      probar las dos.
 - [ ] **Clima eventual** (adelantado de «Después»): los rumores de clima
       (D43) lo necesitan. Por la vía C (D44): arreglo en el fork de
       roBrowser y plugin de `clima`
@@ -190,14 +193,18 @@ cada región:
 - [ ] Rebalanceo de sus monstruos y MVPs para su banda de nivel (D3).
 - [ ] Lore de la región: qué parte del misterio se revela ahí.
 
-**Orden tentativo** (se confirma con la curva de progresión):
+**Orden** por las rutas de D48 y D53: primero **Corona → Celes →
+Crisol** (D54); lo que sigue es propuesta. Detalle por ruta en
+[`CURVA.md`](./CURVA.md#orden-de-las-regiones-de-h3).
 
-| Ola | Regiones |
-|---|---|
-| 1 | Prontera e Izlude (H1), Payon, Geffen, Morocc, Alberta, Aldebaran |
-| 2 | Juno, Einbroch, Lighthalzen, Hugel, Rachel, Veins |
-| 3 | Islas y tierras lejanas: Amatsu, Gonryun, Louyang, Ayothaya, Moscovia, Lutie, Comodo, Umbala, Niflheim, Brasilis, Dewata, Malaya, Malangdo |
-| 4 | El Nuevo Mundo y las tierras de Renewal: Splendide, Manuk, Mora, Eclage, El Dicastes, Rockridge y las siguientes |
+| Ola | Ruta | Regiones |
+|---|---|---|
+| H1 | Corona, 1–59 | Prontera e Izlude |
+| 1 | Celes, 60–79 | Juno, Aldebaran (Mjolnir y la Torre del Reloj), Glast Heim, la torre de Geffen |
+| 2 | Crisol, 80–99 | Einbroch, Lighthalzen, Hugel, Juno alto, Alberta (Isla Tortuga), Geffenia |
+| 3 | Cetro, 1–59 | Geffen y Lutie |
+| 4 | Orbe y Avernum, 1–79 | Payon, Morocc, Alberta, Comodo, Umbala |
+| 5 y siguientes | Renacido | por diseñar (D49): las islas, Arunafeltz, el Nuevo Mundo y los Tiers S |
 
 ### Después
 
@@ -220,12 +227,12 @@ Qué hace cada mod, su versión y qué se probó están **solo** en la sección
 | `clima` | [README](./clima/README.md#estado) | H0; probar el pronóstico |
 | `temperature` | [README](./temperature/README.md#estado) | H0 |
 | `wounds` | [README](./wounds/README.md#estado) | H0; interiores en H1 |
-| `adventure` | [README](./adventure/README.md#estado) | 0.1, 0.2 y 0.3 probadas (salvo MVP y grupo); probar los logros con la 0.4.1. Los saberes esperan a decidir qué skills |
+| `adventure` | [README](./adventure/README.md#estado) | 0.1, 0.2 y 0.3 probadas (salvo MVP y grupo); probar los logros con la 0.4.1 y el relato de cambio de clase de la 0.6.0 (D59). Los saberes esperan a decidir qué skills |
 | `expedition-board` | [README](./expedition-board/README.md#estado) | H0 |
 | `dungeon-chest` | [README](./dungeon-chest/README.md#estado) | probar los objetos del bioma con la 0.7.1 (D38) y el engarce de trofeos |
 | `affix-forge`, `arpg-equipments` | referencia externa, no se activan | datos ya importados a `dungeon-chest`; ver «Otros pendientes» |
 | `nemesis` | [README](./nemesis/README.md#estado) | probado; H2 |
-| `tavern-rumors` | [README](./tavern-rumors/README.md#estado) | 0.1 probada; probar el alijo (0.2.0) y la primera cadena (0.3.0); la segunda cadena; otras ciudades en H3 |
+| `tavern-rumors` | [README](./tavern-rumors/README.md#estado) | 0.1 probada; probar el alijo (0.2.0) y las dos cadenas (0.3.0 y 0.4.0); otras ciudades en H3 |
 | `campfire` | [README](./campfire/README.md#estado) | probado salvo dos jugadores; H2 |
 | `refuges` | [README](./refuges/README.md#estado) | probado salvo dos jugadores; H2 |
 | `remnants` | diseño, sin código; espera a `LORE.md` | H2 |
@@ -234,13 +241,11 @@ Qué hace cada mod, su versión y qué se probó están **solo** en la sección
 
 Trabajo de planificación que no es código y que hay que hacer en paralelo:
 
-- **Curva de progresión.** Tabla de banda de nivel × región × ciudad base ×
-  biomas × qué preparar × experiencias disponibles. Hay que procesar muchos
-  datos: buscar si alguien ya publicó cálculos de EXP por hora y niveles por
-  zona en Renewal; si no, hacerlos juntos. Datos ya disponibles en el repo:
-  `mods/navigation-server-monsters/mob-index.tsv` (spawns con niveles por
-  mapa) y `registry/tools/world-atlas/tier_of.cjs`. Tiene que decidir también
-  si el Tier 6 (150 o más) se parte en un Tier 7, porque Renewal llega a 200.
+- **Curva de progresión.** En [`CURVA.md`](./CURVA.md) (2026-10-27), con
+  D46–D58: rutas por clase, Tiers por etapa de clase con Tiers S para el
+  renacido, relatos nuevos y biomas nuevos. Lo que queda por decidir está en
+  su sección [«Para decidir»](./CURVA.md#para-decidir); lo primero,
+  la ruta del renacido.
 - **Lore** (`LORE.md`): lo escribe el autor; se transforma en contenido
   (restos, rumores, descripciones, nombres) por región.
 - **Economía**: fuentes y sumideros de zeny, precios que crecen con el nivel.

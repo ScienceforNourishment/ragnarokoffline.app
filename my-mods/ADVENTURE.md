@@ -148,9 +148,11 @@ empuja en la misma dirección (por eso `exprate-penalty-remover` está fuera del
 modpack).
 
 **Pendiente de la curva de progresión:** las bandas vienen de `dungeon-chest`
-y se calcularon con monstruos de nivel 1 a ~175. Con el nivel máximo de 200
-(D1, D3), T6 probablemente se parte (T6 150–174, T7 175 o más), y las bandas
-se recalculan cuando la curva esté hecha.
+y se calcularon con monstruos de nivel 1 a ~175. Con el nivel máximo en 99
+(D46), los Tiers pasan a seguir las etapas de una clase: cinco del 1 al 99,
+más los Tiers S del renacido (D50). Esta tabla de bandas se rehace con ellos;
+cortes propuestos en
+[`CURVA.md`](./CURVA.md#las-etapas-de-una-clase-y-los-tiers).
 
 **Racha:** +10 % por cada experiencia distinta en la misma expedición, hasta
 +50 %. Vuelve a 0 al terminar la expedición. Qué le pasa al morir está por
@@ -176,6 +178,7 @@ experiencias**.
 | `long:<min>` | una expedición de 30, 60 y 120 minutos | Media | `adventure` (al cambiar de mapa) |
 | `close:return` | volver con menos del 20 % de HP o con una necesidad a 0 ("por los pelos") | Media | `adventure` |
 | `mvp:<mob>` | primer MVP de cada especie | Mayor | `adventure` (`OnNPCKillEvent`, con `MOB_MODE & MD_MVP` como `nemesis`) |
+| `job:<clase>` | cambiar a una clase por primera vez (D55, D59) | Hito | `adventure` 0.6 (compara `Class` al cambiar de mapa) |
 | `chest:<mapa>` | primer cofre abierto en ese mapa | Menor | `dungeon-chest` |
 | `chesttier:<n>` | primer cofre de un Tier | Mayor | `dungeon-chest` |
 | `mark:<contrato>` | primera vez que abates esa marca | Media | `expedition-board` |

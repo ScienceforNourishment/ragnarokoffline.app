@@ -5,13 +5,15 @@ Diseño de los rumores que llevan a algo: la cadena «Rumor → Pista → Hallaz
 [`DECISIONS.md`](./DECISIONS.md) (D41–D44); lo demás es propuesta hasta que
 exista. Escrito el 2026-10-26.
 
-**Estado:** la primera cadena, «La puerta tapiada», está escrita en
-`tavern-rumors` 0.3.0 con `adventure` 0.5.0 (sin probar en el juego). Lo que
-hace y cómo se prueba está en la
+**Estado:** las dos cadenas de la porción vertical están escritas, sin
+probar en el juego: «La puerta tapiada» en `tavern-rumors` 0.3.0 con
+`adventure` 0.5.0, y «La madre de la manada» (el talismán, otro mapa para
+el final y la consecuencia «servicio») en `tavern-rumors` 0.4.0. Lo que
+hacen y cómo se prueban está en la
 [sección «Las cadenas de rumores» de su README](./tavern-rumors/README.md#las-cadenas-de-rumores).
-Faltan la segunda cadena («La madre de la manada», con el talismán) y los
-rumores de clima. El **alijo** de `tavern-rumors` 0.2.0 (D41) sigue ahí y
-es **provisional**: comprar botín le quita sentido a la mazmorra.
+Faltan los rumores de clima. El **alijo** de `tavern-rumors` (D41) se
+queda, desde la 0.4.0, como recompensa de **lugares lejanos** (D45): un
+campo de otra región, un Tier por encima, independiente de las cadenas.
 
 ## La idea
 
@@ -115,7 +117,7 @@ El talismán **se entrega** y se gasta, como en sus demás usos (D44).
 
 Las rondas del Tabernero siguen siendo **información** (el tiempo, el
 contrato y el némesis), no el disparador de una cadena. El alijo por zeny
-(D41) se retira cuando exista la primera cadena.
+se queda, en tierras lejanas (D45).
 
 ## Rumores de clima
 
@@ -155,14 +157,14 @@ Cloacas (`prt_sewb1`–`4`), el Laberinto (`prt_maze01`–`03`) y la mazmorra su
 4. En **Prontera**, un cazador viejo lee las marcas: es una loba alfa.
 5. La loba alfa, con nombre, en `prt_maze03`.
 6. **Un cazador se instala** a la entrada del Laberinto: vende lo que sirve
-   contra bestias y cuenta los relatos de la caza.
+   contra bestias y cuenta historias de caza.
 
 ## Cómo se hace
 
 Todo dentro de los mods, sin tocar la plataforma
 ([`CLAUDE.md`](../CLAUDE.md), «Where a change belongs»):
 
-- **Datos en un CSV** (`registry/tools/tavern-rumors/rumors.csv`): id,
+- **Datos en un CSV** (`registry/tools/tavern-rumors/chains.csv`): id,
   disparador (clave de relato o raza de talismán), mazmorra, zona del
   rastro, objeto del rastro, ciudad y NPC del análisis, final (monstruo,
   nombre, fuerza), consecuencia y textos. Un script de Node genera los NPC y
@@ -186,6 +188,15 @@ Todo dentro de los mods, sin tocar la plataforma
   rumor, el rastro, el análisis, el final y la consecuencia. Reutiliza el
   código del alijo.
 
+## Decidido con el autor (2026-10-26, «La madre de la manada»)
+
+- **Solo el talismán de bruto** (Colmillo del Némesis, 51202) abre la
+  cadena. Otra raza tendría su propia cadena.
+- **El cazador vende un ungüento propio** (+daño contra brutos durante unos
+  minutos, que no hay en otro sitio) y algunos suministros de siempre.
+- **Sus historias son ambientación:** no se cuentan con él los relatos de
+  `adventure`. D10 no cambia.
+
 ## Decidido con el autor (2026-10-26, D44)
 
 - **Quién da los rumores:** un **NPC propio en la taberna**, un viajero
@@ -204,5 +215,7 @@ Todo dentro de los mods, sin tocar la plataforma
 1. **Grupo:** el rumor es de quien lo contó. ¿El compañero puede seguirlo?
    Propuesta: el rastro lo recoge el dueño, y el final y la consecuencia dan
    crédito al grupo en el mapa (regla de grupo de `CONVENTIONS.md`).
-2. **El alijo actual:** ¿se retira del todo al llegar la primera cadena, o
+2. ~~**El alijo actual:**~~ decidido (D45): se queda como recompensa de
+   lugares lejanos, independiente de las cadenas. Antes: ¿se retira del
+   todo al llegar la primera cadena, o
    queda como rumor menor sin equipo?

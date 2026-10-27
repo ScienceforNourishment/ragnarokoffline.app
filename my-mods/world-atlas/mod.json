@@ -1,6 +1,6 @@
 {
   "name": "world-atlas",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "Ragnarok Offline",
   "description": "Tabla de datos por mapa (bioma, Tier, temperatura, ciudad ancla) con funciones de consulta para otros mods. No cambia nada en el juego por sí solo.",
   "requires": {

@@ -1,0 +1,2 @@
+id,aegis,name,icon,weight,seconds,bonus,desc
+51450,Tr_Hunter_Salve,Ungüento del Cazador,이속증가포션,10,600,"bonus2 bAddRace,RC_Brute,10; bonus2 bMagicAddRace,RC_Brute,10;","Un ungüento espeso que huele a resina y a sangre seca.|Untado en el arma, los brutos lo notan.|Daño físico y mágico +10 % contra brutos durante 10 minutos.|Se pierde al morir. Usar otro lo renueva a 10 minutos; no se suma."

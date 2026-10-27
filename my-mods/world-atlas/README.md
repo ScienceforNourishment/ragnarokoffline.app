@@ -10,8 +10,11 @@ comportamiento. Es la base de datos del mundo para todos los mods (D13 en
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.2.1 (la de `mod.json`); 230 mapas. La región de Prontera e
+- **Versión:** 0.2.2 (la de `mod.json`); 230 mapas. La región de Prontera e
   Izlude está completa (ver «Región de Prontera e Izlude»)
+- **0.2.2 (2026-10-26):** el atlas publica también la lista de sus campos,
+  `$@wa_field$[]`, para el alijo lejano de `tavern-rumors` 0.4.0. No cambia
+  ningún dato ni función; sin probar en el juego
 - **Probado en el juego (0.2.0, 2026-10-23):** la carga sin errores; las 9
   consultas de `AtlasTest` (hoy `@atlas`); que `prt_in`, `prt_church`, `izlude_in` e
   `iz_ac01` detienen hambre, sed y temperatura; los campos nuevos

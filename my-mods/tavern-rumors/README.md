@@ -18,7 +18,35 @@ dejan algo cambiado en el mundo (D42–D44, [`RUMORES.md`](../RUMORES.md)).
 Única fuente del estado de este mod; los demás documentos enlazan aquí.
 Actualízala al cambiar el mod o al probarlo.
 
-- **Versión:** 0.3.0 (la de `mod.json`), escrita el 2026-10-26. Añade las
+- **Versión:** 0.4.0 (la de `mod.json`), escrita el 2026-10-26. Añade la
+  segunda cadena, **«La madre de la manada»** (ver «Las cadenas de
+  rumores»), y lo que pedía al motor: el disparador por **talismán de
+  némesis** (se entrega al Trotamundos y se gasta, D44), el final en **otro
+  mapa** que el rastro (`final_map`), los textos de la puerta por cadena
+  (`door_action`, `door_open`) y una consecuencia nueva, el **servicio**: un
+  NPC generado que aparece para todos al terminar la cadena, con su tienda
+  e historias. Trae el **Ungüento del Cazador** (51450), que solo vende ese
+  servicio, desde `registry/tools/tavern-rumors/wares.csv`. «La puerta
+  tapiada» no cambia, salvo dos textos: el guardián se anuncia con «Algo
+  se acerca: …» y quien no es el dueño de la puerta lee «Puerta Tapiada. No
+  es asunto tuyo.». **Sin probar en el juego**; solo comprobaciones
+  estáticas (llaves y comillas, cabeceras, `mod.json`,
+  `build_chains.cjs --check`). Comprobado contra el rAthena fijado
+  (`8aea17a`, descargando los archivos): la entrada del Laberinto
+  (`prt_fild01 136,373` → `prt_maze01 99,31`; se sale a `prt_fild01
+  136,368`), los sprites (`4_SKULL_MUD` 471, `4_WOODPILE` 10026,
+  `4_M_EINOLD` y `4_M_JOB_HUNTER` exportados), el Wolf (1013, nivel 45,
+  1091 HP), `delitemidx`, `callshop`, que `explode` parte por un carácter y
+  que `bonus_script` con `BSF_FORCE_REPLACE` renueva la duración en vez de
+  sumarla. Por ver en el juego: los sprites 471 y 10026, el sitio del
+  Cazador Viejo (`prontera 145,187`) y del Cazador del Laberinto
+  (`prt_fild01 139,366`, junto a la salida), y el icono del ungüento
+  (`이속증가포션`, el de una poción). También en la 0.4.0, el **alijo pasa a
+  tierras lejanas** (D45, ver «Lejos o cerca»), con el ajuste
+  `find_nearby` encendido para las pruebas; necesita `world-atlas` 0.2.2
+  para ir lejos. Sin probar; la elección del campo por banda se simuló con
+  los datos del atlas
+- **0.3.0:** añade las
   **cadenas de rumores** (ver «Las cadenas de rumores»): el Viejo
   Trotamundos, `npc/tavern-chains.txt` (el motor), `npc/tavern-chains-data.txt`,
   `db/item_db.yml` y `System/itemInfo.lua` (generados desde
@@ -115,11 +143,11 @@ el alijo es el hallazgo.
 
 1. **Rumor.** «Preguntar por algo escondido» cuesta `find_rounds` rondas (3
    por defecto: 600 zeny a nivel 1–39). Antes de cobrar, el Tabernero elige
-   uno de los campos de su ciudad (`F_Tavern_Fields`) y una celda
-   transitable al azar; si no encuentra ninguna, lo dice y no cobra. El
-   diario de `adventure` lo anota.
-2. **Pista.** Dice el campo y un punto: el alijo está a **8 celdas o menos**
-   de ese punto, en cada eje. Hay que buscarlo; `/where` da tu celda.
+   un campo (ver «Lejos o cerca») y una celda transitable al azar; si no
+   encuentra ninguna, lo dice y no cobra. El diario de `adventure` lo anota.
+2. **Pista.** Dice el campo, la ciudad de referencia del atlas y un punto:
+   el alijo está a **8 celdas o menos** de ese punto, en cada eje. Hay que
+   buscarlo; `/where` da tu celda.
 3. **Hallazgo.** Al entrar en ese campo aparece el alijo (sprite de cofre,
    `WA_TREASURE`). Solo lo abre quien compró el rumor; a otro le dice que no
    es suyo. Dentro, con `dungeon-chest` cargado, una **pieza de equipo sin
@@ -136,8 +164,28 @@ sesión y a reiniciar el servidor: el alijo se vuelve a colocar al entrar en
 su campo (`OnPCLoadMapEvent`; `tavern-finds.txt` pone `loadevent` en los
 campos). Sin temporizadores.
 
-El Tier del botín es el del campo (1 o 2 en Prontera), no el del personaje,
-como en los cofres. El precio sí sube con su banda de nivel.
+El Tier del botín es el del campo, no el del personaje, como en los cofres.
+El precio sí sube con su banda de nivel.
+
+**Lejos o cerca** (desde la 0.4.0, D45). El alijo es la recompensa de un
+viaje largo, así que va a **tierras lejanas**: un campo del atlas
+(`$@wa_field$` de `world-atlas` 0.2.2) cuya ciudad ancla es de **otra
+región** (`F_Tavern_Region`: Prontera e Izlude son una), con el **Tier de tu
+banda de nivel + 1**. Si no hay ninguno de ese Tier, el más cercano; ante un
+empate, el más bajo. Mientras el atlas solo tenga la región de Prontera,
+fuera de ella hay campos de Tier 1 y 2, y siempre sale uno de los cinco de
+Tier 2 (Mjolnir 12, Lutie 01, Comodo 01, Umbala 01, Mosk 02); con cada
+región de H3 la elección crece sola.
+
+Para las pruebas, el ajuste **`find_nearby`** (encendido por defecto, D23)
+lo deja en los campos de la ciudad de la taberna (`F_Tavern_Fields`), como
+en la 0.2.0. Sin `world-atlas` también va cerca, porque no se sabe qué es
+lejos. Se apaga al cerrar la porción vertical.
+
+**Con las cadenas.** El alijo y las cadenas del Trotamundos no se estorban:
+variables distintas (`tr_h*` y `tr_c*`) y NPC distintos. Puedes llevar un
+alijo pendiente y una cadena en curso a la vez, y terminar cualquiera de
+los dos primero.
 
 ### Las cadenas de rumores
 
@@ -145,18 +193,27 @@ Desde la 0.3.0. El diseño completo está en [`RUMORES.md`](../RUMORES.md);
 aquí, lo que hace el mod.
 
 El **Viejo Trotamundos** está en la taberna (`prt_in 175,27`), junto al
-Tabernero. Escucha lo que cuentas: cuando cuentas un relato que tiene una
-cadena detrás (con el Cronista, el Tabernero o en un refugio), la próxima vez
-que le hables te ofrece su rumor. Una cadena a la vez; las demás esperan.
+Tabernero. Una cadena se abre de dos formas:
+
+- **Un relato contado.** Cuando cuentas un relato que tiene una cadena
+  detrás (con el Cronista, el Tabernero o en un refugio), la próxima vez que
+  le hables te ofrece su rumor.
+- **Un talismán de némesis** (desde la 0.4.0). Si llevas en la mochila el
+  talismán que abre una cadena, te lo pide; si se lo das, **se lo queda**
+  (D44) y te cuenta el rumor. Si lo llevas puesto, te pide que te lo
+  quites. No lo pide si ya empezaste esa cadena o si el mundo ya tiene su
+  consecuencia.
+
+Una cadena a la vez; las demás esperan.
 
 | Etapa | Qué haces | Qué pasa |
 |---|---|---|
 | Rumor | hablas con el Trotamundos y aceptas | te dice el mapa y un punto: el rastro está a 8 celdas o menos |
 | Rastro | entras en ese mapa y lo buscas | aparece el rastro (solo para ti); al tomarlo recibes su objeto y el relato `rastro:<id>` (Menor) |
-| Análisis | llevas el objeto a quien sabe leerlo, en otra ciudad | te cuenta qué es y adónde volver |
-| Puerta | vuelves al mapa | donde estaba el rastro hay una puerta; la abres con el objeto |
+| Análisis | llevas el objeto a quien sabe leerlo, en otra ciudad | te cuenta qué es y adónde ir: el mismo mapa del rastro o, si la cadena termina en otro, una celda de ese mapa |
+| Puerta | vas a esa celda | hay una puerta (o lo que haga de puerta); la abres con el objeto |
 | Guardián | lo vences | se gasta el objeto; relatos `final:<id>` (Mayor, también para el grupo en el mapa) y `cadena:<id>` (Hito) |
-| Consecuencia | — | la primera vez, algo cambia **para el mundo**: hoy, un pasadizo de vuelta a la entrada |
+| Consecuencia | — | la primera vez, algo cambia **para el mundo**: un **pasadizo** en la puerta o un **servicio** (alguien se instala) |
 
 Al Trotamundos también se le puede pedir que **olvide** el rumor en curso:
 vuelve a esperar y se pierde lo hecho. Si la consecuencia de una cadena ya
@@ -175,8 +232,32 @@ cerrada.
 - **Consecuencia:** un **pasadizo** en la puerta que sube a la entrada de
   las Cloacas (`prt_sewb1 131,247`), para todos.
 
-**Los datos** salen de `registry/tools/tavern-rumors/chains.csv`; no edites
-los archivos generados:
+**«La madre de la manada»** (`manada`), desde la 0.4.0:
+
+- **Disparador:** entregar el **Colmillo del Némesis** (51202, el talismán
+  de un némesis bruto) al Trotamundos.
+- **Rastro:** unos **huesos roídos** en `prt_maze02` (Tier 1), con el
+  **Hueso Marcado** (51401; no se puede soltar, comerciar ni guardar).
+- **Análisis:** el **Cazador Viejo** de Prontera (`prontera 145,187`, junto
+  al tablero mientras duren las pruebas, D23). Elige la madriguera: una
+  celda al azar de `prt_maze03`.
+- **Puerta:** la **Madriguera**; «Dejar el hueso como cebo».
+- **Guardián:** la **Madre de la Manada**, un Wolf con el 400 % de HP y el
+  150 % de ATK, en `prt_maze03` (Tier 2).
+- **Consecuencia:** un **servicio**. El **Cazador del Laberinto** se
+  instala a la salida del Laberinto (`prt_fild01 139,366`), para todos.
+  Vende el **Ungüento del Cazador** (51450, 1500 zeny: +10 % de daño físico
+  y mágico contra brutos durante 10 minutos; se pierde al morir y otro lo
+  renueva, no lo suma), flechas, flechas de fuego, trampas y pociones
+  naranjas al precio de siempre, y cuenta historias de caza. **No** se
+  cuentan allí los relatos de `adventure` (D10).
+
+El ungüento suma con el trofeo de marca de bruto puesto (+10 %, D40): son
+dos `bonus_script` y textos distintos.
+
+**Los datos** salen de `registry/tools/tavern-rumors/chains.csv` (las
+cadenas) y `wares.csv` (lo que venden los servicios); no edites los archivos
+generados:
 
 ```
 node registry/tools/tavern-rumors/build_chains.cjs
@@ -185,13 +266,28 @@ node registry/tools/tavern-rumors/build_chains.cjs --check
 
 Cada fila es una cadena. Los textos van entre comillas si llevan comas, y
 `|` empieza una línea nueva. El `id` se guarda en el personaje y en el mundo:
-no lo cambies. El script comprueba los ids, los objetos (51400–51499), los
-mapas, los números y el largo de los nombres (23 bytes el del guardián).
+no lo cambies. El script comprueba los ids (12 caracteres como mucho), los
+objetos (rastros 51400–51449, mercancías 51450–51499), los mapas, los
+números y el largo de los nombres (23 bytes el del guardián).
+
+Columnas que no son evidentes:
+
+| Columna | Qué es |
+|---|---|
+| `trigger` | `told:<clave del relato>` (con `.` en vez de `:`, como `told:map.prt_sewb4`) o `talisman:<objeto>` (51200–51209) |
+| `final_map` | dónde están la puerta y el guardián; si es el mismo que `map`, en la celda del rastro |
+| `door_action`, `door_open` | la opción del menú de la puerta (sin `:`) y lo que pasa al elegirla |
+| `reward` | `pasadizo` (portal en la puerta hacia `reward_map,x,y`) o `servicio` (NPC en `reward_map,x,y`) |
+| `reward_sprite`, `reward_shop`, `reward_tales` | solo para `servicio`: su sprite; su tienda, `id:precio` separados por `\|` (sin precio, el de siempre; los de `wares.csv` lo llevan siempre); sus historias, separadas por `\|\|` |
+
+En `wares.csv`, `bonus` es lo que va dentro de `bonus_script "{ … }"`
+durante `seconds` segundos.
 
 **`@rumor`** (GM): sin nada, el estado de tus cadenas; `@rumor <id>` pone
-esa cadena en espera, como si hubieras contado su relato (sirve para un
-personaje que ya contó el relato antes de la 0.3.0); `@rumor <id> reset` la
-borra del personaje y del mundo, y quita el pasadizo.
+esa cadena en espera, como si hubieras contado su relato o entregado su
+talismán (sirve para un personaje que ya contó el relato antes de la
+0.3.0); `@rumor <id> reset` la borra del personaje y del mundo, y quita el
+pasadizo u oculta el servicio.
 
 Las variables y las claves del mod store están en la cabecera de
 `tavern-chains.txt` y en «Nombres» de [`CONVENTIONS.md`](../CONVENTIONS.md#nombres).
@@ -282,12 +378,13 @@ activos, y zeny en el personaje.
     suyo y no da nada.
 16. **Mochila llena:** con peso al límite, el alijo no da nada y sigue ahí.
 
-**Las cadenas de rumores** (0.3.0), con `adventure` 0.5.0 y la aplicación
-reiniciada. El guion detallado está en la sección 6 de
+**Las cadenas de rumores** (0.3.0 y 0.4.0), con `adventure` 0.5.0 y la
+aplicación reiniciada. El guion detallado está en las secciones 6 y 7 de
 [`SESION-DE-PRUEBA.md`](../SESION-DE-PRUEBA.md).
 
 17. **Carga:** sin errores de `tavern-chains.txt` ni de
-    `tavern-chains-data.txt`, y el `item_db` de `tavern-rumors` con 1 entrada.
+    `tavern-chains-data.txt`, y el `item_db` de `tavern-rumors` con 3
+    entradas (dos rastros y el ungüento).
 18. **Disparador:** cuenta el relato `map:prt_sewb4` (o `@rumor puerta`).
     El Trotamundos ofrece «La puerta tapiada».
 19. **La cadena entera:** rastro, Capitán de Izlude, puerta, guardián,
@@ -295,5 +392,13 @@ reiniciada. El guion detallado está en la sección 6 de
 20. **Persistir:** a mitad de cadena, sal y vuelve a entrar, o reinicia el
     servidor: lo que toca vuelve a estar en su sitio. El pasadizo sigue
     tras reiniciar.
+21. **El talismán** (0.4.0): con un Colmillo del Némesis en la mochila, el
+    Trotamundos lo pide; «Dárselo» lo gasta y ofrece «La madre de la
+    manada». Puesto, pide que te lo quites.
+22. **Otro mapa y el servicio:** el Cazador Viejo de Prontera manda a
+    `prt_maze03`; allí, la Madriguera y la Madre de la Manada. Al vencerla,
+    el Cazador del Laberinto aparece en `prt_fild01` y vende el ungüento,
+    que da +10 % contra brutos (compara el daño a un Wolf antes y
+    después). Sigue tras reiniciar el servidor.
 
 Anota el resultado en «Estado».

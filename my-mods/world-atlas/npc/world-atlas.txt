@@ -3,6 +3,7 @@
 //
 // 230 maps. Each record is one temporary server variable, $@wa_<map>$:
 //   kind|biome|tier|temp|anchor|water|rest|name
+// $@wa_field$[] lists the field maps, for a mod that picks one.
 // Unknown maps get a default, never an error. Query at run time, not from
 // another NPC's OnInit: this NPC fills the table in its own OnInit and the
 // load order between NPCs is not guaranteed.
@@ -239,6 +240,7 @@ OnInit:
 	$@wa_iz_int02$ = "interior|ciudad|0|0|izlude|0|0|Sala de Inicio de Izlude (3)";
 	$@wa_iz_int03$ = "interior|ciudad|0|0|izlude|0|0|Sala de Inicio de Izlude (4)";
 	$@wa_iz_int04$ = "interior|ciudad|0|0|izlude|0|0|Sala de Inicio de Izlude (5)";
+	setarray $@wa_field$[0], "prt_fild00", "prt_fild01", "prt_fild02", "prt_fild03", "prt_fild04", "prt_fild05", "prt_fild06", "prt_fild07", "prt_fild08", "prt_fild09", "prt_fild10", "prt_fild11", "prt_gld", "prt_monk", "izlu2dun", "prt_q", "gef_fild07", "pay_fild08", "pay_fild03", "moc_fild11", "mjolnir_12", "xmas_fild01", "cmd_fild01", "um_fild01", "mosk_fild02";
 	$@wa_ready = 1;
 	end;
 }
